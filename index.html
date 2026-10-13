@@ -151,15 +151,15 @@ html[data-design="ruhig"] .btn[style*="background:var(--ac)"]{border-color:var(-
 html[data-design="glas"]{--bg:#cfe3ff;--card:rgba(255,255,255,.55);--cs:rgba(244,248,255,.92);--tx:#0d1b2a;--mu:rgba(13,27,42,.62);--ln:rgba(13,27,42,.1);--soft:rgba(13,27,42,.07);--ac:#0a84ff;--acs:rgba(10,132,255,.14);--segon:#0a84ff;--segtx:#fff;--grs:rgba(13,27,42,.08);--edge:rgba(255,255,255,.85);--gsh:0 8px 32px rgba(40,70,120,.14)}
 @media(prefers-color-scheme:dark){html[data-design="glas"]:not([data-theme="light"]){--bg:#101114;--card:rgba(255,255,255,.065);--cs:rgba(30,31,36,.97);--tx:#f3f3f5;--mu:rgba(243,243,245,.62);--ln:rgba(255,255,255,.1);--soft:rgba(255,255,255,.09);--ac:#7fb2ff;--acs:rgba(127,178,255,.18);--segon:#e9ecf2;--segtx:#14161a;--grs:rgba(255,255,255,.12);--edge:rgba(255,255,255,.16);--gsh:0 8px 32px rgba(0,0,0,.45)}}
 html[data-design="glas"][data-theme="dark"]{--bg:#101114;--card:rgba(255,255,255,.065);--cs:rgba(30,31,36,.97);--tx:#f3f3f5;--mu:rgba(243,243,245,.62);--ln:rgba(255,255,255,.1);--soft:rgba(255,255,255,.09);--ac:#7fb2ff;--acs:rgba(127,178,255,.18);--segon:#e9ecf2;--segtx:#14161a;--grs:rgba(255,255,255,.12);--edge:rgba(255,255,255,.16);--gsh:0 8px 32px rgba(0,0,0,.45)}
-html[data-design="glas"] body{background:radial-gradient(60% 50% at 10% 5%,#cfe3ff,transparent 70%),radial-gradient(50% 45% at 92% 18%,#e9d8ff,transparent 70%),radial-gradient(60% 50% at 55% 100%,#c9f2e3,transparent 70%),#d6e6ff;background-attachment:fixed}
-@media(prefers-color-scheme:dark){html[data-design="glas"]:not([data-theme="light"]) body{background:radial-gradient(55% 45% at 8% 4%,#3a3446,transparent 70%),radial-gradient(45% 40% at 94% 16%,#2c3a36,transparent 70%),radial-gradient(55% 45% at 55% 100%,#3a3030,transparent 70%),#0e0f12;background-attachment:fixed}}
-html[data-design="glas"][data-theme="dark"] body{background:radial-gradient(55% 45% at 8% 4%,#3a3446,transparent 70%),radial-gradient(45% 40% at 94% 16%,#2c3a36,transparent 70%),radial-gradient(55% 45% at 55% 100%,#3a3030,transparent 70%),#0e0f12;background-attachment:fixed}
-html[data-design="glas"] :is(.card,.logo,.lkw){backdrop-filter:blur(22px) saturate(1.6);-webkit-backdrop-filter:blur(22px) saturate(1.6);border:1px solid var(--edge);box-shadow:var(--gsh),inset 0 1px 0 rgba(255,255,255,.45);border-radius:24px}
+html[data-design="glas"] body{background:radial-gradient(60% 50% at 10% 5%,#cfe3ff,transparent 70%),radial-gradient(50% 45% at 92% 18%,#e9d8ff,transparent 70%),radial-gradient(60% 50% at 55% 100%,#c9f2e3,transparent 70%),#d6e6ff}
+@media(prefers-color-scheme:dark){html[data-design="glas"]:not([data-theme="light"]) body{background:radial-gradient(55% 45% at 8% 4%,#3a3446,transparent 70%),radial-gradient(45% 40% at 94% 16%,#2c3a36,transparent 70%),radial-gradient(55% 45% at 55% 100%,#3a3030,transparent 70%),#0e0f12}}
+html[data-design="glas"][data-theme="dark"] body{background:radial-gradient(55% 45% at 8% 4%,#3a3446,transparent 70%),radial-gradient(45% 40% at 94% 16%,#2c3a36,transparent 70%),radial-gradient(55% 45% at 55% 100%,#3a3030,transparent 70%),#0e0f12}
+html[data-design="glas"] :is(.card,.logo,.lkw){backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--edge);box-shadow:var(--gsh),inset 0 1px 0 rgba(255,255,255,.45);border-radius:24px}
 html[data-design="glas"] .card.tw{overflow-x:auto}
 html[data-design="glas"] nav{margin:12px auto 0;width:max-content;max-width:calc(100% - 24px);padding:5px;border-radius:99px;background:var(--card);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);border:1px solid var(--edge);box-shadow:var(--gsh),inset 0 1px 0 rgba(255,255,255,.45)}
 html[data-design="glas"] nav h1{padding-left:14px}
 html[data-design="glas"] nav button.on{background:var(--segon);color:var(--segtx);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-html[data-design="glas"] :is(select,input,.btn,textarea){background:rgba(255,255,255,.45);border:1px solid var(--edge);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-design="glas"] :is(select,input,.btn,textarea){background:rgba(255,255,255,.55);border:1px solid var(--edge)}
 @media(prefers-color-scheme:dark){html[data-design="glas"]:not([data-theme="light"]) :is(select,input,.btn,textarea){background:rgba(255,255,255,.08)}}
 html[data-design="glas"][data-theme="dark"] :is(select,input,.btn,textarea){background:rgba(255,255,255,.08)}
 html[data-design="glas"] .seg{background:var(--card);border:1px solid var(--edge);border-radius:99px}
@@ -210,6 +210,9 @@ html[data-design="ruhig"][data-theme="dark"]{--onac:#0f1311}html[data-design="gl
 
 /* Übersicht: Die Schnellzugriffe auf die Bereiche entfallen, wenn das Menü oben steht (Desktop/Tablet). Auf dem Handy mit unterer Leiste bleiben sie. */
 @media(min-width:761px){:is(html[data-design="ruhig"],html[data-design="glas"]) #hn,:is(html[data-design="ruhig"],html[data-design="glas"]) #hn+hr{display:none!important}}
+
+/* Leistung: auf den Vereinsseiten keine Unschärfe hinter Karten (flüssigeres Scrollen) */
+html[data-design="glas"] #vp :is(.card,.vc){backdrop-filter:none;-webkit-backdrop-filter:none}
 #lkco{display:none!important}</style>
 <div class="app">
 <nav><h1>U13 · <span id="sais">2026/27</span></h1><small>Teamzentrale</small>
@@ -305,7 +308,7 @@ html[data-design="ruhig"][data-theme="dark"]{--onac:#0f1311}html[data-design="gl
 <div class="tw"><table id="lkt"></table></div>
 </div>
 <div class="card" id="lkco" style="margin-top:12px"><h3>Trainer-Links (Co-Trainer)</h3><p class="note" style="margin-top:0">Für Trainer und Verantwortliche aus den Stammdaten (außer dem Besitzer). Sie sehen und bearbeiten alles, aber nicht die Einstellungen. <b>Wichtig:</b> Bearbeiten geht nur mit Claude-Konto, und die Person muss unter „Teilen“ der Seite als Mitwirkende eingeladen sein; der Link allein reicht nicht. Ein ausgeschalteter Link sperrt den Zugang über die App sofort (ohne „Aktualisieren“).</p><div class="tw"><table id="lkct"></table></div></div>
-<div class="card" id="lkx" style="margin-top:12px"><h3>Externe Links (nur ansehen)</h3><p class="note" style="margin-top:0">Für Personen außerhalb des Teams. „Vollansicht“ und „Struktur“ zeigen die komplette App (ohne Änderungen). <b>„Nur Terminpläne“</b> zeigt ausschließlich Monats- und Wochenplan und lässt sich ohne Anmeldung öffnen (der A4-Download steht nur den Trainern zur Verfügung) – Spielerprofile, Notizen und To-Dos sind darin nicht enthalten. <b>„Demo“</b> zeigt die ganze App samt A4-Export-Knöpfen mit komplett zufällig erzeugten Daten (Lorem ipsum) – ohne Anmeldung, nichts davon ist echt. Ein-/Ausschalten gilt nach wenigen Sekunden, neue Daten werden etwa alle 6 Stunden übernommen.</p><div class="tw"><table id="lkxt"></table></div></div>
+<div class="card" id="lkx" style="margin-top:12px"><h3>Externe Links (nur ansehen)</h3><p class="note" style="margin-top:0">Für Personen außerhalb des Teams. „Vollansicht“ und „Struktur“ zeigen die komplette App (ohne Änderungen). <b>„Nur Terminpläne“</b> zeigt ausschließlich Monats- und Wochenplan und lässt sich ohne Anmeldung öffnen (der A4-Download steht nur den Trainern zur Verfügung) – Spielerprofile, Notizen und To-Dos sind darin nicht enthalten. <b>„Demo“</b> zeigt die ganze App samt A4-Export-Knöpfen mit komplett zufällig erzeugten Daten (Lorem ipsum) – ohne Anmeldung, nichts davon ist echt. Ein-/Ausschalten gilt nach wenigen Sekunden, neue Daten werden etwa alle 6 Stunden übernommen. <span id="lkxadm" class="note" hidden><b>Vollansicht, Struktur und Demo kann nur der Administrator anlegen</b> (Verein → Einstellungen).</span></p><div class="tw"><table id="lkxt"></table></div></div>
 
 </div>
 <div class="etp" id="etp-s" hidden>
@@ -2184,9 +2187,9 @@ async function renderLinks(){if(window.__DEMO)return;
   await kzPre();if(my!==tok)return;
   const pend=cur.filter((r)=>r.want!==r.pub).length+xr.filter((r)=>r.want!==r.pub).length+orphan,stale=!!SNAP.fp&&SNAP.fp!==fp||(!SNAP.fp&&pubIds.length>0),on=cur.filter((r)=>r.want&&r.want===r.pub).length;
   $("#lks").innerHTML=(SNAP.u?"Letzter Stand online: <b>"+esc(dt(SNAP.u))+"</b> · ":"Noch nichts veröffentlicht · ")+"<b>"+on+"</b> Link(s) online"+(pend||stale?' · <span class="warn">⚠ '+(pend?"Link-Änderungen":"")+(pend&&stale?" und ":"")+(stale?"neuere Daten":"")+(window.__WEB?" noch nicht online – wird automatisch übernommen.":" noch nicht online – bitte „Alle Links aktualisieren“ klicken.")+"</span>":' · <span class="up">alles aktuell</span>');
-  const xe=$("#lkxt");
+  const xe=$("#lkxt");{const ax=$("#lkxadm");if(ax)ax.hidden=!window.__V||window.__V.isAdmin()}
   if(xe){const XN={full:["Vollansicht","Alles sichtbar, nur lesend (inkl. Namen, Fotos, Notizen, To-Dos, Kontakte)"],plan:["Nur Terminpläne","Monats- und Wochenplan zum Ansehen, ohne Anmeldung – keine Spielerprofile, Notizen oder To-Dos"],demo:["Demo (Zufallsdaten)","Ganze App mit komplett zufällig erzeugten Daten (Namen, Beteiligung, Ergebnisse, Lorem-ipsum-Notizen) – ohne Konto, nur lesend, nichts davon echt"],anon:["Struktur (anonym)","Spieler 1…n mit Rückennummer, ohne Fotos, Geburtstage, Kontakte, Notizen, To-Dos und interne Termine"]};
-    if(!(document.activeElement&&document.activeElement.matches&&document.activeElement.matches("[data-xln],[data-kzin]")))xe.innerHTML='<tr><th style="text-align:left">Link</th><th>Aktiv</th><th>Design</th><th style="text-align:left">Adresse</th><th></th><th style="text-align:left">Stand</th></tr>'+xr.map((r)=>{const st=r.want&&r.want===r.pub?'<span class="pill ok">online</span>':r.want?'<span class="pill busy">geht beim Aktualisieren online</span>':r.pub?'<span class="pill busy">wird beim Aktualisieren abgeschaltet</span>':'<span class="pill">aus</span>';
+    if(!(document.activeElement&&document.activeElement.matches&&document.activeElement.matches("[data-xln],[data-kzin]")))xe.innerHTML='<tr><th style="text-align:left">Link</th><th>Aktiv</th><th>Design</th><th style="text-align:left">Adresse</th><th></th><th style="text-align:left">Stand</th></tr>'+xr.filter((r)=>r.k==="plan"||!window.__V||window.__V.isAdmin()).map((r)=>{const st=r.want&&r.want===r.pub?'<span class="pill ok">online</span>':r.want?'<span class="pill busy">geht beim Aktualisieren online</span>':r.pub?'<span class="pill busy">wird beim Aktualisieren abgeschaltet</span>':'<span class="pill">aus</span>';
       return'<tr data-x="'+r.k+'"><td style="text-align:left"><b>'+XN[r.k][0]+'</b><div class="note" style="white-space:normal;max-width:260px">'+XN[r.k][1]+'</div></td><td><input type="checkbox" data-xak '+(r.l.aktiv?"checked":"")+'></td><td>'+dzSel(r.l)+'</td><td style="text-align:left">'+(r.l.key?'<input readonly data-xln value="'+esc(linkOf(r.k,r.l.key))+'" style="width:100%;min-width:230px">'+kzCell("x"+r.k):'<span class="note">noch kein Link</span>')+'</td><td style="white-space:nowrap">'+(r.l.key?'<button class="btn" data-xcp>Kopieren</button> <button class="btn'+(armed==="x"+r.k?" arm":"")+'" data-xnw title="Der bisherige Link wird ungültig">'+(armed==="x"+r.k?"Wirklich neu?":"Neu erzeugen")+"</button>":"")+'</td><td style="text-align:left">'+st+"</td></tr>"}).join("");
   }
   el.innerHTML='<tr><th style="text-align:left">Spieler</th><th>Aktiv</th><th>Design</th><th style="text-align:left">Link</th><th></th><th style="text-align:left">Stand</th></tr>'+cur.map((r)=>{
@@ -2289,7 +2292,11 @@ const kwOf=(s)=>{const d=parseD(s);d.setDate(d.getDate()+3-((d.getDay()+6)%7));c
 const ddm=(s)=>s.slice(8)+"."+s.slice(5,7)+".";
 const monthEnd=(m)=>m+"-"+pad(new Date(+m.slice(0,4),+m.slice(5),0).getDate());
 const KONTAKT_DEFAULT=[]; /* echte Kontaktdaten stehen nur in der Datenbank (Einstellungen), nie im Programmcode */
-const kontakte=()=>(D.config&&D.config.kontakte)||KONTAKT_DEFAULT;
+const kTeam=()=>(D.config&&D.config.kontakte)||KONTAKT_DEFAULT;
+/* Vereinsweite Kontakte (Einstellungen des Vereins): stehen immer zuerst in der Fußzeile; gleichnamige Blöcke der Mannschaft entfallen */
+const KCLUB=[["verein",()=>(window.__VEREIN&&window.__VEREIN.name)||"Verein",/^tus\s*haltern|^verein/i],["jugendleiter",()=>"Jugendleiter",/^jugendleiter/i],["sportleiter",()=>"Sportliche Leiter",/^sportliche[rn]?\s*leiter/i]];
+function kClub(){const c=(window.__VEREIN&&window.__VEREIN.kontakte)||{};return KCLUB.filter((k)=>String(c[k[0]]||"").trim()).map((k)=>({titel:k[1](),zeilen:c[k[0]],club:k[2]}))}
+const kontakte=()=>{const C=kClub();return C.map((c)=>({titel:c.titel,zeilen:c.zeilen})).concat(kTeam().filter((k)=>!C.some((c)=>c.club.test(String(k.titel||"").trim()))))};
 const todos=(m)=>{const M=(D.config&&D.config.trainerToDosM)||{},k=Object.keys(M).filter((x)=>!m||x<=m).sort().pop();return k?M[k]:((D.config&&D.config.trainerToDos)||[{name:"Phil M.",text:""},{name:"Mathis",text:""}])};
 const todosSave=(m,T)=>cfgSave({trainerToDosM:{...((D.config&&D.config.trainerToDosM)||{}),[m]:T}});
 const ICS=(d)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+"</svg>",IC={ed:ICS('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),go:ICS('<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/>'),del:ICS('<path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>')};
@@ -2628,10 +2635,10 @@ $("#w").addEventListener("click",(e)=>{
 /* ---------- Kontakte (Einstellungen) ---------- */
 function renderKontakte(){
   const r=$("#kct");if(!r||busy("#e"))return;
-  r.innerHTML=kontakte().map((k,i)=>'<div class="card" style="margin-bottom:10px"><div class="bar" style="margin:0 0 6px"><input data-kt="'+i+'" value="'+esc(k.titel)+'" placeholder="Überschrift" style="width:260px;font-weight:600"><span style="flex:1"></span><button class="rm" data-kx="'+i+'">✕ entfernen</button></div><textarea data-kz="'+i+'" style="min-height:70px">'+esc(k.zeilen)+"</textarea></div>").join("")+(kontakte().length?"":'<p class="note" style="margin:0 0 8px">Noch keine Kontakte eingetragen. Sie erscheinen in der Fußzeile von Wochenplan und Terminplan-Link.</p>')+'<button class="btn" id="kta">＋ Block hinzufügen</button>';
+  r.innerHTML=(kClub().length?'<p class="note" style="margin:0 0 8px">Immer in der Fußzeile (vom Verein eingetragen): '+kClub().map((c)=>esc(c.titel)).join(", ")+'. Hier trägst du die Kontakte deiner Mannschaft ein.</p>':'<p class="note" style="margin:0 0 8px">Die Kontakte des Vereins, des Jugendleiters und der Sportlichen Leiter pflegt die Leitung zentral unter „Einstellungen“.</p>')+kTeam().map((k,i)=>'<div class="card" style="margin-bottom:10px"><div class="bar" style="margin:0 0 6px"><input data-kt="'+i+'" value="'+esc(k.titel)+'" placeholder="Überschrift" style="width:260px;font-weight:600"><span style="flex:1"></span><button class="rm" data-kx="'+i+'">✕ entfernen</button></div><textarea data-kz="'+i+'" style="min-height:70px">'+esc(k.zeilen)+"</textarea></div>").join("")+(kTeam().length?"":'<p class="note" style="margin:0 0 8px">Noch keine Kontakte der Mannschaft eingetragen. Tipp: Trainer und Co-Trainer mit Name, Telefon und E-Mail. Die Kontakte erscheinen in der Fußzeile von Wochenplan und Terminplan-Link.</p>')+'<button class="btn" id="kta">＋ Block hinzufügen</button> <button class="btn" id="ktv" title="Legt Blöcke für Trainer und Co-Trainer an, die du ausfüllst">＋ Vorschlag: Trainer und Co-Trainer</button>';
 }
-$("#kct").addEventListener("change",(e)=>{const K=kontakte().map((k)=>({...k})),t=e.target.dataset.kt,z=e.target.dataset.kz;if(t!=null||z!=null){const i=+(t!=null?t:z);if(!K[i])return;if(t!=null)K[i].titel=e.target.value.trim();else K[i].zeilen=e.target.value;cfgSave({kontakte:K})}});
-$("#kct").addEventListener("click",(e)=>{const x=e.target.closest("[data-kx]");if(x){cfgSave({kontakte:kontakte().filter((_,k)=>k!==+x.dataset.kx)});return}if(e.target.id==="kta")cfgSave({kontakte:kontakte().concat([{titel:"Neuer Block",zeilen:""}])})});
+$("#kct").addEventListener("change",(e)=>{const K=kTeam().map((k)=>({...k})),t=e.target.dataset.kt,z=e.target.dataset.kz;if(t!=null||z!=null){const i=+(t!=null?t:z);if(!K[i])return;if(t!=null)K[i].titel=e.target.value.trim();else K[i].zeilen=e.target.value;cfgSave({kontakte:K})}});
+$("#kct").addEventListener("click",(e)=>{const x=e.target.closest("[data-kx]");if(x){cfgSave({kontakte:kTeam().filter((_,k)=>k!==+x.dataset.kx)});return}if(e.target.id==="kta")cfgSave({kontakte:kTeam().concat([{titel:"Neuer Block",zeilen:""}])});if(e.target.id==="ktv"){const m=mann();cfgSave({kontakte:kTeam().concat([{titel:"Trainer "+m,zeilen:"Vor- und Nachname\nTel.: \nE-Mail: "},{titel:"Co-Trainer "+m,zeilen:"Vor- und Nachname\nTel.: \nE-Mail: "}])})}});
 renderPlan();
 
 /* Anstoßzeit eines Spiels (Minuten seit Mitternacht) aus dem verknüpften Termin – für „Spiel hat schon stattgefunden“. */
@@ -5326,7 +5333,9 @@ V.teams=()=>(W.__VEREIN&&W.__VEREIN.teams)||[];
 V.set=()=>Object.assign({ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},(W.__VEREIN&&W.__VEREIN.settings)||{});
 V.tname=(id)=>{const t=V.teams().find((x)=>x.id===id);if(t)return t.name+(t.ak?" ("+t.ak+")":"");const e=((V.plan&&V.plan.extern)||[]).find((x)=>x.id===id);return e?e.name:(id||"–")};
 V.tshort=(id)=>{const t=V.teams().find((x)=>x.id===id);if(t)return t.name;const e=((V.plan&&V.plan.extern)||[]).find((x)=>x.id===id);return e?e.name:(id||"–")};
-V.col=(id)=>{let h=0;String(id).split("").forEach((c)=>{h=(h*31+c.charCodeAt(0))%360});return{bg:"hsla("+h+",62%,52%,.22)",bd:"hsl("+h+",55%,48%)"}};
+V.PAL=["#2f7de1","#e0642b","#2e9e5b","#b04ac9","#d6a206","#d6407a","#1a9aa8","#7a5cd1","#8a9a1e","#c9453f","#3c6b9e","#a9693a"];
+V.teamHex=(id)=>{const L=V.teams().length?V.teams():((V.plan&&V.plan.teams)||[]),i=L.findIndex((x)=>x.id===id);if(i<0)return "";const t=L[i];return /^#[0-9a-f]{6}$/i.test(t.farbe||"")?t.farbe:V.PAL[i%V.PAL.length]};
+V.col=(id)=>{const x=V.teamHex(id);if(x)return{bg:x+"3a",bd:x};let h=0;String(id).split("").forEach((c)=>{h=(h*31+c.charCodeAt(0))%360});return{bg:"hsla("+h+",62%,52%,.22)",bd:"hsl("+h+",55%,48%)"}};
 V.log=(was,tid)=>{try{V.fs().doc("protokoll/"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)).set({at:new Date().toISOString(),von:(W.__VME&&W.__VME.email)||"",was:String(was).slice(0,300),tid:tid||""}).catch(()=>{})}catch(e){}};
 V.setTeam=(id)=>{try{localStorage.setItem("u13team",id)}catch(e){}location.href=W.__WEB_BASE0};
 /* Datumshilfen (lokal, ohne Zeitzonen-Sprünge) */
@@ -5381,7 +5390,7 @@ const CSS='#vnav{position:sticky;top:0;z-index:340;display:flex;flex-wrap:wrap;a
 +'#vnav .vpill button.on{background:var(--tx);color:var(--bg);font-weight:600}html[data-design="glas"] #vnav .vpill button.on{background:var(--segon,#0a84ff);color:var(--segtx,#fff);box-shadow:0 2px 8px rgba(0,0,0,.25)}'
 +'#vnav .vpill .vbrand{display:flex;align-items:center;gap:8px;color:var(--tx);font-weight:700;padding:5px 14px 5px 6px;cursor:pointer}#vnav .vlogo{display:grid;place-items:center;min-width:30px;height:30px;padding:0 6px;border-radius:9px;background:var(--ac);color:#fff;font-size:12px;font-weight:800;letter-spacing:-.01em}#vnav .vlogo.img{padding:0;min-width:0;background:none;width:34px;height:34px;border-radius:50%}#vnav .vlogo.img img{width:34px;height:34px;display:block;object-fit:contain}'
 +'#vnav .vr{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:relative}#vnav .vchip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:var(--card);border:1px solid var(--ln);color:var(--tx);font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}'
-+'#vnav .vchip b{font-weight:700}#vnav .vchip.err{background:var(--rs);color:var(--r);border-color:transparent}'
++'#vnav .vchip b{font-weight:700}#vnav .vchip.ok{color:var(--g,#1b7a3a)}#vnav .vchip.warn{background:var(--ys,#fff3cd);border-color:transparent;cursor:pointer}#vnav .vchip.err{background:var(--rs);color:var(--r);border-color:transparent}'
 +'#vdrop{position:absolute;right:0;top:calc(100% + 8px);width:min(340px,92vw);z-index:430;padding:10px;border-radius:18px;background:var(--cs,var(--card));border:1px solid var(--ln);box-shadow:0 18px 50px rgba(0,0,0,.22);max-height:70vh;overflow:auto}#vdrop[hidden]{display:none}'
 +'#vdrop h4{margin:10px 8px 4px;font-size:11px;font-weight:600;color:var(--mu)}#vdrop h4:first-child{margin-top:2px}#vdrop button{display:flex;width:100%;align-items:center;gap:8px;border:0;background:none;color:var(--tx);font:inherit;padding:8px 10px;border-radius:10px;cursor:pointer;text-align:left}#vdrop button:hover{background:var(--soft,var(--grs))}#vdrop button.on{background:var(--acs);color:var(--ac);font-weight:600}#vdrop .sub{margin-left:auto;font-size:12px;color:var(--mu);font-weight:400}#vdrop .dim{padding:6px 10px;font-size:12px;color:var(--mu)}'
 +'html.vclub .app{display:block}@media(min-width:761px){html.vclub nav{top:var(--vnh,56px)!important}html.vclub:not([data-design="ruhig"]):not([data-design="glas"]) nav{height:calc(100vh - var(--vnh,56px))}html.vclub:not([data-design="ruhig"]):not([data-design="glas"]) .app{display:grid}}'
@@ -5446,13 +5455,22 @@ function mountNav(){
   document.documentElement.classList.add("vclub");
   const nav=document.createElement("header");nav.id="vnav";
   nav.innerHTML='<div class="vpill" role="tablist"><button type="button" class="vbrand" id="vhome" title="Zur Mannschaft"><span class="vlogo img"><img alt="" src="'+E(W.__CLUBLOGO||"")+'"></span><span>'+E((W.__VEREIN&&W.__VEREIN.name)||"Verein")+'</span></button><span id="vmenu" style="display:contents"></span></div>'
-   +'<div class="vr"><button class="vchip err" id="vhin" type="button" hidden></button><button class="vchip" id="vteamb" type="button" aria-haspopup="true" aria-label="Mannschaft wechseln"></button><span class="vchip" id="vrole"></span><div id="vdrop" hidden></div></div>';
+   +'<div class="vr"><button class="vchip warn" id="vview" type="button" hidden></button><span class="vchip" id="vsync" role="status" aria-live="polite">Verbinde …</span><button class="vchip err" id="vhin" type="button" hidden></button><button class="vchip" id="vteamb" type="button" aria-haspopup="true" aria-label="Mannschaft wechseln"></button><span class="vchip" id="vrole"></span><div id="vdrop" hidden></div></div>';
   const app=q(".app");app?app.parentNode.insertBefore(nav,app):document.body.insertBefore(nav,document.body.firstChild);
   const fit=()=>document.documentElement.style.setProperty("--vnh",nav.offsetHeight+"px");
   fit();try{new ResizeObserver(fit).observe(nav)}catch(e){W.addEventListener("resize",fit)}
   q("#vhome",nav).onclick=()=>V.go("mannschaft");
+  {const sy=q("#vsync",nav),upd=()=>{const e=document.getElementById("st"),t=((e&&e.textContent)||"").trim(),c=(e&&e.className)||"";
+    let x="Verbinde …",k="";
+    if(/err|bad/.test(c)||/^(Nicht|Lesefehler|Fehler)/i.test(t)){x="✕ Nicht synchronisiert";k="err"}
+    else if(/busy/.test(c)||/^Speichert/i.test(t)){x="↻ Synchronisiert …";k=""}
+    else if(/^(Synchron|Gespeichert)/i.test(t)||/ok/.test(c)){x="✓ Synchronisiert";k="ok"}
+    sy.textContent=x;sy.className="vchip vsy "+k;sy.title=t||""};
+    upd();const e0=document.getElementById("st");if(e0)try{new MutationObserver(upd).observe(e0,{childList:true,characterData:true,subtree:true,attributes:true})}catch(x){}}
+
   q("#vmenu",nav).onclick=(e)=>{const b=e.target.closest("button[data-m]");if(b)V.go(b.dataset.m)};
   q("#vhin",nav).onclick=()=>V.go("uebersicht");
+  q("#vview",nav).onclick=()=>{V.viewAs(null);V.go("einstellungen")};
   const dr=q("#vdrop",nav);
   q("#vteamb",nav).onclick=(e)=>{e.stopPropagation();dr.innerHTML=switcherHtml();dr.hidden=!dr.hidden};
   dr.onclick=(e)=>{const b=e.target.closest("button[data-sw]");if(b&&b.dataset.sw!==W.__TID)V.setTeam(b.dataset.sw);else dr.hidden=true};
@@ -5467,6 +5485,7 @@ function refreshNav(){
   q("#vteamb",nav).innerHTML='<b>'+E((W.__TEAM||{}).name||"")+'</b><span class="note">'+E((W.__TEAM||{}).ak||"")+'</span> ▾';
   q("#vrole",nav).innerHTML='<b>'+E((W.__VME&&(W.__VME.name||W.__VME.email.split("@")[0]))||"")+'</b> · '+E(V.roleLabel());
   q("#vrole",nav).title=(W.__VME&&W.__VME.email)||"";
+  {const vv=q("#vview",nav);if(vv){vv.hidden=!V.vw;if(V.vw)vv.innerHTML='Vorschau: <b>'+E(V.vw.label)+'</b> · beenden ✕'}}
 }
 V.refreshNav=refreshNav;
 /* Überschriften der Mannschafts-App an die gewählte Mannschaft anpassen */
@@ -5495,7 +5514,7 @@ function subPlan(){
 V.subPlan=subPlan;
 V.savePlan=async(patch)=>{V.plan=Object.assign({},V.plan,patch);await V.fs().doc("plaene/platz").set(V.plan)};
 /* Teamnamen für den Platzwart-Link (er darf „verein“ nicht lesen) im Plan mitführen */
-V.syncTeamNames=async()=>{const t=V.teams().map((x)=>({id:x.id,name:x.name,ak:x.ak||"",aktiv:x.aktiv!==false}));await V.savePlan({teams:t})};
+V.syncTeamNames=async()=>{const t=V.teams().map((x)=>({id:x.id,name:x.name,ak:x.ak||"",aktiv:x.aktiv!==false,...(x.farbe?{farbe:x.farbe}:{})}));await V.savePlan({teams:t})};
 
 /* ---------- Vereinsbereich (unter dem Menü) ---------- */
 let panel=null;
@@ -5526,6 +5545,20 @@ V.close=()=>{if(!panel)return;const o=V.tabs.find((x)=>x.id===V.cur);o&&o.stop&&
 V.go=(mid,tab)=>{const m=MENU.find((x)=>x.id===mid);if(!m)return;if(m.app){V.close();try{window.scrollTo(0,0)}catch(e){}return}const ts=tabsOf(m);const t=ts.find((x)=>x.id===tab)||ts[0];if(t)V.open(t.id)};
 /* Mannschafts-App auf einem bestimmten Reiter (Kader & Scouting …) */
 V.app=(sec)=>{V.close();const b=document.querySelector('nav button[data-s="'+sec+'"]');if(b)b.click()};
+/* Vorschau „Ansicht als …“: zeigt die Oberfläche so, wie sie eine Rolle sieht. Rechte in der Datenbank bleiben unverändert (nur die Anzeige ändert sich). */
+V.vw=null;
+V.viewAs=(o)=>{
+  if(!V.vw&&o){V.vw={real:{r:W.__VROLLE,me:W.__VME,al:W.__VALLOWED}}}
+  if(!o){if(V.vw){const r=V.vw.real;W.__VROLLE=r.r;W.__VME=r.me;W.__VALLOWED=r.al;V.vw=null}}
+  else{const real=V.vw.real,rolle=o.rolle,zu=o.zu||[];
+    if(rolle==="team"){const x=V.expandZu(zu);W.__VME={...real.me,rolle:"team",zu,tr:x.tr,g:x.g,kader:{}};}
+    else W.__VME={...real.me,rolle,zu:[],tr:{},g:[],kader:{}};
+    W.__VROLLE=rolle;V.vw={real,label:o.label||rolle};
+    W.__VALLOWED=V.visTeams().map((t)=>t.id)}
+  const t=V.tabs.find((x)=>x.id===V.cur);
+  if(t&&t.show&&!t.show())V.close();else if(V.cur)V.render();
+  refreshNav();try{W.dispatchEvent(new Event("resize"))}catch(e){}
+};
 V.render=()=>{if(!panel||panel.hidden)return;const t=V.tabs.find((x)=>x.id===V.cur);if(!t)return;
   try{t.render(q("#vbody",panel))}catch(e){q("#vbody",panel).innerHTML='<div class="card"><b>Diese Ansicht konnte nicht aufgebaut werden.</b><div class="note">'+E(e&&e.message)+'</div></div>'}};
 V.tab=(t)=>V.tabs.push(t);
@@ -5626,7 +5659,7 @@ V.tab({id:"teams",label:"Mannschaften",show:()=>V.isAll(),render(el){
   if(V.typing())return;
   const ts=V.teams(),st=V.set();
   let h='<h2>Mannschaften</h2><p class="sub note">Mannschaften lassen sich beliebig ergänzen (z. B. E3 oder U10-3). Nicht besetzte Mannschaften werden archiviert, ihre Daten bleiben erhalten.</p>';
-  h+='<div class="card vc"><div class="tw"><table class="vt"><thead><tr><th>Name</th><th>Altersklasse</th><th>Status</th><th></th></tr></thead><tbody>'+ts.map((t)=>'<tr><td><input data-n="'+E(t.id)+'" value="'+E(t.name)+'" maxlength="20" style="width:120px"></td><td><input data-a="'+E(t.id)+'" value="'+E(t.ak||"")+'" maxlength="12" style="width:90px"></td><td>'+(t.aktiv===false?'<span class="vbad">archiviert</span>':'<span class="vbad g">aktiv</span>')+'</td><td><button class="btn" data-t="'+E(t.id)+'">'+(t.aktiv===false?"Wieder aktivieren":"Archivieren")+'</button></td></tr>').join("")+'</tbody></table></div>'
+  h+='<div class="card vc"><div class="tw"><table class="vt"><thead><tr><th>Name</th><th>Altersklasse</th><th>Farbe im Plan</th><th>Status</th><th></th></tr></thead><tbody>'+ts.map((t)=>'<tr><td><input data-n="'+E(t.id)+'" value="'+E(t.name)+'" maxlength="20" style="width:120px"></td><td><input data-a="'+E(t.id)+'" value="'+E(t.ak||"")+'" maxlength="12" style="width:90px"></td><td><input type="color" data-tf="'+E(t.id)+'" value="'+E(V.teamHex(t.id)||'#2f7de1')+'" aria-label="Farbe von '+E(t.name)+'" style="width:44px;height:30px;padding:0"></td><td>'+(t.aktiv===false?'<span class="vbad">archiviert</span>':'<span class="vbad g">aktiv</span>')+'</td><td><button class="btn" data-t="'+E(t.id)+'">'+(t.aktiv===false?"Wieder aktivieren":"Archivieren")+'</button></td></tr>').join("")+'</tbody></table></div>'
    +'<div class="vrow" style="margin-top:12px"><label>Neue Mannschaft<input id="tnn" maxlength="20" placeholder="z. B. E3"></label><label>Altersklasse<input id="tna" maxlength="12" placeholder="z. B. U10"></label><button class="btn" id="tadd" type="button" style="align-self:flex-end">Hinzufügen</button></div><div class="vmsg" id="tm"></div></div>';
   h+='<div class="card vc"><h3>Pflege-Erinnerung</h3><div class="vrow"><label>Erinnern nach (Tage)<input id="tse" type="number" min="7" max="365" value="'+st.erinnerungTage+'" style="width:100px"></label><label>Ausgrauen nach (Tage)<input id="tsa" type="number" min="14" max="400" value="'+st.ausgrauenTage+'" style="width:100px"></label><button class="btn" id="tss" type="button" style="align-self:flex-end">Speichern</button></div><div class="note">Wurde in einer Mannschaft so lange nichts gespeichert, erscheint die Erinnerung bzw. die Mannschaft wird in der Übersicht ausgegraut.</div><div class="vmsg" id="ts"></div></div>';
   const bs=V.bereiche();
@@ -5640,6 +5673,7 @@ V.tab({id:"teams",label:"Mannschaften",show:()=>V.isAll(),render(el){
   el.onchange=async(e)=>{
     const bn=e.target.dataset&&e.target.dataset.bn;
     if(bn){if(await saveB(V.bereiche().map((b)=>b.id===bn?{...b,name:e.target.value.trim()||b.name}:b),"Bereich umbenannt")){msg("bm","Gespeichert.");V.render()}return}
+    const tf=e.target.dataset&&e.target.dataset.tf;if(tf){if(await save(V.teams().map((t)=>t.id===tf?{...t,farbe:e.target.value}:t),"Farbe geändert: "+tf)){msg("tm","Gespeichert.")}return}
     const n=e.target.dataset&&e.target.dataset.n,a=e.target.dataset&&e.target.dataset.a;
     if(n||a){const id=n||a,teams=V.teams().map((t)=>t.id===id?{...t,[n?"name":"ak"]:e.target.value.trim()||t[n?"name":"ak"]}:t);if(await save(teams,"Mannschaft geändert: "+id)){msg("tm","Gespeichert.");V.render()}}
   };
@@ -5693,7 +5727,7 @@ const timeOk=(a,b)=>V.min(a)!=null&&V.min(b)!=null&&V.min(a)<V.min(b);
 const dateOk=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||"");
 
 /* ============ Platzbelegung ============ */
-let pGroup=null,pDay=null,pEdit=null,pEditDay=null,pF=null,pMsg="",pMsgK="ok",pMode="woche",pFilt="alle";
+let pGroup=null,pDay=null,pEdit=null,pEditDay=null,pF=null,pMsg="",pMsgK="ok",pMode="woche",pFilt="alle",pSel=new Set();
 const PXM=1.05;
 const planOn=(s,date)=>{if(!s.pid)return true;const pl=((V.plan&&V.plan.plans)||[]).find((x)=>x.id===s.pid);return !pl||((!pl.von||date>=pl.von)&&(!pl.bis||date<=pl.bis))};
 const sameK=(a,b)=>!a.datum&&!b.datum&&a.tid===b.tid&&a.art===b.art&&a.platz===b.platz&&a.von===b.von&&a.bis===b.bis&&(a.txt||"")===(b.txt||"")&&(a.pid||"")===(b.pid||"")&&JSON.stringify(a.teil||[])===JSON.stringify(b.teil||[])&&!!a.teilen===!!b.teilen&&(a.gv||"")===(b.gv||"")&&(a.gb||"")===(b.gb||"");
@@ -5706,13 +5740,14 @@ function slotsOn(date,withAbs){
 }
 V.slotsOn=slotsOn;
 const platzOn=(p,date)=>(!p.von||date>=p.von)&&(!p.bis||date<=p.bis);
-const nCols=(p)=>(p&&p.typ!=="halle"&&p.viertel!==false)?4:1;
-const teilOf=(s,p)=>nCols(p)===1?[1]:((s.teil&&s.teil.length)?s.teil.slice().sort():[1,2,3,4]);
-const teilTxt=(s,p)=>{if(nCols(p)===1)return "";const t=teilOf(s,p).join("");return t==="1234"?"ganzer Platz":t==="12"?"Hälfte 1 (Viertel 1+2)":t==="34"?"Hälfte 2 (Viertel 3+4)":"Viertel "+t.split("").join(", ")};
+const nCols=(p)=>!p?1:p.typ==="halle"?Math.min(3,Math.max(1,+p.felder||1)):(p.viertel!==false?4:1);
+const allTeil=(p)=>Array.from({length:nCols(p)},(_,i)=>i+1);
+const teilOf=(s,p)=>nCols(p)===1?[1]:((s.teil&&s.teil.length)?s.teil.slice().sort():allTeil(p));
+const teilTxt=(s,p)=>{if(nCols(p)===1)return "";const t=teilOf(s,p).join("");if(p.typ==="halle")return t===allTeil(p).join("")?"ganze Halle":"Feld "+t.split("").join("+");return t==="1234"?"ganzer Platz":t==="12"?"Hälfte 1 (Viertel 1+2)":t==="34"?"Hälfte 2 (Viertel 3+4)":"Viertel "+t.split("").join(", ")};
 const runs=(t)=>{const o=[];let a=null;t.forEach((n,i)=>{if(a==null)a=n;if(t[i+1]!==n+1){o.push([a,n]);a=null}});return o};
 const tOv=(a,b)=>a.a<b.b&&b.a<a.b;
 const clashOf=(a,b,pl)=>a.platz===b.platz&&tOv(a,b)&&teilOf(a,pl).some((x)=>teilOf(b,pl).indexOf(x)>=0)&&!(a.teilen&&b.teilen);
-function newForm(day){const p0=(V.plan.plaetze||[])[0]||{};return{id:"",tid:(V.teams().find((t)=>t.aktiv!==false)||{}).id||"",art:"Training",platz:p0.id||"",pid:"",teil:[1,2,3,4],teilen:false,verdr:true,mode:"w",tage:[V.dow(day)],datum:day,von:"17:00",bis:"18:30",gv:"",gb:"",txt:""}}
+function newForm(day){const p0=(V.plan.plaetze||[])[0]||{};return{id:"",tid:(V.teams().find((t)=>t.aktiv!==false)||{}).id||"",art:"Training",platz:p0.id||"",pid:"",teil:allTeil(p0),teilen:false,verdr:true,mode:"w",tage:[V.dow(day)],datum:day,von:"17:00",bis:"18:30",gv:"",gb:"",txt:""}}
 const sendHint=(tid,text)=>V.fs().doc(tid+"__vhinweise/"+V.id("h")).set({text,von:(W.__VME&&(W.__VME.name||W.__VME.email))||"",at:new Date().toISOString(),erledigt:false,art:"hinweis"});
 V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(el){
   if(V.typing())return;
@@ -5728,35 +5763,42 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
   let from=Math.min(15*60,...dayAll.map((s)=>Math.floor(s.a/60)*60)),to=Math.max(21*60,...dayAll.map((s)=>Math.ceil(s.b/60)*60));
   from=Math.max(6*60,from);to=Math.min(24*60,to);
   let h='<h2>Platzbelegung</h2><p class="sub note">Training und Spiele auf Plätzen (in Vierteln) und in Hallen. Alle Mitglieder können den Plan ansehen'+(ed?"; du kannst ihn pflegen.":"; gepflegt wird er von Jugendleitung und sportlichem Leiter.")+'</p>';
-  h+='<div class="card vc"><div class="vrow"><button class="btn" data-w="-7" aria-label="Eine Woche zurück">◀</button><b>'+E(V.fdl(wk).slice(0,6))+' – '+E(V.fdl(V.add(wk,6)))+'</b><button class="btn" data-w="7" aria-label="Eine Woche vor">▶</button><button class="btn" data-w="0">Heute</button><span class="vseg"><button class="btn'+(pMode==="woche"?" on":"")+'" data-pm="woche">Woche</button><button class="btn'+(pMode==="tag"?" on":"")+'" data-pm="tag">Tag</button></span><span style="flex:1"></span>'+(clashes.size&&pMode==="tag"?'<span class="vbad r">'+Math.ceil(clashes.size/2)+' Doppelbelegung'+(clashes.size>2?"en":"")+' an diesem Tag</span>':"")+'</div>';
+  h+='<div class="card vc"><div class="vrow"><button class="btn" data-w="-7" aria-label="Eine Woche zurück">◀</button><b>'+E(V.fdl(wk).slice(0,6))+' – '+E(V.fdl(V.add(wk,pMode==="woche"?4:6)))+'</b><button class="btn" data-w="7" aria-label="Eine Woche vor">▶</button><button class="btn" data-w="0">Heute</button><span class="vseg"><button class="btn'+(pMode==="woche"?" on":"")+'" data-pm="woche">Woche</button><button class="btn'+(pMode==="tag"?" on":"")+'" data-pm="tag">Tag</button></span><span style="flex:1"></span>'+(clashes.size&&pMode==="tag"?'<span class="vbad r">'+Math.ceil(clashes.size/2)+' Doppelbelegung'+(clashes.size>2?"en":"")+' an diesem Tag</span>':"")+'</div>';
   if(pMode==="tag"){h+='<div class="vrow" id="pdays">';
     for(let i=0;i<7;i++){const d=V.add(wk,i),n=slotsOn(d).length;h+='<button class="btn'+(d===day?" on":"")+'" data-d="'+d+'" style="'+(d===day?"background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600":"")+'">'+V.wt[i]+' '+d.slice(8)+'.'+d.slice(5,7)+'.'+(n?' <span class="note">· '+n+'</span>':"")+'</button>'}
     h+='</div>'}
-  else{h+='<div class="vrow"><span class="note">Anzeigen:</span>'+[["alle","Alles"],["plaetze","Plätze"],["hallen","Hallen"]].concat(PL0.map((p)=>[p.id,p.name])).map(([k,n])=>'<span class="vch'+(pFilt===k?" on":"")+'" data-pf="'+E(k)+'" role="button" tabindex="0">'+E(n)+'</span>').join("")+'</div>'}
-  const blkTxt=(s,pl)=>'<b>'+E(teamName(s.tid))+'</b> '+E(s.von)+'–'+E(s.bis)+(s.art&&s.art!=="Training"?' · '+E(s.art):"")+(s.abgesagt?' · abgesagt, frei':"")+(s.txt?'<small>'+E(s.txt)+'</small>':"");
+  else{h+='<div class="vrow"><span class="note">Anzeigen:</span>'+[["alle","Alles"],["plaetze","Alle Plätze"],["hallen","Hallen"]].map(([k,n])=>'<span class="vch'+(!pSel.size&&pFilt===k?" on":"")+'" data-pf="'+k+'" role="button" tabindex="0">'+E(n)+'</span>').join("")+'<span class="note" style="margin-left:6px">oder einzeln (mehrere möglich):</span>'+PL0.map((p)=>'<span class="vch'+(pSel.has(p.id)?" on":"")+'" data-pp="'+E(p.id)+'" role="button" tabindex="0">'+E(p.name)+'</span>').join("")+'</div>'}
+  const blkTxt=(s,pl)=>'<b>'+E(teamName(s.tid))+'</b> '+E(s.von)+'–'+E(s.bis)+(s.art&&s.art!=="Training"?' · '+E(s.art):"")+(s.art==="Training"&&stdK(s.tid,day)?' · Kabine '+E(stdK(s.tid,day)):"")+(s.abgesagt?' · abgesagt, frei':"")+(s.txt?'<small>'+E(s.txt)+'</small>':"");
   /* ---- Wochenansicht: alle Plätze und Hallen in einem Blick ---- */
   if(pMode==="woche"){
-    const wkAll=[];for(let i=0;i<7;i++){const d=V.add(wk,i);mapS(slotsOn(d,true)).forEach((s)=>wkAll.push({...s,date:d,di:i}))}
-    const fl=wkAll.filter((s)=>{const p=pById(s.platz);return pFilt==="alle"||(pFilt==="plaetze"&&p.typ!=="halle")||(pFilt==="hallen"&&p.typ==="halle")||pFilt===s.platz});
+    const ND=5,visP=(p)=>pSel.size?pSel.has(p.id):(pFilt==="alle"||(pFilt==="plaetze"&&p.typ!=="halle")||(pFilt==="hallen"&&p.typ==="halle"));
+    const visL=PL0.filter(visP),subs=visL.filter((p)=>p.typ!=="halle").map((p)=>({id:p.id,name:p.name})).concat(visL.some((p)=>p.typ==="halle")?[{id:"~h",name:"Hallen"}]:[]),NS=Math.max(1,subs.length);
+    const sOf=(s)=>{const p=pById(s.platz);return p.typ==="halle"?"~h":p.id};
+    const wkAll=[];for(let i=0;i<ND;i++){const d=V.add(wk,i);mapS(slotsOn(d,true)).forEach((s)=>wkAll.push({...s,date:d,di:i}))}
+    const fl=wkAll.filter((s)=>visL.some((p)=>p.id===s.platz));
     let f2=Math.min(15*60,...fl.map((s)=>Math.floor(s.a/60)*60)),t2=Math.max(21*60,...fl.map((s)=>Math.ceil(s.b/60)*60));f2=Math.max(6*60,f2);t2=Math.min(24*60,t2);
     if(!PL0.length)h+='<div class="note" style="padding:10px 0">Es sind noch keine Plätze oder Hallen angelegt.'+(ed?" Lege sie unten unter „Plätze und Hallen“ an.":"")+'</div>';
     else{
-      const H=(t2-f2)*PXM;
-      h+='<div class="tw"><div class="vgrid" style="grid-template-columns:48px repeat(7,minmax(120px,1fr))"><div class="vgh"></div>'+Array.from({length:7},(_,i)=>{const d=V.add(wk,i);return '<div class="vgh'+(d===V.today()?" today":"")+'"><button class="vlk" data-d="'+d+'" data-gotoday="1">'+V.wt[i]+' '+d.slice(8)+'.'+d.slice(5,7)+'.</button></div>'}).join("");
+      const H=(t2-f2)*PXM,tm=Array.from(new Set(fl.map((s)=>s.tid)));
+      if(tm.length)h+='<div class="vrow" style="gap:4px"><span class="note">Mannschaften:</span>'+tm.map((t)=>{const c=V.col(t);return '<span class="vch" style="background:'+c.bg+';border-color:'+c.bd+';cursor:default">'+E(teamName(t))+'</span>'}).join("")+'</div>';
+      h+='<div class="tw"><div class="vgrid" style="grid-template-columns:48px repeat('+ND+',minmax('+Math.max(120,NS*92)+'px,1fr))"><div class="vgh"></div>'+Array.from({length:ND},(_,i)=>{const d=V.add(wk,i);return '<div class="vgh'+(d===V.today()?" today":"")+'"><button class="vlk" data-d="'+d+'" data-gotoday="1">'+V.wt[i]+' '+d.slice(8)+'.'+d.slice(5,7)+'.</button>'+(NS>1?'<div style="display:flex;font-weight:500;font-size:10px;opacity:.75">'+subs.map((x)=>'<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+E(x.name)+'</span>').join("")+'</div>':"")+'</div>'}).join("");
       let lines="";for(let m=f2;m<=t2;m+=60)lines+='<div class="vgl" style="top:'+((m-f2)*PXM)+'px">'+V.hm(m)+'</div>';
       h+='<div class="vgc" style="height:'+H+'px;border-left:0">'+lines+'</div>';
-      for(let i=0;i<7;i++){
+      for(let i=0;i<ND;i++){
         h+='<div class="vgc" style="height:'+H+'px">';for(let m=f2;m<=t2;m+=60)h+='<div class="vgl" style="top:'+((m-f2)*PXM)+'px"></div>';
-        const L=fl.filter((s)=>s.di===i).sort((x,y)=>x.a-y.a||x.b-y.b),lane={},ln=[];
-        L.forEach((s)=>{let k=0;while(ln[k]!=null&&ln[k]>s.a)k++;ln[k]=s.b;lane[s.id]=k});
-        L.forEach((s)=>{s.nl=1;L.forEach((o)=>{if(tOv(o,s))s.nl=Math.max(s.nl,lane[o.id]+1,lane[s.id]+1)})});
-        L.forEach((s)=>{const p=pById(s.platz),c=V.col(s.tid),w=100/s.nl,tt=teilTxt(s,p);
-          h+='<div class="vwb'+(ed?" ed":"")+(s.abgesagt?" frei":"")+'" data-s="'+E(s.id)+'" data-sd="'+s.date+'" style="top:'+((s.a-f2)*PXM)+'px;left:calc('+(lane[s.id]*w)+'% + 2px);right:calc('+(100-(lane[s.id]+1)*w)+'% + 2px);height:'+Math.max(26,(s.b-s.a)*PXM-2)+'px;background:'+(s.abgesagt?"transparent":c.bg)+';border-color:'+c.bd+'"><b>'+E(teamName(s.tid))+'</b> '+E(s.von)+'–'+E(s.bis)+'<small>'+E(p.name||"?")+(tt&&tt!=="ganzer Platz"?" · "+E(tt):"")+(s.abgesagt?" · abgesagt":"")+'</small></div>'});
+        subs.forEach((sb,k)=>{
+          h+='<div style="position:absolute;top:0;bottom:0;left:'+(k/NS*100)+'%;width:'+(100/NS)+'%;'+(k?'border-left:1px dashed var(--ln)':'')+'">';
+          const L=fl.filter((s)=>s.di===i&&sOf(s)===sb.id).sort((x,y)=>x.a-y.a||x.b-y.b),lane={},ln=[];
+          L.forEach((s)=>{let kk=0;while(ln[kk]!=null&&ln[kk]>s.a)kk++;ln[kk]=s.b;lane[s.id]=kk});
+          L.forEach((s)=>{s.nl=1;L.forEach((o)=>{if(tOv(o,s))s.nl=Math.max(s.nl,lane[o.id]+1,lane[s.id]+1)})});
+          L.forEach((s)=>{const p=pById(s.platz),c=V.col(s.tid),w=100/s.nl,tt=teilTxt(s,p),kb=s.art==="Training"?stdK(s.tid,s.date):"",sm=(p.typ==="halle"?E(p.name||"?"):"")+(tt&&tt!=="ganzer Platz"&&tt!=="ganze Halle"?(p.typ==="halle"?" · ":"")+E(tt):"")+(kb?(p.typ==="halle"||(tt&&tt!=="ganzer Platz")?" · ":"")+'Kabine '+E(kb):"")+(s.abgesagt?" · abgesagt":"");
+            h+='<div class="vwb'+(ed?" ed":"")+(s.abgesagt?" frei":"")+'" data-s="'+E(s.id)+'" data-sd="'+s.date+'" style="top:'+((s.a-f2)*PXM)+'px;left:calc('+(lane[s.id]*w)+'% + 2px);right:calc('+(100-(lane[s.id]+1)*w)+'% + 2px);height:'+Math.max(26,(s.b-s.a)*PXM-2)+'px;background:'+(s.abgesagt?"transparent":c.bg)+';border-color:'+c.bd+'"><b>'+E(teamName(s.tid))+'</b> '+E(s.von)+'–'+E(s.bis)+(sm?'<small>'+sm+'</small>':"")+'</div>'});
+          h+='</div>'});
         h+='</div>';
       }
       h+='</div></div>';
     }
-    h+='<div class="vrow" style="margin-top:8px"><button class="btn" id="pexp">Woche als A4-Bild speichern</button><span class="note">Tippe auf einen Tag für die Platzansicht mit Vierteln.</span></div><div class="vmsg" id="pxm"></div>';
+    h+='<div class="vrow" style="margin-top:8px"><button class="btn" id="pexp">Woche als A4-Bild speichern</button><span class="note">Der Wochenplan zeigt Montag bis Freitag. Tippe auf einen Tag für die Platzansicht mit Vierteln (auch Wochenende).</span></div><div class="vmsg" id="pxm"></div>';
   }
   /* ---- Tagesansicht: Plätze in Vierteln, Hallen getrennt ---- */
   else{
@@ -5802,7 +5844,8 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
     h+='<div class="card vc" id="pform"><h3>'+(pEdit?"Eintrag bearbeiten":"Neuer Eintrag")+'</h3>'+(f?"":'<button class="btn" id="pnew">+ Eintrag hinzufügen</button>');
     if(f){
       h+='<div class="vrow"><label>Mannschaft<select id="pft">'+teamOpts(f.tid)+'</select></label><label>Art<select id="pfa">'+["Training","Spiel","Sonstiges"].map((a)=>'<option'+(a===f.art?" selected":"")+'>'+a+'</option>').join("")+'</select></label><label>Platz / Halle<select id="pfp">'+PL0.map((p)=>'<option value="'+E(p.id)+'"'+(p.id===f.platz?" selected":"")+'>'+E(p.name)+'</option>').join("")+'</select></label><label>von<input id="pfv" type="time" value="'+E(f.von)+'"></label><label>bis<input id="pfb" type="time" value="'+E(f.bis)+'"></label>'+((plan.plans||[]).length?'<label>Plan<select id="pfpl"><option value="">immer</option>'+plan.plans.map((x)=>'<option value="'+E(x.id)+'"'+(x.id===f.pid?" selected":"")+'>'+E(x.name)+'</option>').join("")+'</select></label>':"")+'</div>';
-      if(nCols(fp)>1){const kb=fp.kab||"u";
+      if(fp.typ==="halle"&&nCols(fp)>1)h+='<div class="vrow"><div><div class="note">Welches Hallenfeld (antippen)</div>'+allTeil(fp).map((n)=>'<span class="vch'+(f.teil.indexOf(n)>=0?" on":"")+'" data-q="'+n+'" role="button" tabindex="0">Feld '+n+'</span>').join("")+'</div><button class="btn" data-qp="'+allTeil(fp).join("")+'" type="button">Ganze Halle</button><label style="flex-direction:row;align-items:center;gap:6px;max-width:300px"><input type="checkbox" id="pfte"'+(f.teilen?" checked":"")+'> darf sich mit einer anderen Mannschaft überschneiden</label></div>';
+      if(fp.typ!=="halle"&&nCols(fp)>1){const kb=fp.kab||"u";
         h+='<div class="vrow" style="align-items:flex-start"><div><div class="note">Welcher Teil des Platzes (Draufsicht, antippen): links Hälfte 1 (Viertel 1+2), rechts Hälfte 2 (3+4)</div><div class="vq vq-'+kb+'" id="pq"><div class="vqk">Kabinengebäude</div><div class="vqg">'+[2,4,1,3].map((n)=>'<span class="vqc'+(f.teil.indexOf(n)>=0?" on":"")+'" data-q="'+n+'" role="button" tabindex="0">'+n+'</span>').join("")+'</div></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="note">oder wählen</div><button class="btn" data-qp="1234" type="button">Ganzer Platz</button><button class="btn" data-qp="12" type="button">Hälfte 1 (Viertel 1+2)</button><button class="btn" data-qp="34" type="button">Hälfte 2 (Viertel 3+4)</button></div><label style="flex-direction:row;align-items:center;gap:6px;max-width:300px"><input type="checkbox" id="pfte"'+(f.teilen?" checked":"")+'> darf sich mit einer anderen Mannschaft überschneiden (gemeinsam genutzt, keine Doppelbelegung)</label></div>'}
       h+='<div class="vrow"><label>Wiederholung<select id="pfm"><option value="w"'+(f.mode==="w"?" selected":"")+'>jede Woche</option><option value="e"'+(f.mode==="e"?" selected":"")+'>einmalig</option></select></label>';
       if(f.mode==="w")h+='<div><div class="note">Wochentage</div>'+V.wt.map((n,i)=>chip(f.tage.indexOf(i+1)>=0,"d"+(i+1),n)).join("")+'</div><label>gültig ab<input id="pfgv" type="date" value="'+E(f.gv)+'"></label><label>gültig bis<input id="pfgb" type="date" value="'+E(f.gb)+'"></label>';
@@ -5817,9 +5860,9 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
     /* Pläne */
     h+='<div class="card vc"><h3>Pläne (z. B. Sommer, Winter, Halle)</h3><div class="note" style="margin-bottom:8px">Ein Plan gilt nur im angegebenen Zeitraum. Beim Eintrag wählst du, zu welchem Plan er gehört; Einträge ohne Plan gelten immer.</div>'+(plan.plans||[]).map((x)=>'<div class="vrow"><input data-ln="'+E(x.id)+'" value="'+E(x.name)+'" maxlength="30" style="width:160px"><label style="flex-direction:row;align-items:center;gap:4px">von<input type="date" data-lv="'+E(x.id)+'" value="'+E(x.von||"")+'"></label><label style="flex-direction:row;align-items:center;gap:4px">bis<input type="date" data-lb="'+E(x.id)+'" value="'+E(x.bis||"")+'"></label><button class="btn" data-lx="'+E(x.id)+'">Entfernen</button></div>').join("")+'<div class="vrow" style="margin-top:8px"><label>Neuer Plan<input id="nplan" maxlength="30" placeholder="z. B. Winter"></label><label>von<input id="nplv" type="date"></label><label>bis<input id="nplb" type="date"></label><button class="btn" id="npladd" style="align-self:flex-end">Hinzufügen</button></div></div>';
     /* Plätze und Hallen */
-    h+='<div class="card vc"><h3>Plätze und Hallen</h3><div class="note" style="margin-bottom:8px">Plätze lassen sich in vier Viertel teilen (Viertel 1+2 sind eine Hälfte, 3+4 die andere). Hallen werden einzeln geführt. Mit „von / bis“ legst du fest, wann ein Platz oder eine Halle zur Verfügung steht.</div>';
-    h+=PL0.map((p)=>'<div class="vrow"><input data-pn="'+E(p.id)+'" value="'+E(p.name)+'" maxlength="40" style="width:180px"><select data-pt="'+E(p.id)+'"><option value="platz"'+(p.typ!=="halle"?" selected":"")+'>Platz</option><option value="halle"'+(p.typ==="halle"?" selected":"")+'>Halle</option></select>'+(p.typ!=="halle"?'<label style="flex-direction:row;align-items:center;gap:4px"><input type="checkbox" data-pq="'+E(p.id)+'"'+(p.viertel!==false?" checked":"")+'> in Viertel teilbar</label><label style="flex-direction:row;align-items:center;gap:4px">Kabinengebäude<select data-pk="'+E(p.id)+'">'+[["u","unten"],["o","oben"],["l","links"],["r","rechts"]].map(([k,n])=>'<option value="'+k+'"'+((p.kab||"u")===k?" selected":"")+'>'+n+'</option>').join("")+'</select></label>':"")+'<label style="flex-direction:row;align-items:center;gap:4px">von<input type="date" data-pv="'+E(p.id)+'" value="'+E(p.von||"")+'"></label><label style="flex-direction:row;align-items:center;gap:4px">bis<input type="date" data-pb="'+E(p.id)+'" value="'+E(p.bis||"")+'"></label><button class="btn" data-px="'+E(p.id)+'">Entfernen</button></div>').join("");
-    h+='<div class="vrow" style="margin-top:8px"><label>Neu<input id="nplatz" maxlength="40" placeholder="z. B. Kunstrasen oder Sporthalle Ost"></label><label>Art<select id="nptyp"><option value="platz">Platz</option><option value="halle">Halle</option></select></label><button class="btn" id="padd" style="align-self:flex-end">Hinzufügen</button></div></div>';
+    h+='<div class="card vc"><h3>Plätze und Hallen</h3><div class="note" style="margin-bottom:8px">Plätze lassen sich in vier Viertel teilen (Viertel 1+2 sind eine Hälfte, 3+4 die andere). Hallen gibt es als Einfach-, Doppel- oder Dreifachhalle (1 bis 3 Felder). Mit „von / bis“ legst du fest, wann ein Platz oder eine Halle zur Verfügung steht.</div>';
+    h+=PL0.map((p)=>'<div class="vrow"><input data-pn="'+E(p.id)+'" value="'+E(p.name)+'" maxlength="40" style="width:180px"><select data-pt="'+E(p.id)+'"><option value="platz"'+(p.typ!=="halle"?" selected":"")+'>Platz</option><option value="halle"'+(p.typ==="halle"?" selected":"")+'>Halle</option></select>'+(p.typ==="halle"?'<label style="flex-direction:row;align-items:center;gap:4px">Größe<select data-pg="'+E(p.id)+'">'+[[1,"Einfachhalle (1 Feld)"],[2,"Doppelhalle (2 Felder)"],[3,"Dreifachhalle (3 Felder)"]].map(([k,n])=>'<option value="'+k+'"'+(nCols(p)===k?" selected":"")+'>'+n+'</option>').join("")+'</select></label>':"")+(p.typ!=="halle"?'<label style="flex-direction:row;align-items:center;gap:4px"><input type="checkbox" data-pq="'+E(p.id)+'"'+(p.viertel!==false?" checked":"")+'> in Viertel teilbar</label><label style="flex-direction:row;align-items:center;gap:4px">Kabinengebäude<select data-pk="'+E(p.id)+'">'+[["u","unten"],["o","oben"],["l","links"],["r","rechts"]].map(([k,n])=>'<option value="'+k+'"'+((p.kab||"u")===k?" selected":"")+'>'+n+'</option>').join("")+'</select></label>':"")+'<label style="flex-direction:row;align-items:center;gap:4px">von<input type="date" data-pv="'+E(p.id)+'" value="'+E(p.von||"")+'"></label><label style="flex-direction:row;align-items:center;gap:4px">bis<input type="date" data-pb="'+E(p.id)+'" value="'+E(p.bis||"")+'"></label><button class="btn" data-px="'+E(p.id)+'">Entfernen</button></div>').join("");
+    h+='<div class="vrow" style="margin-top:8px"><label>Neu<input id="nplatz" maxlength="40" placeholder="z. B. Kunstrasen oder Sporthalle Ost"></label><label>Art<select id="nptyp"><option value="platz">Platz</option><option value="halle">Halle</option></select></label><label>Hallengröße<select id="nphg"><option value="1">Einfachhalle</option><option value="2">Doppelhalle</option><option value="3">Dreifachhalle</option></select></label><button class="btn" id="padd" style="align-self:flex-end">Hinzufügen</button></div></div>';
   }
   el.innerHTML=h;
   const msg=(t,k)=>{pMsg=t;pMsgK=k||"ok";const m=q("#pmsg",el);if(m){m.textContent=t;m.className="vmsg "+pMsgK}};
@@ -5830,7 +5873,8 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
     const t=e.target;
     const w=t.closest("[data-w]");if(w){const n=+w.dataset.w;pDay=n===0?V.today():V.add(pDay||V.today(),n);redraw();return}
     const pm=t.closest("[data-pm]");if(pm){pMode=pm.dataset.pm;redraw();return}
-    const pf=t.closest("[data-pf]");if(pf){pFilt=pf.dataset.pf;redraw();return}
+    const pf=t.closest("[data-pf]");if(pf){pFilt=pf.dataset.pf;pSel=new Set();redraw();return}
+    const pp1=t.closest("[data-pp]");if(pp1){const id=pp1.dataset.pp;if(pSel.has(id))pSel.delete(id);else pSel.add(id);redraw();return}
     const d=t.closest("[data-d]");if(d){pDay=d.dataset.d;if(d.dataset.gotoday)pMode="tag";redraw();return}
     if(t.id==="pexp"){exportWeek(wk,el);return}
     if(!ed)return;
@@ -5841,7 +5885,7 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
     if(t.id==="pcancel"){pF=null;pEdit=null;pMsg="";redraw();return}
     const tg=t.closest("[data-tg]");const tn=t.closest("[data-tn]");
     if(tn){if(!PL0.length){msg("Bitte zuerst unten einen Platz oder eine Halle anlegen.","er");return}pEdit=null;pGroup=null;pEditDay=null;pF=newForm(day);pF.tid=tn.dataset.tn;pF.tage=[];redraw();q("#pform",el)&&q("#pform",el).scrollIntoView({block:"nearest"});return}
-    const b=tg||t.closest("[data-s]");if(b){const s=(plan.slots||[]).find((x)=>x.id===(tg?tg.dataset.tg:b.dataset.s));if(s){pEdit=s.id;pEditDay=tg?null:(b.dataset.sd||day);const sib=s.datum?[s]:(plan.slots||[]).filter((x)=>sameK(x,s));pGroup=sib.map((x)=>x.id);pF={id:s.id,tid:s.tid,art:s.art||"Training",platz:s.platz,pid:s.pid||"",teil:(s.teil&&s.teil.length)?s.teil.slice():[1,2,3,4],teilen:!!s.teilen,verdr:true,mode:s.datum?"e":"w",tage:s.datum?[V.dow(day)]:sib.map((x)=>x.tag).sort(),datum:s.datum||day,von:s.von,bis:s.bis,gv:s.gv||"",gb:s.gb||"",txt:s.txt||""};redraw();q("#pform",el)&&q("#pform",el).scrollIntoView({block:"nearest"})}return}
+    const b=tg||t.closest("[data-s]");if(b){const s=(plan.slots||[]).find((x)=>x.id===(tg?tg.dataset.tg:b.dataset.s));if(s){pEdit=s.id;pEditDay=tg?null:(b.dataset.sd||day);const sib=s.datum?[s]:(plan.slots||[]).filter((x)=>sameK(x,s));pGroup=sib.map((x)=>x.id);pF={id:s.id,tid:s.tid,art:s.art||"Training",platz:s.platz,pid:s.pid||"",teil:(s.teil&&s.teil.length)?s.teil.slice():allTeil(pById(s.platz)),teilen:!!s.teilen,verdr:true,mode:s.datum?"e":"w",tage:s.datum?[V.dow(day)]:sib.map((x)=>x.tag).sort(),datum:s.datum||day,von:s.von,bis:s.bis,gv:s.gv||"",gb:s.gb||"",txt:s.txt||""};redraw();q("#pform",el)&&q("#pform",el).scrollIntoView({block:"nearest"})}return}
     if(t.id==="pabs"||t.id==="pres"){const key=pEdit+"|"+pEditDay;let aus=(plan.aus||[]).filter((x)=>x!==key);if(t.id==="pabs")aus.push(key);
       try{await V.savePlan({aus});V.log("Platzplan: "+(t.id==="pabs"?"abgesagt ":"wieder eingetragen ")+pEditDay);pF=null;pEdit=null;pMsg=t.id==="pabs"?"Abgesagt – der Platz ist an diesem Tag frei.":"Wieder eingetragen.";pMsgK="ok";redraw()}catch(x){msg("Das hat nicht geklappt.","er")}return}
     if(t.id==="psave"){
@@ -5851,9 +5895,9 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
       if(f.mode==="e"&&!dateOk(f.datum)){msg("Bitte ein Datum wählen.","er");return}
       if(f.mode==="w"&&!f.tage.length){msg("Bitte mindestens einen Wochentag wählen.","er");return}
       if(f.mode==="w"&&f.gv&&f.gb&&f.gb<f.gv){msg("„gültig bis“ liegt vor „gültig ab“.","er");return}
-      const pp=pById(f.platz);if(nCols(pp)>1&&!f.teil.length){msg("Bitte mindestens ein Viertel des Platzes wählen.","er");return}
+      const pp=pById(f.platz);if(nCols(pp)>1&&!f.teil.length){msg("Bitte mindestens einen Teil (Viertel oder Hallenfeld) wählen.","er");return}
       let slots=(plan.slots||[]).filter((s)=>(pGroup||[pEdit]).indexOf(s.id)<0);
-      const mk=(extra)=>({id:V.id("s"),tid:f.tid,art:f.art,platz:f.platz,von:f.von,bis:f.bis,txt:f.txt,...(f.pid?{pid:f.pid}:{}),...(nCols(pp)>1&&f.teil.length<4?{teil:f.teil.slice()}:{}),...(f.teilen?{teilen:true}:{}),...extra});
+      const mk=(extra)=>({id:V.id("s"),tid:f.tid,art:f.art,platz:f.platz,von:f.von,bis:f.bis,txt:f.txt,...(f.pid?{pid:f.pid}:{}),...(nCols(pp)>1&&f.teil.length<nCols(pp)?{teil:f.teil.slice()}:{}),...(f.teilen?{teilen:true}:{}),...extra});
       const created=[];
       if(f.mode==="e")created.push(mk({datum:f.datum}));else f.tage.forEach((n)=>created.push(mk({tag:n,...(f.gv?{gv:f.gv}:{}),...(f.gb?{gb:f.gb}:{})})));
       slots=slots.concat(created);
@@ -5868,41 +5912,41 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
     if(t.id==="pdel"){try{await V.savePlan({slots:(plan.slots||[]).filter((s)=>(pGroup||[pEdit]).indexOf(s.id)<0)});V.log("Platzplan: Eintrag gelöscht");pF=null;pEdit=null;pMsg="Gelöscht.";pMsgK="ok";redraw()}catch(x){msg("Das hat nicht geklappt.","er")}return}
     const gs=t.closest("[data-gs]");if(gs){const g=soon[+gs.dataset.gs],p=q('[data-gp="'+gs.dataset.gs+'"]',el).value,tl=q('[data-gt="'+gs.dataset.gs+'"]',el).value;const a=V.min(g.z)==null?17*60:V.min(g.z);
       try{await V.savePlan({slots:(plan.slots||[]).concat([{id:V.id("s"),tid:g.tid,art:"Spiel",platz:p,von:V.hm(a),bis:V.hm(Math.min(a+120,23*60+59)),datum:g.d,txt:"gegen "+(g.g||"?"),...(tl!=="1234"&&nCols(pById(p))>1?{teil:tl.split("").map(Number)}:{})}])});V.log("Heimspiel-Platz eingetragen",g.tid)}catch(x){}return}
-    if(t.id==="padd"){const n=rd("nplatz").trim();if(!n){return}const id=V.id("p");try{await V.savePlan({plaetze:PL0.concat([{id,name:n,typ:rd("nptyp")}])});V.log("Platz/Halle angelegt: "+n)}catch(x){}return}
+    if(t.id==="padd"){const n=rd("nplatz").trim();if(!n){return}const id=V.id("p");try{await V.savePlan({plaetze:PL0.concat([{id,name:n,typ:rd("nptyp"),...(rd("nptyp")==="halle"?{felder:+rd("nphg")||1}:{})}])});V.log("Platz/Halle angelegt: "+n)}catch(x){}return}
     const px=t.closest("[data-px]");if(px){if(!px.dataset.arm){px.dataset.arm="1";px.textContent="Wirklich? Alle Einträge dort werden gelöscht";return}const id=px.dataset.px;try{await V.savePlan({plaetze:PL0.filter((p)=>p.id!==id),slots:(plan.slots||[]).filter((s)=>s.platz!==id)});V.log("Platz/Halle entfernt")}catch(x){}return}
     if(t.id==="npladd"){const n=rd("nplan").trim();if(!n)return;try{await V.savePlan({plans:(plan.plans||[]).concat([{id:V.id("pl"),name:n,von:rd("nplv"),bis:rd("nplb")}])});V.log("Plan angelegt: "+n)}catch(x){}return}
     const lx=t.closest("[data-lx]");if(lx){if(!lx.dataset.arm){lx.dataset.arm="1";lx.textContent="Wirklich? Einträge bleiben, gelten dann immer";return}const id=lx.dataset.lx;try{await V.savePlan({plans:(plan.plans||[]).filter((x)=>x.id!==id),slots:(plan.slots||[]).map((s)=>{if(s.pid!==id)return s;const c={...s};delete c.pid;return c})})}catch(x){}return}
   };
   el.onchange=async(e)=>{
     const t=e.target;if(!ed||!t.dataset)return;
-    if((t.id==="pfm"||t.id==="pfp")&&pF){readForm();if(t.id==="pfp"&&nCols(pById(pF.platz))>1&&!pF.teil.length)pF.teil=[1,2,3,4];redraw();return}
+    if((t.id==="pfm"||t.id==="pfp")&&pF){readForm();if(t.id==="pfp"){const np=pById(pF.platz);pF.teil=allTeil(np)}redraw();return}
     const lk=["ln","lv","lb"].find((x)=>t.dataset[x]!=null);
     if(lk){const id=t.dataset[lk],f={ln:"name",lv:"von",lb:"bis"}[lk];try{await V.savePlan({plans:(plan.plans||[]).map((x)=>x.id===id?{...x,[f]:t.value.trim()||(f==="name"?x.name:"")}:x)})}catch(x){}return}
-    const k=["pn","pt","pv","pb","pq","pk"].find((x)=>t.dataset[x]!=null);
-    if(k){const id=t.dataset[k],f={pn:"name",pt:"typ",pv:"von",pb:"bis",pq:"viertel",pk:"kab"}[k],val=k==="pq"?t.checked:(t.value.trim()||(f==="name"?undefined:""));try{await V.savePlan({plaetze:PL0.map((p)=>p.id===id?{...p,[f]:f==="name"&&val===undefined?p.name:val}:p)})}catch(x){}}
+    const k=["pn","pt","pv","pb","pq","pk","pg"].find((x)=>t.dataset[x]!=null);
+    if(k){const id=t.dataset[k],f={pn:"name",pt:"typ",pv:"von",pb:"bis",pq:"viertel",pk:"kab",pg:"felder"}[k],val=k==="pq"?t.checked:k==="pg"?+t.value:(t.value.trim()||(f==="name"?undefined:""));try{await V.savePlan({plaetze:PL0.map((p)=>p.id===id?{...p,[f]:f==="name"&&val===undefined?p.name:val}:p)})}catch(x){}}
   };
-  el.onkeydown=(e)=>{if((e.key==="Enter"||e.key===" ")&&e.target.dataset&&(e.target.dataset.c||e.target.dataset.q||e.target.dataset.pf||e.target.dataset.tg)){e.preventDefault();e.target.click()}};
+  el.onkeydown=(e)=>{if((e.key==="Enter"||e.key===" ")&&e.target.dataset&&(e.target.dataset.c||e.target.dataset.q||e.target.dataset.pf||e.target.dataset.pp||e.target.dataset.tg)){e.preventDefault();e.target.click()}};
 }});
 /* Wochenplan als A4-Bild (quer) */
 async function exportWeek(wk,el){
   const m=q("#pxm",el),plan=V.plan,W2=1754,H2=1240,cv=document.createElement("canvas");cv.width=W2;cv.height=H2;const g=cv.getContext("2d");
   const cs=getComputedStyle(document.documentElement),css=(k,d)=>cs.getPropertyValue(k).trim()||d;
-  g.fillStyle="#ffffff";g.fillRect(0,0,W2,H2);g.fillStyle="#111";g.font="bold 34px sans-serif";g.fillText("Platzbelegung "+((W.__VEREIN&&W.__VEREIN.name)||""),50,64);g.font="22px sans-serif";g.fillStyle="#555";g.fillText(V.fdl(wk)+" – "+V.fdl(V.add(wk,6)),50,98);
-  const all=[];for(let i=0;i<7;i++){const d=V.add(wk,i);slotsOn(d).forEach((s)=>{const a=V.min(s.von),b=V.min(s.bis);if(a!=null&&b!=null)all.push({...s,a,b,di:i})})}
+  g.fillStyle="#ffffff";g.fillRect(0,0,W2,H2);g.fillStyle="#111";g.font="bold 34px sans-serif";g.fillText("Platzbelegung "+((W.__VEREIN&&W.__VEREIN.name)||""),50,64);g.font="22px sans-serif";g.fillStyle="#555";g.fillText(V.fdl(wk)+" – "+V.fdl(V.add(wk,4)),50,98);
+  const all=[];for(let i=0;i<5;i++){const d=V.add(wk,i);slotsOn(d).forEach((s)=>{const a=V.min(s.von),b=V.min(s.bis);if(a!=null&&b!=null)all.push({...s,a,b,di:i})})}
   let f=Math.min(15*60,...all.map((s)=>Math.floor(s.a/60)*60)),t=Math.max(21*60,...all.map((s)=>Math.ceil(s.b/60)*60));f=Math.max(6*60,f);t=Math.min(24*60,t);
-  const x0=110,y0=150,cw=(W2-x0-40)/7,ph=(H2-y0-60)/(t-f);
-  g.font="bold 22px sans-serif";for(let i=0;i<7;i++){g.fillStyle="#111";g.fillText(V.wt[i]+" "+V.add(wk,i).slice(8)+"."+V.add(wk,i).slice(5,7)+".",x0+i*cw+10,y0-14)}
+  const x0=110,y0=150,cw=(W2-x0-40)/5,ph=(H2-y0-60)/(t-f);
+  g.font="bold 22px sans-serif";for(let i=0;i<5;i++){g.fillStyle="#111";g.fillText(V.wt[i]+" "+V.add(wk,i).slice(8)+"."+V.add(wk,i).slice(5,7)+".",x0+i*cw+10,y0-14)}
   g.strokeStyle="#ccc";g.lineWidth=1;g.font="18px sans-serif";g.fillStyle="#666";for(let m2=f;m2<=t;m2+=60){const y=y0+(m2-f)*ph;g.beginPath();g.moveTo(x0,y);g.lineTo(W2-40,y);g.stroke();g.fillText(V.hm(m2),50,y+6)}
-  for(let i=0;i<=7;i++){g.beginPath();g.moveTo(x0+i*cw,y0);g.lineTo(x0+i*cw,H2-60);g.stroke()}
-  for(let i=0;i<7;i++){const L=all.filter((s)=>s.di===i).sort((x,y)=>x.a-y.a||x.b-y.b),lane={},ln=[];L.forEach((s)=>{let k=0;while(ln[k]!=null&&ln[k]>s.a)k++;ln[k]=s.b;lane[s.id]=k});
+  for(let i=0;i<=5;i++){g.beginPath();g.moveTo(x0+i*cw,y0);g.lineTo(x0+i*cw,H2-60);g.stroke()}
+  for(let i=0;i<5;i++){const L=all.filter((s)=>s.di===i).sort((x,y)=>x.a-y.a||x.b-y.b),lane={},ln=[];L.forEach((s)=>{let k=0;while(ln[k]!=null&&ln[k]>s.a)k++;ln[k]=s.b;lane[s.id]=k});
     L.forEach((s)=>{s.nl=1;L.forEach((o)=>{if(tOv(o,s))s.nl=Math.max(s.nl,lane[o.id]+1,lane[s.id]+1)})});
     L.forEach((s)=>{const p=(plan.plaetze||[]).find((x)=>x.id===s.platz)||{},w=cw/s.nl,x=x0+i*cw+lane[s.id]*w+2,y=y0+(s.a-f)*ph,h=Math.max(30,(s.b-s.a)*ph-2),c=V.col(s.tid);
-      g.fillStyle="#e8eefc";g.strokeStyle="#4a6bd0";g.lineWidth=1.5;g.fillRect(x,y,w-4,h);g.strokeRect(x,y,w-4,h);g.fillStyle="#111";g.font="bold 17px sans-serif";g.fillText(teamName(s.tid),x+6,y+20,w-14);g.font="15px sans-serif";g.fillStyle="#333";if(h>40)g.fillText(s.von+"–"+s.bis+" · "+(p.name||""),x+6,y+38,w-14);if(h>58){const tt=teilTxt(s,p);if(tt&&tt!=="ganzer Platz")g.fillText(tt,x+6,y+55,w-14)}})}
+      g.fillStyle="#fff";g.fillRect(x,y,w-4,h);g.fillStyle=c.bg;g.strokeStyle=c.bd;g.lineWidth=2;g.fillRect(x,y,w-4,h);g.strokeRect(x,y,w-4,h);g.fillStyle="#111";g.font="bold 17px sans-serif";g.fillText(teamName(s.tid),x+6,y+20,w-14);g.font="15px sans-serif";g.fillStyle="#333";if(h>40)g.fillText(s.von+"–"+s.bis+" · "+(p.name||""),x+6,y+38,w-14);if(h>58){const tt=teilTxt(s,p),kb=s.art==="Training"?stdK(s.tid,V.add(wk,i)):"";const z=[tt&&tt!=="ganzer Platz"&&tt!=="ganze Halle"?tt:"",kb?"Kabine "+kb:""].filter(Boolean).join(" · ");if(z)g.fillText(z,x+6,y+55,w-14)}})}
   try{const blob=await new Promise((r)=>cv.toBlob(r,"image/png"));const d=await W.claude.use("downloads");if(!d)throw new Error("nodl");await d.save({filename:"Platzbelegung_"+wk+".png",data:blob});m.className="vmsg ok";m.textContent="Gespeichert."}catch(x){m.className="vmsg er";m.textContent="Speichern hat nicht geklappt."}
 }
 
 /* ============ Kabinenbelegung ============ */
-let kDay=null,kDoc=null,kUnsub=null,kUnsubDay="",kF=null,kEd=null,kMsg="",kMsgK="ok",kLinks=null,kLUnsub=null;
+let kEdDay=null,kDay=null,kDoc=null,kUnsub=null,kUnsubDay="",kF=null,kEd=null,kMsg="",kMsgK="ok",kLinks=null,kLUnsub=null;
 function kabSub(db,day,redraw){
   if(kUnsubDay===day&&kUnsub)return;
   if(kUnsub){try{kUnsub()}catch(e){}}
@@ -5924,7 +5968,7 @@ function renderKab(el,o){
   if(kDoc&&kDoc.err)h+='<div class="vmsg er">Die Belegung konnte nicht geladen werden.</div>';
   h+='<div class="vkabs">';
   const noK=L.filter((x)=>!x.kabine||kabs.indexOf(x.kabine)<0);
-  const ent=(x)=>{const c=V.col(x.tid||x.fremd||"g");return '<div class="vke'+(ed?" ed":"")+'" data-e="'+E(x.id)+'" style="border-color:'+c.bd+';background:'+c.bg+'"><b style="display:inline">'+E(x.von||"")+(x.bis?"–"+E(x.bis):"")+'</b> · '+E(eLabel(x))+(x.art&&x.art!=="Training"&&x.art!=="Heim"&&x.art!=="Gast"?" · "+E(x.art):x.art==="Training"?" · Training":"")+(x.txt?'<small style="display:block;opacity:.8">'+E(x.txt)+'</small>':"")+'</div>'};
+  const ent=(x)=>{const c=V.col(x.tid||x.fremd||"g");return '<div class="vke'+(ed?" ed":"")+'" data-e="'+E(x.id)+'" style="border-color:'+c.bd+';background:'+c.bg+'">'+(x.von?'<b style="display:inline">'+E(x.von)+(x.bis?"–"+E(x.bis):"")+'</b> · ':"")+'<b style="display:inline">'+E(eLabel(x))+'</b>'+(x.art&&x.art!=="Training"&&x.art!=="Heim"&&x.art!=="Gast"?" · "+E(x.art):x.art==="Training"?" · Training":"")+(x.txt?'<small style="display:block;opacity:.8">'+E(x.txt)+'</small>':"")+'</div>'};
   if(noK.length)h+='<div class="vkab" style="border-color:var(--o)"><b>Noch ohne Kabine</b>'+noK.map(ent).join("")+'</div>';
   kabs.forEach((k)=>{const l=L.filter((x)=>x.kabine===k);h+='<div class="vkab"><b>Kabine '+E(k)+'</b>'+(l.length?l.map(ent).join(""):'<span class="note">frei</span>')+'</div>'});
   h+='</div></div>';
@@ -5933,52 +5977,53 @@ function renderKab(el,o){
     h+='<div class="card vc" id="kform"><h3>'+(kEd?"Eintrag bearbeiten":"Neuer Eintrag")+'</h3>';
     if(!f)h+='<button class="btn" id="knew">+ Eintrag hinzufügen</button>';
     else{
-      h+='<div class="vrow"><label>Kabine<select id="kk"><option value="">noch offen</option>'+kabs.map((k)=>'<option'+(k===f.kabine?" selected":"")+' value="'+E(k)+'">Kabine '+E(k)+'</option>').join("")+'</select></label><label>Mannschaft<select id="kt">'+teamOpts(f.tid,true)+'</select></label>'+(f.tid==="~gast"?'<label>Gastmannschaft<input id="kfr" maxlength="40" value="'+E(f.fremd)+'" placeholder="z. B. SV Beispiel U13"></label>':"")+'<label>Art<select id="ka">'+["Training","Heim","Gast","Sonstiges"].map((a)=>'<option'+(a===f.art?" selected":"")+'>'+a+'</option>').join("")+'</select></label><label>'+((f.art==="Heim"||f.art==="Gast")?"Kabine ab":"von")+'<input id="kv" type="time" value="'+E(f.von)+'"></label>'+((f.art==="Heim"||f.art==="Gast")?"":'<label>bis<input id="kb" type="time" value="'+E(f.bis)+'"></label>')+'</div>';
+      const own=clubTeams().filter((t)=>t.aktiv!==false);
+      h+='<div class="vrow"><label>Wer braucht eine Kabine?<select id="kty"><option value="heim"'+(f.typ==="heim"?" selected":"")+'>Heimmannschaft</option><option value="gast"'+(f.typ==="gast"?" selected":"")+'>Auswärtsmannschaft (Gast)</option>'+(f.typ==="training"?'<option value="training" selected>Training</option>':"")+'</select></label>'+(f.typ==="gast"?'<label>Auswärtsmannschaft<input id="kfr" maxlength="40" value="'+E(f.fremd)+'" placeholder="z. B. SV Beispiel U13"></label>':'<label>Mannschaft<select id="kt">'+own.map((t)=>'<option value="'+E(t.id)+'"'+(t.id===f.tid?" selected":"")+'>'+E(t.name+(t.ak?" ("+t.ak+")":""))+'</option>').join("")+'</select></label>')+'<label>Tag<input id="kdt" type="date" value="'+E(f.datum)+'"></label><label>Kabine<select id="kk"><option value="">noch offen</option>'+kabs.map((k)=>'<option'+(k===f.kabine?" selected":"")+' value="'+E(k)+'">Kabine '+E(k)+'</option>').join("")+'</select></label>'+(f.typ==="training"?'<label>von<input id="kv" type="time" value="'+E(f.von)+'"></label><label>bis<input id="kb" type="time" value="'+E(f.bis)+'"></label>':"")+'</div>';
       h+='<div class="vrow"><label style="flex:1;min-width:200px">Hinweis<input id="kx" maxlength="80" value="'+E(f.txt)+'" placeholder="optional"></label></div><div class="vrow"><button class="btn" id="ksave" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button>'+(kEd?'<button class="btn" id="kdel">Löschen</button>':"")+'<button class="btn" id="kcancel">Abbrechen</button></div>';
     }
     h+='<div class="vmsg '+kMsgK+'" id="kmsg">'+E(kMsg)+'</div></div>';
     h+='<div class="vrow"><button class="btn" id="kexp">Tag als A4-Bild speichern</button><span class="vmsg" id="kxm"></span></div>';
-    h+='<div class="card vc" id="qhcard"><h3>Heimspiel schnell eintragen</h3><div class="note" style="margin-bottom:8px">Heim- und Gastmannschaft bekommen je eine Kabine. Eine Endzeit brauchst du nicht – die Kabinen sind für den Spieltag ab dieser Uhrzeit eingetragen.</div><div class="vrow"><label>Heimmannschaft<select id="qh_t">'+teamOpts("")+'</select></label><label>Gegner<input id="qh_g" maxlength="40" placeholder="z. B. SV Beispiel U13"></label><label>Kabine ab<input id="qh_v" type="time" value="10:00"></label><label>Kabine Heim<select id="qh_kh"><option value="">offen</option>'+kabs.map((k)=>'<option value="'+E(k)+'">'+E(k)+'</option>').join("")+'</select></label><label>Kabine Gast<select id="qh_kg"><option value="">offen</option>'+kabs.map((k)=>'<option value="'+E(k)+'">'+E(k)+'</option>').join("")+'</select></label><button class="btn" id="qh_go" style="align-self:flex-end">Eintragen</button></div></div>';
+    h+='<div class="card vc" id="qhcard"><h3>Heimspiel schnell eintragen</h3><div class="note" style="margin-bottom:8px">Heim- und Gastmannschaft bekommen je eine Kabine. Eine Uhrzeit ist optional.</div><div class="vrow"><label>Heimmannschaft<select id="qh_t">'+teamOpts("")+'</select></label><label>Gegner<input id="qh_g" maxlength="40" placeholder="z. B. SV Beispiel U13"></label><label>Kabine ab (optional)<input id="qh_v" type="time"></label><label>Kabine Heim<select id="qh_kh"><option value="">offen</option>'+kabs.map((k)=>'<option value="'+E(k)+'">'+E(k)+'</option>').join("")+'</select></label><label>Kabine Gast<select id="qh_kg"><option value="">offen</option>'+kabs.map((k)=>'<option value="'+E(k)+'">'+E(k)+'</option>').join("")+'</select></label><button class="btn" id="qh_go" style="align-self:flex-end">Eintragen</button></div></div>';
     if(!o.kab){
       h+='<div class="card vc"><h3>Aus Plan und Terminen vorschlagen</h3><div class="note" style="margin-bottom:8px">Trägt für diesen Tag die Trainings aus der Platzbelegung ein (in der Standard-Kabine der Mannschaft) und die Heimspiele (Heim- und Gastmannschaft, Kabinen noch offen).</div><button class="btn" id="kauto">Für '+E(V.fd(day))+' vorschlagen</button> <div class="vmsg" id="kam"></div>';
-      h+='<h3 style="margin-top:12px">Standard-Kabine je Mannschaft und Wochentag</h3><div class="note" style="margin-bottom:6px">„immer“ gilt für alle Tage ohne eigene Angabe.</div><div class="tw"><table class="vt"><thead><tr><th>Mannschaft</th><th>immer</th>'+V.wt.map((n)=>'<th>'+n+'</th>').join("")+'</tr></thead><tbody>'+clubTeams().filter((t)=>t.aktiv!==false).map((t)=>'<tr><td>'+E(t.name)+'</td><td><select data-sk="'+E(t.id)+'"><option value="">–</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+((plan.stdKabine||{})[t.id]===k?" selected":"")+'>'+E(k)+'</option>').join("")+'</select></td>'+V.wt.map((n,i)=>'<td><select data-skd="'+E(t.id)+'|'+(i+1)+'"><option value="">–</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+((((plan.stdKabineTag||{})[t.id])||{})[i+1]===k?" selected":"")+'>'+E(k)+'</option>').join("")+'</select></td>').join("")+'</tr>').join("")+'</tbody></table></div></div>';
+      h+='<h3 style="margin-top:12px">Standard-Kabine je Mannschaft und Wochentag</h3><div class="note" style="margin-bottom:6px">Gilt nur für Trainings, nicht für Spiele. „immer“ gilt für alle Tage ohne eigene Angabe.</div><div class="tw"><table class="vt"><thead><tr><th>Mannschaft</th><th>immer</th>'+V.wt.map((n)=>'<th>'+n+'</th>').join("")+'</tr></thead><tbody>'+clubTeams().filter((t)=>t.aktiv!==false).map((t)=>'<tr><td>'+E(t.name)+'</td><td><select data-sk="'+E(t.id)+'"><option value="">–</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+((plan.stdKabine||{})[t.id]===k?" selected":"")+'>'+E(k)+'</option>').join("")+'</select></td>'+V.wt.map((n,i)=>'<td><select data-skd="'+E(t.id)+'|'+(i+1)+'"><option value="">–</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+((((plan.stdKabineTag||{})[t.id])||{})[i+1]===k?" selected":"")+'>'+E(k)+'</option>').join("")+'</select></td>').join("")+'</tr>').join("")+'</tbody></table></div></div>';
     }
   }
   if(!o.kab&&V.isStaff())h+=linkCard();
   el.innerHTML=h;
   const msg=(t,k)=>{kMsg=t;kMsgK=k||"ok";const m=q("#kmsg",el);if(m){m.textContent=t;m.className="vmsg "+kMsgK}};
   const rd=(id)=>{const x=q("#"+id,el);return x?x.value:""};
-  const readF=()=>{const f=kF;f.kabine=rd("kk");f.tid=rd("kt");f.art=rd("ka");f.von=rd("kv");f.bis=(f.art==="Heim"||f.art==="Gast")?"":rd("kb");f.txt=rd("kx").trim();if(f.tid==="~gast")f.fremd=rd("kfr").trim()};
-  const putDay=async(arr)=>{await o.db.doc("kabinen/"+day).set({datum:day,eintraege:arr,von:o.kab?"Platzwart-Link":((W.__VME&&W.__VME.email)||""),am:new Date().toISOString()})};
+  const readF=()=>{const f=kF;f.typ=rd("kty")||f.typ;f.kabine=rd("kk");if(q("#kt",el))f.tid=rd("kt");if(q("#kfr",el))f.fremd=rd("kfr").trim();f.datum=rd("kdt")||f.datum;if(q("#kv",el)){f.von=rd("kv");f.bis=rd("kb")}f.txt=rd("kx").trim()};
+  const putDay=async(arr,d0)=>{d0=d0||day;await o.db.doc("kabinen/"+d0).set({datum:d0,eintraege:arr,von:o.kab?"Platzwart-Link":((W.__VME&&W.__VME.email)||""),am:new Date().toISOString()})};
   el.onclick=async(e)=>{
     const t=e.target;
     const kd=t.closest("[data-kd]");if(kd){const n=+kd.dataset.kd;kDay=n===0?V.today():V.add(kDay||V.today(),n);o.redraw();return}
     if(!ed&&!t.closest("[data-lk]")&&!t.closest("#lknew")&&!t.closest("[data-lkc]")&&!t.closest("[data-lka]")&&!t.closest("[data-lkd]"))return;
-    if(t.id==="knew"){kEd=null;kF={kabine:"",tid:(clubTeams().find((x)=>x.aktiv!==false)||{}).id||"",fremd:"",art:"Training",von:"17:00",bis:"18:30",txt:""};o.redraw();return}
+    if(t.id==="knew"){kEd=null;kEdDay=null;kF={typ:"heim",kabine:"",tid:(clubTeams().find((x)=>x.aktiv!==false)||{}).id||"",fremd:"",datum:day,von:"",bis:"",txt:""};o.redraw();return}
     if(t.id==="kcancel"){kF=null;kEd=null;kMsg="";o.redraw();return}
-    const en=t.closest("[data-e]");if(en&&ed){const x=((kDoc&&kDoc.eintraege)||[]).find((y)=>y.id===en.dataset.e);if(x){kEd=x.id;kF={kabine:x.kabine||"",tid:x.fremd?"~gast":x.tid,fremd:x.fremd||"",art:x.art||"Training",von:x.von||"",bis:x.bis||"",txt:x.txt||""};o.redraw();q("#kform",el)&&q("#kform",el).scrollIntoView({block:"nearest"})}return}
+    const en=t.closest("[data-e]");if(en&&ed){const x=((kDoc&&kDoc.eintraege)||[]).find((y)=>y.id===en.dataset.e);if(x){kEd=x.id;kEdDay=day;kF={typ:x.art==="Gast"?"gast":x.art==="Heim"?"heim":"training",artO:x.art||"Training",kabine:x.kabine||"",tid:x.tid||(clubTeams().find((c)=>c.aktiv!==false)||{}).id||"",fremd:x.fremd||"",datum:day,von:x.von||"",bis:x.bis||"",txt:x.txt||""};o.redraw();q("#kform",el)&&q("#kform",el).scrollIntoView({block:"nearest"})}return}
     if(t.id==="ksave"){
       readF();const f=kF;
-      if((f.art==="Heim"||f.art==="Gast"||f.tid==="~gast")&&V.min(f.von)!=null)f.bis=V.hm(Math.min(V.min(f.von)+135,23*60+59));
-      if(!timeOk(f.von,f.bis)){msg("Bitte eine Zeit eintragen; die Endzeit muss nach der Startzeit liegen.","er");return}
-      if(f.tid==="~gast"&&!f.fremd){msg("Bitte den Namen der Gastmannschaft eintragen.","er");return}
-      const x={id:kEd||V.id("k"),kabine:f.kabine,art:f.tid==="~gast"?"Gast":f.art,von:f.von,bis:f.bis,txt:f.txt,...(f.tid==="~gast"?{fremd:f.fremd}:{tid:f.tid})};
-      let arr=((kDoc&&kDoc.eintraege)||[]).filter((y)=>y.id!==kEd);
-      /* Doppelbelegung einer Kabine warnen, aber nicht verbieten */
-      const clash=x.kabine&&arr.some((y)=>y.kabine===x.kabine&&V.min(y.von)<V.min(x.bis)&&V.min(x.von)<V.min(y.bis));
-      arr.push(x);
-      try{await putDay(arr);V.log("Kabinenbelegung geändert ("+day+")");kF=null;kEd=null;kMsg=clash?"Gespeichert – achtung: In dieser Kabine ist zur selben Zeit schon etwas eingetragen.":"Gespeichert.";kMsgK=clash?"er":"ok";o.redraw()}catch(x2){msg("Das hat nicht geklappt (kein Zugriff oder keine Verbindung).","er")}
+      if(!dateOk(f.datum)){msg("Bitte einen Tag wählen.","er");return}
+      if(f.typ==="gast"&&!f.fremd){msg("Bitte den Namen der Auswärtsmannschaft eintragen.","er");return}
+      if(f.typ==="training"&&!timeOk(f.von,f.bis)){msg("Die Endzeit muss nach der Startzeit liegen.","er");return}
+      const x={id:kEd||V.id("k"),kabine:f.kabine,art:f.typ==="gast"?"Gast":f.typ==="heim"?"Heim":(f.artO||"Training"),von:f.typ==="training"?f.von:"",bis:f.typ==="training"?f.bis:"",txt:f.txt,...(f.typ==="gast"?{fremd:f.fremd}:{tid:f.tid})};
+      try{
+        if(kEd&&kEdDay&&kEdDay!==f.datum){await putDay(((kDoc&&kDoc.eintraege)||[]).filter((y)=>y.id!==kEd),kEdDay)}
+        let arr;if(f.datum===day)arr=((kDoc&&kDoc.eintraege)||[]).filter((y)=>y.id!==kEd);else{const sn=await o.db.doc("kabinen/"+f.datum).get();arr=((sn.exists&&sn.data().eintraege)||[]).filter((y)=>y.id!==kEd)}
+        const clash=f.typ==="training"&&x.kabine&&arr.some((y)=>y.kabine===x.kabine&&V.min(y.von)!=null&&V.min(y.von)<V.min(x.bis)&&V.min(x.von)<V.min(y.bis));
+        arr.push(x);await putDay(arr,f.datum);V.log("Kabinenbelegung geändert ("+f.datum+")");kF=null;kEd=null;kDay=f.datum;kMsg=clash?"Gespeichert – achtung: In dieser Kabine ist zur selben Zeit schon etwas eingetragen.":"Gespeichert für "+V.fd(f.datum)+".";kMsgK=clash?"er":"ok";o.redraw()}catch(x2){msg("Das hat nicht geklappt (kein Zugriff oder keine Verbindung).","er")}
       return}
     if(t.id==="kexp"){const m=q("#kxm",el);try{await exportKab(day,kabs,L);m.className="vmsg ok";m.textContent="Gespeichert."}catch(x){m.className="vmsg er";m.textContent="Speichern hat nicht geklappt."}return}
-    if(t.id==="qh_go"){const tid=rd("qh_t"),g=rd("qh_g").trim()||"Gast",v=rd("qh_v");if(V.min(v)==null){msg("Bitte eine Uhrzeit eintragen.","er");return}
-      const bis=V.hm(Math.min(V.min(v)+135,23*60+59)),arr=((kDoc&&kDoc.eintraege)||[]).concat([{id:V.id("k"),kabine:rd("qh_kh"),art:"Heim",tid,von:v,bis,txt:"gegen "+g},{id:V.id("k"),kabine:rd("qh_kg"),art:"Gast",fremd:g,von:v,bis,txt:"bei "+teamName(tid)}]);
+    if(t.id==="qh_go"){const tid=rd("qh_t"),g=rd("qh_g").trim()||"Gast",v=V.min(rd("qh_v"))==null?"":rd("qh_v");
+      const bis=v?V.hm(Math.min(V.min(v)+135,23*60+59)):"",arr=((kDoc&&kDoc.eintraege)||[]).concat([{id:V.id("k"),kabine:rd("qh_kh"),art:"Heim",tid,von:v,bis,txt:"gegen "+g},{id:V.id("k"),kabine:rd("qh_kg"),art:"Gast",fremd:g,von:v,bis,txt:"bei "+teamName(tid)}]);
       try{await putDay(arr);V.log("Heimspiel eingetragen ("+day+")");kMsg="Heimspiel eingetragen: "+teamName(tid)+" gegen "+g+".";kMsgK="ok";o.redraw()}catch(x){msg("Das hat nicht geklappt.","er")}return}
     if(t.id==="kdel"){try{await putDay(((kDoc&&kDoc.eintraege)||[]).filter((y)=>y.id!==kEd));V.log("Kabinenbelegung: Eintrag gelöscht ("+day+")");kF=null;kEd=null;kMsg="Gelöscht.";kMsgK="ok";o.redraw()}catch(x){msg("Das hat nicht geklappt.","er")}return}
     if(t.id==="kauto"){
       const m=q("#kam",el),arr=((kDoc&&kDoc.eintraege)||[]).slice(),has=(src)=>arr.some((y)=>y.src===src);let n=0;
       slotsOn(day).filter((s)=>s.art!=="Spiel"&&clubTeams().some((c)=>c.id===s.tid)).forEach((s)=>{const src="s:"+s.id+":"+day;if(has(src))return;arr.push({id:V.id("k"),src,kabine:stdK(s.tid,day),art:s.art==="Sonstiges"?"Sonstiges":"Training",tid:s.tid,von:s.von,bis:s.bis,txt:s.txt||""});n++});
       Object.keys(V.st).forEach((k)=>{const s=V.st[k];if(!s||!s.naechste)return;s.naechste.filter((g)=>g.d===day&&g.h==="H").forEach((g)=>{const src="g:"+s.tid+":"+g.d+":"+g.z;if(has(src))return;const a=V.min(g.z)==null?10*60:V.min(g.z),von=V.hm(Math.max(0,a-45)),bis=V.hm(Math.min(a+135,23*60+59));
-        arr.push({id:V.id("k"),src,kabine:stdK(s.tid,day),art:"Heim",tid:s.tid,von,bis,txt:"gegen "+(g.g||"?")});arr.push({id:V.id("k"),src:src+"~g",kabine:"",art:"Gast",fremd:g.g||"Gast",von,bis,txt:"bei "+teamName(s.tid)});n+=2})});
+        arr.push({id:V.id("k"),src,kabine:"",art:"Heim",tid:s.tid,von,bis,txt:"gegen "+(g.g||"?")});arr.push({id:V.id("k"),src:src+"~g",kabine:"",art:"Gast",fremd:g.g||"Gast",von,bis,txt:"bei "+teamName(s.tid)});n+=2})});
       if(!n){m.className="vmsg";m.textContent="Für diesen Tag gibt es nichts Neues vorzuschlagen.";return}
       try{await putDay(arr);V.log("Kabinenbelegung vorgeschlagen ("+day+")");m.className="vmsg ok";m.textContent=n+" Einträge ergänzt. Offene Kabinen bitte zuordnen."}catch(x){m.className="vmsg er";m.textContent="Das hat nicht geklappt."}
       return}
@@ -5991,7 +6036,7 @@ function renderKab(el,o){
   el.onchange=async(e)=>{
     const t=e.target;
     if(t.id==="kdate"){if(dateOk(t.value)){kDay=t.value;o.redraw()}return}
-    if((t.id==="kt"||t.id==="ka")&&kF){readF();o.redraw();return}
+    if(t.id==="kty"&&kF){readF();o.redraw();return}
     if(t.dataset&&t.dataset.skd!=null&&ed){try{const [tid,d]=t.dataset.skd.split("|"),m={...(plan.stdKabineTag||{})};m[tid]={...(m[tid]||{})};if(t.value)m[tid][d]=t.value;else delete m[tid][d];await V.savePlan({stdKabineTag:m})}catch(x){}return}
     if(t.dataset&&t.dataset.sk!=null&&ed){try{const sk={...(plan.stdKabine||{})};if(t.value)sk[t.dataset.sk]=t.value;else delete sk[t.dataset.sk];await V.savePlan({stdKabine:sk})}catch(x){}}
   };
@@ -6172,7 +6217,15 @@ V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
   if(V.typing())return;
   const v=W.__VEREIN||{},logo=sLogo||W.__CLUBLOGO||"";
   let h='<h2>Einstellungen des Vereins</h2><p class="sub note">Gilt für alle Mannschaften auf einmal.</p>';
+  {const dz=W.__dz,cur=dz?dz.get():"ruhig",ACCN=(()=>{const e=document.getElementById("dzacc");return e?Array.from(e.options).map((o)=>[o.value,o.textContent]):[["","Standard"]]})(),GLN=(()=>{const e=document.getElementById("dzgl");return e?Array.from(e.options).map((o)=>[o.value,o.textContent]):[["std","Standard"]]})(),ac=(document.getElementById("dzacc")||{}).value||"",gl=(document.getElementById("dzgl")||{}).value||"std",th=(document.getElementById("th")||{}).value||"";
+    const op=(L,v)=>L.map((x)=>'<option value="'+E(x[0])+'"'+(x[0]===v?" selected":"")+'>'+E(x[1])+'</option>').join("");
+    h+='<div class="card vc"><h3>Design und Darstellung</h3><div class="note" style="margin-bottom:8px">Gilt für dein Konto auf allen Seiten – du musst dafür in keine Mannschaft wechseln.</div><div class="vrow"><label>Design<select id="vdz_app">'+op([["ruhig","Klar & ruhig"],["glas","Liquid Glass"]],cur)+'</select></label><label>Farbe<select id="vdz_acc">'+op(ACCN,ac)+'</select></label><label>Glas-Transparenz<select id="vdz_gl"'+(cur==="glas"?"":" disabled")+'>'+op(GLN,gl)+'</select></label><label>Darstellung<select id="vdz_th">'+op([["","Automatisch"],["light","Hell"],["dark","Dunkel"]],th)+'</select></label></div></div>'}
+  if(V.isAdmin()){const arts=V.arten().filter((x)=>x.id!=="platzwart"),tms=V.teams().filter((t)=>t.aktiv!==false);
+    h+='<div class="card vc"><h3>Ansicht als Rolle (Vorschau)</h3><div class="note" style="margin-bottom:8px">Zeigt dir die App so, wie sie die gewählte Rolle sieht – zum Testen, für Vorführungen oder einen Pitch. Du bleibst dabei Administrator; oben im Menü beendest du die Vorschau mit einem Klick. Verschickbare Links für einzelne Rollen kommen in einer späteren Stufe (der bestehende „Demo“-Link je Mannschaft zeigt schon Zufallsdaten ohne Anmeldung).</div>'
+     +'<div class="vrow"><label>Rolle<select id="va_r"><option value="admin">Administrator</option><option value="jugendleiter">Jugendleitung</option>'+arts.map((x)=>'<option value="a:'+E(x.id)+'">'+E(x.name)+'</option>').join("")+'</select></label><label>Für welche Mannschaften<select id="va_t"><option value="*">alle Mannschaften</option>'+tms.map((t)=>'<option value="'+E(t.id)+'">nur '+E(t.name)+'</option>').join("")+'</select></label><button class="btn" id="va_go">Vorschau starten</button></div></div>'}
   h+='<div class="card vc"><h3>Verein</h3><div class="vrow"><label>Name des Vereins<input id="sv_n" maxlength="50" style="width:260px" value="'+E(v.name||"")+'"></label><label>Saison<input id="sv_s" maxlength="12" style="width:110px" placeholder="2026/27" value="'+E(v.saison||"")+'"></label><button class="btn" id="sv_save" type="button" style="align-self:flex-end;background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button></div></div>';
+  const kc=v.kontakte||{};
+  h+='<div class="card vc"><h3>Kontakte in der Fußzeile</h3><div class="note" style="margin-bottom:8px">Diese drei Blöcke stehen bei allen Mannschaften immer in der Fußzeile von Wochenplan, Terminplan-Link und Spielerlinks. Eine Zeile pro Angabe. Trainer und Co-Trainer tragen die Mannschaften selbst ein.</div>'+[["verein",v.name||"Verein","Adresse, Telefon, Internet"],["jugendleiter","Jugendleiter","Name, Telefon, E-Mail"],["sportleiter","Sportliche Leiter","Name und Telefon, je Person ein Absatz"]].map(([k,n,ph])=>'<label style="display:block;margin-bottom:8px"><b>'+E(n)+'</b><textarea data-kc="'+k+'" rows="3" placeholder="'+E(ph)+'" style="width:100%;box-sizing:border-box">'+E(kc[k]||"")+'</textarea></label>').join("")+'<div class="vrow"><button class="btn" id="kc_save" type="button" style="background:var(--ac);color:#fff;border-color:var(--ac)">Kontakte speichern</button><button class="btn" id="kc_take" type="button" title="Übernimmt gleichnamige Blöcke aus den Kontakten der aktuell geöffneten Mannschaft">Aus der aktuellen Mannschaft übernehmen</button></div></div>';
   h+='<div class="card vc"><h3>Vereinslogo</h3><div class="vrow" style="align-items:center"><img id="sv_img" alt="Vereinslogo" src="'+E(logo)+'" style="width:96px;height:96px;object-fit:contain;border:1px solid var(--ln);border-radius:12px;background:#fff;padding:4px"><div><div class="note" style="margin-bottom:8px">Das Logo erscheint oben im Menü, in den Mannschaften, in den Exporten (PDF/PNG) und in den Spielerlinks. Am besten ein quadratisches oder rundes Bild mit hellem oder durchsichtigem Hintergrund.</div><button class="btn" id="sv_up" type="button">Neues Logo hochladen</button> <button class="btn" id="sv_std" type="button">Mitgeliefertes Logo (TuS) verwenden</button><input type="file" id="sv_file" accept="image/*" hidden></div></div></div>';
   h+='<div class="card vc"><h3>Weitere Einstellungen</h3><div class="note">Erinnerungs- und Ausgrau-Fristen findest du unter <b>Mannschaften</b>, die Aufbewahrungsfrist für ausgeschiedene Spieler unter <b>Datenschutz</b>.</div></div>';
   h+='<div class="vmsg '+sMsgK+'" id="svm">'+E(sMsg)+'</div>';
@@ -6182,10 +6235,19 @@ V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
   el.onclick=async(e)=>{
     const t=e.target;
     if(t.id==="sv_save"){const n=q("#sv_n",el).value.trim(),s=q("#sv_s",el).value.trim();if(!n){msg("Bitte einen Vereinsnamen eintragen.","er");return}try{await V.saveVerein({name:n,saison:s||v.saison});V.log("Vereinsname/Saison geändert");msg("Gespeichert.");V.render()}catch(x){msg("Das konnte nicht gespeichert werden.","er")}return}
+    if(t.id==="kc_save"||t.id==="kc_take"){const o={...(v.kontakte||{})};
+      if(t.id==="kc_take"){try{const L=(D.config&&D.config.kontakte)||[],R={verein:/^tus\s*haltern|^verein/i,jugendleiter:/^jugendleiter/i,sportleiter:/^sportliche[rn]?\s*leiter/i};let n=0;Object.keys(R).forEach((k)=>{const b=L.find((x)=>R[k].test(String(x.titel||"").trim()));if(b&&String(b.zeilen||"").trim()){o[k]=b.zeilen;n++}});if(!n){msg("In den Kontakten dieser Mannschaft gibt es keine passenden Blöcke.","er");return}}catch(x){msg("Das hat nicht geklappt.","er");return}}
+      else el.querySelectorAll("[data-kc]").forEach((x)=>{o[x.dataset.kc]=x.value.trim()});
+      try{await V.saveVerein({kontakte:o});V.log("Vereinskontakte geändert");msg("Kontakte gespeichert. Sie stehen ab sofort bei allen Mannschaften in der Fußzeile.");V.render()}catch(x){msg("Das konnte nicht gespeichert werden.","er")}return}
+    if(t.id==="va_go"){const r=q("#va_r",el).value,tt=q("#va_t",el).value,lab=q("#va_r",el).selectedOptions[0].textContent+(r.indexOf("a:")===0&&tt!=="*"?" ("+q("#va_t",el).selectedOptions[0].textContent.replace(/^nur /,"")+")":"");
+      if(r.indexOf("a:")===0){V.viewAs({rolle:"team",zu:[tt==="*"?{art:r.slice(2),alle:true}:{art:r.slice(2),teams:[tt]}],label:lab})}else V.viewAs({rolle:r,label:lab});
+      V.go("mannschaft");return}
     if(t.id==="sv_up"){q("#sv_file",el).click();return}
     if(t.id==="sv_std"){await saveLogo("","Vereinslogo auf Standard zurückgesetzt");return}
   };
-  el.onchange=async(e)=>{if(e.target.id!=="sv_file")return;const f=e.target.files[0];e.target.value="";if(!f)return;const u=await shrinkLogo(f);if(!u){msg("Das Bild konnte nicht gelesen werden.","er");return}await saveLogo(u,"Vereinslogo hochgeladen")};
+  el.onchange=async(e)=>{const id=e.target.id,px={vdz_app:"dzapp",vdz_acc:"dzacc",vdz_gl:"dzgl",vdz_th:"th"}[id];
+    if(px){const o=document.getElementById(px);if(o){o.value=e.target.value;o.dispatchEvent(new Event("change",{bubbles:true}))}if(id==="vdz_app")setTimeout(()=>V.render(),60);return}
+    if(e.target.id!=="sv_file")return;const f=e.target.files[0];e.target.value="";if(!f)return;const u=await shrinkLogo(f);if(!u){msg("Das Bild konnte nicht gelesen werden.","er");return}await saveLogo(u,"Vereinslogo hochgeladen")};
 }});
 
 /* ---------- Datenschutz-Center ---------- */
