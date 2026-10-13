@@ -19,7 +19,7 @@ window.__KAB=!!KABKEY;
 const TQ=(new URLSearchParams(location.search).get("t")||"").toLowerCase().replace(/[^a-z0-9]/g,"");
 const skt=()=>String(window.__SCOUTKEY||"").split("-")[0].toLowerCase().replace(/[^a-z0-9]/g,"");
 window.__TID="";
-const GLOB=new Set(["verein","mitglieder","plaene","kabinen","kablinks","kabzugang","protokoll","pub","aliasin","aliasauth","ownercheck"]);
+const GLOB=new Set(["verein","mitglieder","plaene","kabinen","kablinks","kabzugang","protokoll","pub","aliasin","aliasauth","ownercheck","prefs"]);
 const T=(p)=>{const i=p.indexOf("/"),c=i<0?p:p.slice(0,i);return GLOB.has(c)?p:window.__TID+"__"+p};
 window.__T=T;
 const isKurz=/^#k\/[A-Za-z0-9_-]{4,40}$/.test(H);
@@ -198,7 +198,12 @@ function chooseTeam(V,me,rolle){
 async function clubInit(u){
   const em=lowC(u&&u.email);
   let fixed=null,me=null,V=null,offline=false;
+  let owner=false,frei=false;
   try{await fs.doc("ownercheck/x").get();fixed=true}catch(e){if(denied(e))fixed=false;else offline=true}
+  if(!offline){
+    try{await fs.doc("ownercheck/owner").get();owner=true}catch(e){if(!denied(e))offline=true}
+    try{const s=await fs.doc("ownercheck/frei").get();frei=!!s.exists}catch(e){if(!denied(e))offline=true}
+  }
   if(!offline){
     try{const s=await fs.doc("mitglieder/"+em).get();me=s.exists?s.data():null}catch(e){if(!denied(e))offline=true}
     try{const s=await fs.doc("verein/main").get();V=s.exists?s.data():null}catch(e){if(!denied(e))offline=true}
@@ -206,19 +211,24 @@ async function clubInit(u){
   let cache=null;try{cache=JSON.parse(localStorage.getItem("u13v:"+em)||"null")}catch(e){}
   if(offline){
     if(!cache){showInfo("Keine Verbindung","Die App wurde auf diesem Gerät noch nie online geöffnet. Bitte einmal mit Internet öffnen.","Neu laden");return null}
-    fixed=cache.fixed;me=cache.me;V=cache.V;
+    fixed=cache.fixed;me=cache.me;V=cache.V;owner=!!cache.owner;frei=!!cache.frei;
   }
   if(!V){
     if(!fixed){showInfo(me?"Der Verein ist noch nicht eingerichtet.":"Dieses Konto ist nicht freigegeben.","Angemeldet als <b>"+E(em)+"</b>. "+(me?"Bitte den Besitzer der App fragen.":"Zugriff haben nur Personen, die der Verein freigegeben hat."));return null}
     V=await showClubSetup(em);hideOverlay();
   }
+  if(owner&&frei&&!fixed&&!me){
+    const o=overlay('<div class="ms er" style="font-size:15px">Du hast deine Besitzerrechte abgegeben</div><p class="sb">Angemeldet als <b>'+E(em)+'</b>. Zurzeit hast du keine Rolle im Verein. Du kannst die Besitzerrechte jederzeit zurücknehmen – du bist dann wieder Administrator.</p><button id="u13ow">Besitzerrechte zurücknehmen</button> <button id="u13so">Abmelden</button>');
+    o.querySelector("#u13so").onclick=()=>auth.signOut().then(()=>location.reload());
+    o.querySelector("#u13ow").onclick=async()=>{try{await fs.doc("ownercheck/frei").delete();location.reload()}catch(e){o.querySelector("#u13ow").textContent="Hat nicht geklappt – erneut versuchen"}};
+    return null}
   const rolle=fixed?"admin":(me&&me.rolle);
   if(!rolle||ROLLEN_V.indexOf(rolle)<0){showInfo("Dieses Konto ist nicht freigegeben.","Angemeldet als <b>"+E(em)+"</b>. Zugriff haben nur Personen, die der Verein freigegeben hat.");return null}
   me=me||{email:em,rolle:rolle,zu:[],tr:{},g:[],kader:{}};
   if(fixed&&me.rolle!=="admin")me={...me,rolle:"admin"};
-  try{localStorage.setItem("u13v:"+em,JSON.stringify({fixed:!!fixed,me,V}))}catch(e){}
+  try{localStorage.setItem("u13v:"+em,JSON.stringify({fixed:!!fixed,me,V,owner,frei}))}catch(e){}
   const ch=chooseTeam(V,me,rolle);
-  window.__VEREIN=V;window.__VROLLE=rolle;window.__VFIXED=!!fixed;window.__VALLOWED=ch.allowed.map((t)=>t.id);
+  window.__VEREIN=V;window.__VROLLE=rolle;window.__VFIXED=!!fixed;window.__VOWNER=owner;window.__VFREI=frei;window.__VALLOWED=ch.allowed.map((t)=>t.id);
   window.__VME={email:em,rolle,name:me.name||"",zu:me.zu||[],tr:me.tr||{},g:me.g||[],kader:me.kader||{},teams:ch.allowed.map((t)=>t.id)};
   if(rolle==="platzwart"){window.__KABACCT=true;return{kabOnly:true}}
   if(rolle==="team"&&!ch.team&&(me.zu||[]).some((z)=>z.art==="platzwart")){window.__KABACCT=true;window.__KABRO=(me.g||[]).indexOf("plan")<0;return{kabOnly:true}}
@@ -241,9 +251,10 @@ async function kabStart(){
 }
 
 async function start(){
-  if(!cfgOk()){showSetup();return new Promise(()=>{})}
+  if(window.__DEMO&&document.readyState!=="complete")await new Promise((r)=>window.addEventListener("load",r));
+  if(!window.__DEMO&&!cfgOk()){showSetup();return new Promise(()=>{})}
   try{
-    for(const f of["firebase-app-compat.js","firebase-auth-compat.js","firebase-firestore-compat.js"])await loadScript(SDK+f);
+    if(!window.__DEMO)for(const f of["firebase-app-compat.js","firebase-auth-compat.js","firebase-firestore-compat.js"])await loadScript(SDK+f);
   }catch(e){overlay('<div class="ms er">Die Firebase-Bausteine konnten nicht geladen werden. Bitte die Internetverbindung prüfen und die Seite neu laden.</div>');return new Promise(()=>{})}
   fb=window.firebase;fb.initializeApp(CFG);auth=fb.auth();fs=fb.firestore();
   try{await fs.enablePersistence({synchronizeTabs:true})}catch(e){}

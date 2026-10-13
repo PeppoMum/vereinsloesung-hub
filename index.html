@@ -1,4 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://accounts.google.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://www.gstatic.com; frame-src https://*.firebaseapp.com https://accounts.google.com https://apis.google.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"><meta name="theme-color" content="#2563eb"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><script src="firebase-config.js"></script><script src="web.js"></script></head><body style="margin:0"><title>TuS Haltern</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://accounts.google.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://www.gstatic.com; frame-src https://*.firebaseapp.com https://accounts.google.com https://apis.google.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"><meta name="theme-color" content="#2563eb"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><script src="firebase-config.js"></script><script src="demo.js"></script><script src="web.js"></script></head><body style="margin:0"><title>TuS Haltern</title>
 <style>
 /* Layout: feste Seitenleiste (auf dem Handy untere Leiste), Inhalt in Karten und Tabellen. Farben aus dem freigegebenen Entwurf. */
 :root{--bg:#f4f5f7;--card:#fff;--tx:#1c1f24;--mu:#6b7280;--ln:#e5e7eb;--ac:#2563eb;--acs:#dbe6fd;--g:#22a06b;--gs:#d8f3e6;--y:#d9a400;--ys:#fbf0c6;--r:#d64545;--rs:#fbdcdc;--o:#e07b1a;--os:#fbe6cf;--gr:#8b93a1;--grs:#e6e8ec;--b:#3b82f6;--bs:#dbe8fd;--vi:#000;--nb:#1e3a8a;--p:#8b5cf6;--ps:#e9defc;--be:#8a6d3b;--bes:#f1e8d6;--n1:#111827;--n1s:#c3c9d4;--n2:#374151;--n2s:#d8dce4;--n3:#6b7280;--n3s:#e6e8ee;--n4:#8b93a1;--n4s:#f0f1f4;--font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Helvetica,Arial,sans-serif}
@@ -975,7 +975,7 @@ function xcols(s,x,y,w,h,items,lines,title,sub,rot){
   if(sub)s.t(x+w-12,y+20,sub,8,XC.mu,{an:"end"});
 }
 /* Durchschnitt pro Woche: nur Kalenderwochen, in denen es mindestens einen Eintrag gab */
-function wkAvg(dates){const d=dates.filter(Boolean),w=new Set(d.map((x)=>monday(x)));return{n:d.length,wochen:w.size,avg:w.size?d.length/w.size:null}}
+function wkAvg(dates){const d=dates.filter(Boolean),w=new Set(d.map((x)=>{const t=new Date(x+"T12:00:00");t.setDate(t.getDate()-((t.getDay()+6)%7));return t.getFullYear()+"-"+t.getMonth()+"-"+t.getDate()}));return{n:d.length,wochen:w.size,avg:w.size?d.length/w.size:null}}
 function wkTxt(a){return a.avg==null?"–":(Math.round(a.avg*10)/10).toLocaleString("de-DE")}
 /* ---------- Saisonübersicht (A4 quer) ---------- */
 function xSaison(){
@@ -4486,7 +4486,7 @@ document.addEventListener("click",(e)=>{const t=e.target.closest&&e.target.close
 (function(){
 const NAMES={ruhig:"Klar & ruhig",glas:"Liquid Glass"},root=document.documentElement;
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||"";v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){return""}};
-let cur=NAMES[ls("u13design")]?ls("u13design"):"ruhig",mem={};
+let cur=NAMES[ls("u13design")]?ls("u13design"):"glas",mem={};
 /* Farben und Glas-Transparenz (nur Optik, pro Design merkbar) */
 const ACC={std:{n:"Standard"},gruen:{n:"Grün",l:"#0f7a5a",d:"#4cc79c"},blau:{n:"Blau",l:"#0a6ad6",d:"#7fb2ff"},tuerkis:{n:"Türkis",l:"#0b7f8c",d:"#4fc7d3"},violett:{n:"Violett",l:"#6b46d6",d:"#b39cff"},beere:{n:"Beere",l:"#b8235f",d:"#ff8fba"},orange:{n:"Orange",l:"#bf5608",d:"#ffa45c"},rot:{n:"Rot",l:"#c62828",d:"#ff8a80"},graphit:{n:"Graphit",l:"#3b4350",d:"#c3cad6"}};
 const GLS={dicht:{n:"Wenig durchsichtig",l:.82,d:.13,b:30,nv:.95},std:{n:"Standard"},klar:{n:"Sehr durchsichtig",l:.3,d:.035,b:12,nv:.72}};
@@ -4514,12 +4514,12 @@ function sync(){const a=document.getElementById("dzapp"),l=document.getElementBy
   if(gs){if(!gs.options.length)gs.innerHTML=["dicht","std","klar"].map((k)=>'<option value="'+k+'">'+GLS[k].n+"</option>").join("");gs.disabled=cur!=="glas"||window.__ROLE==="lesen";if(document.activeElement!==gs)gs.value=glKey()}}
 const linkDefault=()=>cfg().linkDesign==="glas"?"glas":"ruhig";
 /* Design, Farbe und Glas-Transparenz gelten pro Konto (Sammlung „prefs“), nicht pro Gerät. Ohne eigenen Eintrag gelten ältere Werte aus den Einstellungen. */
-function applyPrefs(p){if(window.__VIEWER||window.__RO)return;const c=cfg(),S=p||{design:c.design,acc:c.acc,gl:c.gl};
+function applyPrefs(p){if(window.__VIEWER||window.__RO)return;const c=cfg(),S=p||{design:c.design||(pfSeen?"glas":undefined),acc:c.acc,gl:c.gl};
   if(S.design&&NAMES[S.design]&&S.design!==cur)set(S.design);
   if(S.acc&&typeof S.acc==="object"&&JSON.stringify(S.acc)!==JSON.stringify(acc)){acc=S.acc;ls("u13acc",JSON.stringify(acc));inject()}
   if(S.gl&&GLS[S.gl]&&S.gl!==gl){gl=S.gl;ls("u13gl",gl);inject()}sync()}
 function fromConfig(){if(window.__VIEWER||window.__RO)return;if(!pf)applyPrefs(null);else sync();const ro=window.__ROLE==="lesen";["dzapp","dzlnk","dzacc","dzgl"].forEach((i)=>{const e=document.getElementById(i);if(e&&i==="dzlnk")e.disabled=ro})}
-const savePrefs=()=>{if(typeof save==="function"&&window.__ROLE!=="lesen"&&window.__ROLE!=="scout")try{save("prefs",window.__ACCT||"main",{design:cur,acc,gl,...(window.__gcP?{gc:window.__gcP}:{}),...(window.__vnP?{vn:window.__vnP}:{})})}catch(e){}};
+const savePrefs=()=>{if(typeof save==="function"&&window.__ROLE!=="lesen"&&window.__ROLE!=="scout")try{save("prefs",window.__ACCT||"main",{design:cur,acc,gl,...(window.__gcP?{gc:window.__gcP}:{}),...(window.__vnP?{vn:window.__vnP}:{}),...(window.__ghP?{gh:window.__ghP}:{})})}catch(e){}};
 set(cur,true);
 const nav=document.querySelector("nav");if(nav)new MutationObserver(wrap).observe(nav,{childList:true,subtree:true,characterData:true});
 document.addEventListener("change",(e)=>{const t=e.target;if(!t||!t.id)return;
@@ -4528,7 +4528,7 @@ document.addEventListener("change",(e)=>{const t=e.target;if(!t||!t.id)return;
   if(t.id==="dzacc"){acc={...acc,[cur]:t.value==="std"?"":t.value};ls("u13acc",JSON.stringify(acc));inject();savePrefs()}
   if(t.id==="dzgl"){gl=t.value;ls("u13gl",gl);inject();savePrefs()}});
 window.__dz={names:NAMES,get:()=>cur,set,sync:fromConfig,linkDefault,wrap,accOf:(des)=>acc[des]||"",glOf:()=>gl,view:(a,g)=>{ovr={a:a||"",g:g||"std"};inject()}};
-window.__dzSync=fromConfig;window.__dzSavePrefs=savePrefs;window.__dzPrefs=(p)=>{pf=p;pfSeen=true;applyPrefs(p);window.__gcP=(p&&p.gc)||window.__gcP||null;window.__vnP=(p&&p.vn)||window.__vnP||null;window.__gcOnPrefs&&window.__gcOnPrefs();window.__vnOnPrefs&&window.__vnOnPrefs()};
+window.__dzSync=fromConfig;window.__dzSavePrefs=savePrefs;window.__dzPrefs=(p)=>{pf=p;pfSeen=true;applyPrefs(p);window.__gcP=(p&&p.gc)||window.__gcP||null;window.__vnP=(p&&p.vn)||window.__vnP||null;window.__ghP=(p&&p.gh)||window.__ghP||null;window.__gcOnPrefs&&window.__gcOnPrefs();window.__vnOnPrefs&&window.__vnOnPrefs();window.__ghOnPrefs&&window.__ghOnPrefs()};
 
 /* ---------- A4-Export: Design wählbar ---------- */
 function xdes(){const v=ls("u13xdes")||mem.x;return v==="glas"||v==="ruhig"?v:(cur==="glas"?"glas":"ruhig")}
@@ -5412,7 +5412,7 @@ const CSS='#vnav{position:sticky;top:0;z-index:340;display:flex;flex-wrap:wrap;a
 +'.vch{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--ln);margin:1px 3px 1px 0;cursor:pointer;background:var(--card);user-select:none}.vch.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}'
 +'.vbad{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--grs);color:var(--mu);white-space:nowrap}.vbad.r{background:var(--rs);color:var(--r)}.vbad.o{background:var(--os);color:var(--o)}.vbad.g{background:var(--gs);color:var(--g)}'
 +'.vdot{display:inline-block;min-width:54px;text-align:center;padding:2px 8px;border-radius:99px;font-weight:600;font-size:12px}.vdot.p0{background:var(--grs);color:var(--mu)}.vdot.p1{background:var(--rs);color:var(--r)}.vdot.p2{background:var(--os);color:var(--o)}.vdot.p3{background:var(--ys);color:var(--y)}.vdot.p4{background:var(--gs);color:var(--g)}'
-+'.vseg{display:inline-flex;gap:2px;margin-left:8px}.vseg .btn.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}.vgh.today{color:var(--ac)}.vlk{font:inherit;font-weight:600;background:none;border:0;color:inherit;cursor:pointer;padding:0}.vwb{position:absolute;border:1.5px solid;border-radius:8px;padding:3px 6px;font-size:11.5px;line-height:1.25;overflow:hidden;box-sizing:border-box}.vwb.ed,.vblk.ed{cursor:pointer}.vwb small{display:block;opacity:.8}.vblk.frei,.vwb.frei{border-style:dashed;opacity:.6;background-image:repeating-linear-gradient(135deg,transparent 0 6px,rgba(128,128,128,.18) 6px 8px)}.vqv{position:absolute;top:0;bottom:0;width:0;border-left:1px dashed var(--ln)}.vq{display:inline-flex;flex-direction:column;align-items:stretch;gap:4px}.vq .vqk{font-size:11px;text-align:center;background:var(--soft,rgba(128,128,128,.15));border-radius:6px;padding:3px 8px;color:var(--mu)}.vq .vqg{display:grid;grid-template-columns:repeat(2,108px);grid-template-rows:repeat(2,70px);gap:3px;padding:3px;border:2px solid var(--g);border-radius:4px;background:rgba(40,160,80,.12)}.vq .vqc{display:flex;align-items:center;justify-content:center;font-weight:700;border:1px solid var(--ln);border-radius:4px;cursor:pointer;color:var(--mu);user-select:none}.vq .vqc.on{background:var(--g);color:#fff;border-color:var(--g)}.vq-u{flex-direction:column-reverse}.vq-o{flex-direction:column}.vq-l{flex-direction:row}.vq-r{flex-direction:row-reverse}.vq-l .vqk,.vq-r .vqk{writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center}'
++'.vseg{display:inline-flex;gap:2px;margin-left:8px}.vseg .btn.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}.vgh.today{color:var(--ac)}.vlk{font:inherit;font-weight:600;background:none;border:0;color:inherit;cursor:pointer;padding:0}.vwb{position:absolute;border:1.5px solid;border-radius:8px;padding:2px 3px;font-size:11.5px;line-height:1.25;overflow:hidden;box-sizing:border-box;container-type:inline-size}.vwb b{display:block;font-size:clamp(10px,24cqw,15px);line-height:1.05;overflow-wrap:anywhere;word-break:break-all}@container (max-width:72px){.vwb small{display:none}}.vgl.h{border-top:1px dotted var(--ln);opacity:.55}.vwb.ed,.vblk.ed{cursor:pointer}.vwb small{display:block;opacity:.8}.vblk.frei,.vwb.frei{border-style:dashed;opacity:.6;background-image:repeating-linear-gradient(135deg,transparent 0 6px,rgba(128,128,128,.18) 6px 8px)}.vqv{position:absolute;top:0;bottom:0;width:0;border-left:1px dashed var(--ln)}.vq{display:inline-flex;flex-direction:column;align-items:stretch;gap:4px}.vq .vqk{font-size:11px;text-align:center;background:var(--soft,rgba(128,128,128,.15));border-radius:6px;padding:3px 8px;color:var(--mu)}.vq .vqg{display:grid;grid-template-columns:repeat(2,108px);grid-template-rows:repeat(2,70px);gap:3px;padding:3px;border:2px solid var(--g);border-radius:4px;background:rgba(40,160,80,.12)}.vq .vqc{display:flex;align-items:center;justify-content:center;font-weight:700;border:1px solid var(--ln);border-radius:4px;cursor:pointer;color:var(--mu);user-select:none}.vq .vqc.on{background:var(--g);color:#fff;border-color:var(--g)}.vq-u{flex-direction:column-reverse}.vq-o{flex-direction:column}.vq-l{flex-direction:row}.vq-r{flex-direction:row-reverse}.vq-l .vqk,.vq-r .vqk{writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center}'
 +'#vp .vt th,#vp .vt td{text-align:left}#vp .vt thead th{background:rgba(127,127,127,.16);color:var(--tx);font-size:12.5px;font-weight:700;padding:9px 10px;border-bottom:2px solid var(--ln);vertical-align:bottom}#vp .vt tr.vgrp td{background:rgba(127,127,127,.08);font-weight:700;color:var(--tx)}#vp .vmx td.fix{opacity:.55}#vp .vhd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-bottom:6px}#vp .vhd h3{margin:0}#vp [hidden]{display:none!important}#vp #vlkx #lkx{display:block;margin:8px 0 0;border:0;box-shadow:none;padding:0;background:none}#vp #vlkx #lkx>h3{display:none}#vp .vmx td.c,#vp .vmx th.c{text-align:center}#vnav .vchip[hidden]{display:none!important}'
 +'.vok{color:var(--g)}.vmsg{min-height:18px;font-size:12px;margin:4px 0}.vmsg.er{color:var(--r)}.vmsg.ok{color:var(--g)}'
 +'.vgrid{position:relative;display:grid;gap:0;border:1px solid var(--ln);border-radius:12px;overflow:hidden;background:var(--card)}.vgh{font-size:12px;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--ln);border-left:1px solid var(--ln);background:var(--card);text-align:center}.vgc{position:relative;border-left:1px solid var(--ln)}'
@@ -5521,16 +5521,21 @@ V.subPlan=subPlan;
 V.gd={};
 function subGames(){const T=V.today(),fs=V.fs();let c=fs.collection("kabinen");try{c=c.where("datum",">=",T).where("datum","<=",V.add(T,14))}catch(e){}
   try{c.onSnapshot((s)=>{V.gd={};s.docs.forEach((d)=>{V.gd[d.id]=(d.data().eintraege)||[]});if(V.cur==="uebersicht"&&!V.typing())V.render()},()=>{})}catch(e){}}
-V.ghKey=(tid,d)=>"u13gh:"+tid+":"+d;
-V.spielHinweise=(tid)=>{const out=[],T=V.today();
-  Object.keys(V.gd||{}).sort().forEach((d)=>{if(d<T||d>V.add(T,14)||V.dow(d)>5)return;
+V.ghKey=(tid,d)=>tid+"|"+d;
+V.ghHidden=(tid,d)=>{const m=window.__ghP||{};return !!m[V.ghKey(tid,d)]};
+V.ghHide=(tid,d)=>{const T=V.today(),m={};Object.keys(window.__ghP||{}).forEach((k)=>{if(k.split("|")[1]>=T)m[k]=1});m[V.ghKey(tid,d)]=1;window.__ghP=m;try{window.__dzSavePrefs&&window.__dzSavePrefs()}catch(e){}};
+/* Hinweis nur am Tag selbst und am Tag davor. Administratoren sehen ihn vereinsweit (tid "*"), unabhängig von der gewählten Mannschaft. Ausblenden wird pro Konto gemerkt. */
+V.spielHinweise=(tid)=>{const out=[],T=V.today(),adm=tid==="*";
+  Object.keys(V.gd||{}).sort().forEach((d)=>{if(d<T||d>V.add(T,1)||V.dow(d)>5)return;
     const g=(V.gd[d]||[]).filter((x)=>(x.art==="Heim"||x.art==="Gast")&&!x.removed);if(!g.length)return;
-    const plays=g.some((x)=>x.tid===tid),trains=typeof V.slotsOn==="function"&&V.slotsOn(d).some((x)=>x.tid===tid&&x.art!=="Spiel");
-    if(!plays&&!trains)return;
-    try{if(localStorage.getItem(V.ghKey(tid,d)))return}catch(e){}
-    const heim=g.filter((x)=>x.art==="Heim").map((x)=>V.tname(x.tid)+(x.txt?" "+x.txt:"")).join(", ");
-    out.push({d,tid,txt:"Am "+V.fd(d)+" "+(heim?"gibt es ein Heimspiel ("+heim+")":"spielt eine Mannschaft bei uns")+". "+(plays?"Deine Mannschaft spielt an diesem Tag. ":"")+(trains?"Dein Training an diesem Tag kann dadurch verlegt sein. ":"")+"Bitte in Platz- und Kabinenbelegung nachsehen."})});
+    const plays=!adm&&g.some((x)=>x.tid===tid),trains=!adm&&typeof V.slotsOn==="function"&&V.slotsOn(d).some((x)=>x.tid===tid&&x.art!=="Spiel");
+    if(!adm&&!plays&&!trains)return;
+    if(V.ghHidden(tid,d))return;
+    const heim=g.filter((x)=>x.art==="Heim").map((x)=>V.tname(x.tid)+(x.txt?" "+x.txt:"")).join(", "),gast=g.filter((x)=>x.art==="Gast").map((x)=>V.tname(x.tid)+(x.txt?" "+x.txt:"")).join(", ");
+    const wann=d===T?"Heute":"Morgen";
+    out.push({d,tid,txt:wann+" ("+V.fd(d)+") "+(heim?"gibt es ein Heimspiel ("+heim+")":"spielt eine Mannschaft bei uns")+(gast?"; auswärts: "+gast:"")+". "+(plays?"Deine Mannschaft spielt an diesem Tag. ":"")+(trains?"Dein Training an diesem Tag kann dadurch verlegt sein. ":"")+"Bitte in Platz- und Kabinenbelegung nachsehen."})});
   return out};
+window.__ghOnPrefs=()=>{if(V.cur==="uebersicht"&&!(V.typing&&V.typing()))V.render()};
 V.savePlan=async(patch)=>{V.plan=Object.assign({},V.plan,patch);await V.fs().doc("plaene/platz").set(V.plan)};
 /* Teamnamen für den Platzwart-Link (er darf „verein“ nicht lesen) im Plan mitführen */
 V.syncTeamNames=async()=>{const t=V.teams().map((x)=>({id:x.id,name:x.name,ak:x.ak||"",aktiv:x.aktiv!==false,...(x.farbe?{farbe:x.farbe}:{})}));await V.savePlan({teams:t})};
@@ -5623,8 +5628,8 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   let h='<h2>Übersicht</h2><p class="sub note">'+((V.isAll()||fid==="alle"&&vis.length>1)?"Die Mannschaften auf einen Blick.":"Deine Mannschaft"+(act.length>1?"en":"")+" auf einen Blick.")+'</p>';
   if(filters.length>1)h+='<div class="vf" role="tablist">'+filters.map((x)=>'<button type="button" data-f="'+E(x.id)+'" class="'+(x.id===fid?"on":"")+'">'+E(x.n)+'</button>').join("")+'</div>';
   if(open.length&&V.has(W.__TID,"sehen"))h+='<div class="card vc" style="border-color:var(--y);background:var(--ys)"><b>Hinweise für '+E(V.tname(W.__TID))+'</b>'+open.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+E(x.text)+' <span class="note">· '+E(x.von||"")+' · '+E(String(x.at||"").slice(0,10).split("-").reverse().join("."))+'</span></span>'+(V.canWrite()&&x.ack!==false?'<button class="btn" data-ok="'+E(x.id)+'">Erledigt</button>':"")+(x.bis?' <span class="note">bis '+E(V.fdl(x.bis).slice(0,6))+'</span>':"")+'</div>').join("")+'</div>';
-  {const gts=Array.from(new Set((V.isAll()?[]:mineIds).concat([W.__TID]))).filter((id)=>V.has(id,"sehen")||V.isAll()),gh=[];gts.forEach((id)=>V.spielHinweise(id).forEach((x)=>gh.push(x)));
-   if(gh.length)h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Spiele an Wochentagen</b>'+gh.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+(gts.length>1?'<b>'+E(V.tname(x.tid))+':</b> ':"")+E(x.txt)+'</span><button class="btn" data-gh="'+E(x.tid+"|"+x.d)+'">Ausblenden</button></div>').join("")+'</div>'}
+  {const adm=V.isAdmin(),gts=adm?["*"]:Array.from(new Set((V.isAll()?[]:mineIds).concat([W.__TID]))).filter((id)=>V.has(id,"sehen")||V.isAll()),gh=[];gts.forEach((id)=>V.spielHinweise(id).forEach((x)=>gh.push(x)));
+   if(gh.length)h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Spiele an Wochentagen</b>'+gh.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+(!adm&&gts.length>1?'<b>'+E(V.tname(x.tid))+':</b> ':"")+E(x.txt)+'</span><button class="btn" data-gh="'+E(x.tid+"|"+x.d)+'">Ausblenden</button></div>').join("")+'</div>'}
   if(V.canWrite()&&ow.art&&own!==undefined)h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Erinnerung</b><div class="note" style="color:inherit">Die Daten von '+E(V.tname(W.__TID))+' wurden zuletzt '+E(V.pflegeTxt(ow))+' gepflegt. Bitte Anwesenheit und Spielzeit nachtragen.</div></div>';
   if(act.length>1||have.length)h+='<div class="kpis"><div class="card kpi"><b>'+act.length+'</b><span>aktive Mannschaften</span></div><div class="card kpi"><b>'+have.reduce((a,s)=>a+(s.n||0),0)+'</b><span>Spieler insgesamt</span></div><div class="card kpi"><b>'+pcx(avg((s)=>s.bet))+'</b><span>Ø Training</span></div><div class="card kpi"><b>'+pcx(avg((s)=>s.zeit))+'</b><span>Ø Spielzeit</span></div><div class="card kpi c'+(need.length?2:4)+'"><b>'+need.length+'</b><span>brauchen Aufmerksamkeit</span></div></div>';
   h+='<div class="vtg">'+act.map((t)=>{
@@ -5655,7 +5660,7 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
     const fb=e.target.closest("[data-f]");if(fb){ufilt=fb.dataset.f;try{localStorage.setItem("u13uf",ufilt)}catch(x){}V.render();return}
     const g=e.target.closest("[data-go]");if(g){if(g.dataset.go===W.__TID)V.go("mannschaft");else V.setTeam(g.dataset.go);return}
     const o=e.target.closest("[data-ok]");if(o){try{await V.fs().doc(W.__TID+"__vhinweise/"+o.dataset.ok).update({erledigt:true,erledigtAm:new Date().toISOString()})}catch(x){}return}
-    const gh=e.target.closest("[data-gh]");if(gh){const [tt,dd]=gh.dataset.gh.split("|");try{localStorage.setItem(V.ghKey(tt,dd),"1")}catch(x){}V.render();return}
+    const gh=e.target.closest("[data-gh]");if(gh){const [tt,dd]=gh.dataset.gh.split("|");V.ghHide(tt,dd);V.render();return}
     const r=e.target.closest("[data-rem]");if(r){await send(r.dataset.rem,"Bitte die Daten der Mannschaft aktualisieren (Anwesenheit und Spielzeit nachtragen).","erinnerung");return}
     const hed=e.target.closest("[data-hed]");if(hed){const [t,id]=hed.dataset.hed.split("|"),x=(V.st["~h"+t]||[]).find((y)=>y.id===id);if(x){hSel=new Set([t]);hEdit={t,id};V.render();q("#slx",el).value=x.text||"";q("#slb",el).value=x.bis||"";q("#slv",el).value=x.ab||"";q("#sla",el).checked=x.ack!==false;q("#slsend",el).textContent="Änderung speichern";q("#slcan",el).hidden=false;q("#slx",el).focus()}return}
     const hdl=e.target.closest("[data-hdel]");if(hdl){if(!hdl.dataset.arm){hdl.dataset.arm="1";hdl.textContent="Sicher?";return}const [t,id]=hdl.dataset.hdel.split("|");try{await V.fs().doc(t+"__vhinweise/"+id).delete();V.log("Hinweis gelöscht",t)}catch(x){}return}
@@ -5749,7 +5754,7 @@ const timeOk=(a,b)=>V.min(a)!=null&&V.min(b)!=null&&V.min(a)<V.min(b);
 const dateOk=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||"");
 
 /* ============ Platzbelegung ============ */
-let pAusSrc="",pGroup=null,pDay=null,pEdit=null,pEditDay=null,pF=null,pMsg="",pMsgK="ok",pMode="woche",pFilt="alle",pSel=new Set();
+let pAusSrc="",pGroup=null,pDay=null,pEdit=null,pEditDay=null,pF=null,pMsg="",pMsgK="ok",pMode="woche",pFilt="plaetze",pSel=new Set();
 const PXM=1.05;
 const planOn=(s,date)=>{if(!s.pid)return true;const P=V.plan||{};if(P.aktiv)return s.pid===P.aktiv;const pl=(P.plans||[]).find((x)=>x.id===s.pid);return !pl||((!pl.von||date>=pl.von)&&(!pl.bis||date<=pl.bis))};
 const sameK=(a,b)=>!a.datum&&!b.datum&&a.tid===b.tid&&a.art===b.art&&a.platz===b.platz&&a.von===b.von&&a.bis===b.bis&&(a.txt||"")===(b.txt||"")&&(a.pid||"")===(b.pid||"")&&JSON.stringify(a.teil||[])===JSON.stringify(b.teil||[])&&!!a.teilen===!!b.teilen&&(a.gv||"")===(b.gv||"")&&(a.gb||"")===(b.gb||"");
@@ -5814,11 +5819,11 @@ function gridHtml(M,o){
   let lines="";for(let m=M.f;m<=M.t;m+=60)lines+='<div class="vgl" style="top:'+((m-M.f)*PXM)+'px">'+V.hm(m)+'</div>';
   g+='<div class="vgc" style="height:'+H+'px;border-left:0">'+lines+'</div>';
   M.days.forEach((d)=>{
-    g+='<div class="vgc" style="height:'+H+'px">';for(let m=M.f;m<=M.t;m+=60)g+='<div class="vgl" style="top:'+((m-M.f)*PXM)+'px"></div>';
+    g+='<div class="vgc" style="height:'+H+'px">';for(let m=M.f;m<=M.t;m+=30)g+='<div class="vgl'+((m-M.f)%60?" h":"")+'" style="top:'+((m-M.f)*PXM)+'px"></div>';
     for(let c=1;c<M.NC;c++){const strong=M.groups.some((x)=>x.off===c);g+='<div class="vqv" style="left:'+(c/M.NC*100)+'%;'+(strong?"border-left-style:solid":"")+'"></div>'}
     d.items.forEach((it)=>{const s=it.s,c=V.col(s.tid),w=(it.c1-it.c0+1)/M.NC*100/it.nl,left=it.c0/M.NC*100+it.lane*w,kb=s.art==="Training"?stdK(s.tid,d.date):"",
         sm=[kb?"Kabine "+kb:"",s.art&&s.art!=="Training"?s.art:"",s.abgesagt?"abgesagt, frei":"",s.txt||""].filter(Boolean).join(" · ");
-      g+='<div class="vwb'+(o.ed?" ed":"")+(o.clashes&&o.clashes.has(s.id)?" clash":"")+(s.abgesagt?" frei":"")+'" data-s="'+E(s.id)+'" data-sd="'+(o.tag?d.date:"")+'" style="top:'+((it.a-M.f)*PXM)+'px;left:calc('+left+'% + 2px);right:calc('+(100-left-w)+'% + 2px);height:'+Math.max(26,(it.b-it.a)*PXM-2)+'px;background:'+(s.abgesagt?"transparent":c.bg)+';border-color:'+c.bd+'"><b>'+E(teamName(s.tid))+'</b> '+E(s.von)+'–'+E(s.bis)+(sm?'<small>'+E(sm)+'</small>':"")+'</div>'});
+      g+='<div class="vwb'+(o.ed?" ed":"")+(o.clashes&&o.clashes.has(s.id)?" clash":"")+(s.abgesagt?" frei":"")+'" title="'+E(teamName(s.tid)+" "+s.von+"–"+s.bis)+'" data-s="'+E(s.id)+'" data-sd="'+(o.tag?d.date:"")+'" style="top:'+((it.a-M.f)*PXM)+'px;left:calc('+left+'% + 2px);right:calc('+(100-left-w)+'% + 2px);height:'+Math.max(26,(it.b-it.a)*PXM-2)+'px;background:'+(s.abgesagt?"transparent":c.bg)+';border-color:'+c.bd+'"><b>'+E(teamName(s.tid))+'</b>'+(sm?'<small>'+E(sm)+'</small>':"")+'</div>'});
     g+='</div>'});
   return g+'</div></div>';
 }
@@ -5992,16 +5997,23 @@ async function exportWeek(el){
       g.textAlign="left"});
     /* Raster */
     g.lineWidth=1;g.font="18px sans-serif";g.fillStyle="#777";
-    for(let t=M.f;t<=M.t;t+=60){const y=y0+(t-M.f)*ph;g.strokeStyle="#e0e0e0";g.beginPath();g.moveTo(x0,y);g.lineTo(xe,y);g.stroke();g.fillText(V.hm(t),44,y+6)}
+    for(let t=M.f;t<=M.t;t+=60){const y=y0+(t-M.f)*ph;g.strokeStyle="#e0e0e0";g.beginPath();g.moveTo(x0,y);g.lineTo(xe,y);g.stroke();g.fillText(V.hm(t),44,y+6);if(t+30<=M.t){const y2=y+30*ph;g.save();g.setLineDash([2,4]);g.strokeStyle="#e6e8ec";g.beginPath();g.moveTo(x0,y2);g.lineTo(xe,y2);g.stroke();g.restore()}}
     for(let i=0;i<5;i++)for(let c=0;c<M.NC;c++){const x=x0+i*cw+c*colw,strong=c===0||M.groups.some((gr)=>gr.off===c);g.strokeStyle=strong?(c===0?"#9ca3af":"#cbd5e1"):"#eceff3";g.setLineDash(strong?[]:[4,4]);g.beginPath();g.moveTo(x,c===0?150:150+hDay);g.lineTo(x,yb);g.stroke()}
     g.setLineDash([]);g.strokeStyle="#9ca3af";g.beginPath();g.moveTo(xe,150);g.lineTo(xe,yb);g.stroke();g.beginPath();g.moveTo(x0,yb);g.lineTo(xe,yb);g.stroke();
     /* Einträge */
     M.days.forEach((d,i)=>{d.items.forEach((it)=>{const s=it.s,c=V.col(s.tid),w=(it.c1-it.c0+1)*colw/it.nl,x=x0+i*cw+it.c0*colw+it.lane*w+2,y=y0+(it.a-M.f)*ph+1,bw=w-4,bh=Math.max(34,(it.b-it.a)*ph-3),kb=s.art==="Training"?stdK(s.tid,d.date):"";
       rr(g,x,y,bw,bh,9);g.fillStyle="#fff";g.fill();g.fillStyle=c.bg;g.fill();g.strokeStyle=c.bd;g.lineWidth=2;g.stroke();
-      g.fillStyle="#111";const big=bw>=90,nar=bw<62;g.font="bold "+(big?19:nar?14:15)+"px sans-serif";g.fillText(teamName(s.tid),x+(nar?5:7),y+(big?24:19),bw-8);
-      g.fillStyle="#333";g.font=(big?16:nar?12:13)+"px sans-serif";
-      if(nar){if(bh>40){g.fillText(s.von,x+5,y+34,bw-8);g.fillText("–"+s.bis,x+5,y+48,bw-8)}if(kb&&bh>66)g.fillText("K"+kb,x+5,y+64,bw-8)}
-      else{if(bh>44)g.fillText(s.von+"–"+s.bis,x+7,y+(big?44:36),bw-12);const z=[kb?"Kabine "+kb:"",s.art&&s.art!=="Training"?s.art:""].filter(Boolean).join(" · ");if(z&&bh>64)g.fillText(z,x+7,y+(big?64:52),bw-12)}})});
+      g.fillStyle="#111";const nm=teamName(s.tid);let fs=bw>=90?22:bw>=62?19:16;g.font="bold "+fs+"px sans-serif";
+      while(fs>12&&g.measureText(nm).width>bw-8){fs--;g.font="bold "+fs+"px sans-serif"}
+      let used=0;
+      if(g.measureText(nm).width<=bw-8){g.fillText(nm,x+5,y+fs+4);used=fs+8}
+      else{/* zu schmal: Zeichen untereinander, damit die Mannschaft immer lesbar bleibt */
+        g.font="bold 15px sans-serif";const lh=15,maxL=Math.max(1,Math.floor((bh-6)/lh)),per=Math.max(1,Math.floor((bw-6)/g.measureText("W").width)),lines=[];
+        for(let k=0;k<nm.length;k+=per)lines.push(nm.slice(k,k+per));
+        lines.slice(0,maxL).forEach((l,k)=>g.fillText(l,x+4,y+14+k*lh));used=bh}
+      g.fillStyle="#333";g.font=(bw>=90?15:13)+"px sans-serif";
+      const z=[kb?"Kabine "+kb:"",s.art&&s.art!=="Training"?s.art:""].filter(Boolean).join(" · ");
+      if(z&&bw>=62&&bh>used+12)g.fillText(z,x+5,y+used+10,bw-10)})});
     /* Legende */
     let lx=50;g.font="17px sans-serif";g.fillStyle="#555";g.fillText("Mannschaften:",lx,H2-68);lx+=130;
     M.teams.forEach((t)=>{const c=V.col(t),n=teamName(t),tw=g.measureText(n).width+26;rr(g,lx,H2-86,tw,26,8);g.fillStyle=c.bg;g.fill();g.strokeStyle=c.bd;g.lineWidth=1.5;g.stroke();g.fillStyle="#111";g.fillText(n,lx+13,H2-67);lx+=tw+8});
@@ -6196,8 +6208,10 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   const teams=V.teams().filter((t)=>t.aktiv!==false),arten=V.arten(),bs=V.bereiche(),adm=V.isAdmin();
   if(adm&&!arten.some((x)=>x.id==="platzwart")&&!W.__pwMig){W.__pwMig=1;V.saveVerein({arten:arten.concat([{id:"platzwart",name:"Platzwart",rechte:[],gl:["plan"]}])}).then(()=>V.render()).catch(()=>{})}
   let h='<h2>Personen &amp; Rechte</h2><p class="sub note">Zwei Teile: oben die Personen, darunter die Rollen mit ihren Berechtigungen. Wer darf die App öffnen und was darf er in welcher Mannschaft? Die Person meldet sich mit genau dieser E-Mail-Adresse an (Google oder E-Mail). Änderungen gelten beim nächsten Öffnen der App.</p>';
+  if(W.__VOWNER){const other=(mem||[]).some((m)=>m.rolle==="admin"&&m.id!==(W.__VME||{}).email);
+    h+='<div class="card vc"><h3>Besitzer der App</h3>'+(W.__VFREI?'<p class="note">Du hast deine Besitzerrechte abgegeben und arbeitest jetzt mit der Rolle, die dir ein Administrator gegeben hat.</p><button class="btn" id="obk">Besitzerrechte zurücknehmen</button>':'<p class="note">Du bist der Besitzer. Du bist immer Administrator und kein anderer Administrator kann dir das wegnehmen. Du selbst kannst deine Administratorrechte abgeben, zum Beispiel wenn eine andere Person die Verwaltung übernimmt. Du kannst sie jederzeit wieder zurücknehmen.</p>'+(other?'<button class="btn" id="oabg">Meine Administratorrechte abgeben</button>':'<p class="note"><b>Zum Abgeben braucht es einen zweiten Administrator.</b> Lege ihn unten bei „Person hinzufügen“ mit der Rolle Administrator an.</p>'))+'<div class="vmsg" id="omsg"></div></div>'}
   h+='<div class="card vc"><div class="vhd"><h3>Personen</h3>'+(pe?'':'<button class="btn" id="pnew" type="button">＋ Person hinzufügen</button>')+'</div><div class="tw"><table class="vt" id="vpt"><thead><tr><th>Person</th><th>Rolle und Zuordnung</th><th>Aktion</th></tr></thead><tbody>';
-  h+='<tr><td colspan="3" class="note">Fest eingetragene Besitzer (Administratoren) stehen in den Zugriffsregeln und sind hier nicht aufgeführt. Sie können nicht entfernt werden.</td></tr>';
+  h+='<tr><td colspan="3" class="note">Der Besitzer und fest eingetragene Administratoren stehen in den Zugriffsregeln und sind hier nicht aufgeführt. Du kannst weitere Personen zu Administratoren machen (Rolle „Administrator“); den Besitzer kann niemand entfernen.</td></tr>';
   (mem||[]).forEach((m)=>{const ed=mayEdit(m);
     h+='<tr data-m="'+E(m.id)+'"><td><b>'+E(m.name||"–")+'</b><div class="note">'+E(m.id)+'</div></td><td style="white-space:normal">'+E(summary(m))+'</td><td>'+(ed?'<button class="btn" data-ed="'+E(m.id)+'">Bearbeiten</button> <button class="btn" data-md="'+E(m.id)+'">Entfernen</button>':'<span class="note">nur Administrator</span>')+'</td></tr>'});
   if(mem&&!mem.length)h+='<tr><td colspan="3" class="note">Noch keine weiteren Personen.</td></tr>';
@@ -6273,6 +6287,8 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
       const doc={email:pe.email,name:pe.name,rolle:pe.rolle,zu:pe.rolle==="team"?pe.zu:[],tr:ex.tr,g:ex.g,kader:pe.rolle==="team"?pe.kader:{},am:new Date().toISOString()};
       try{await V.fs().doc("mitglieder/"+pe.email).set(doc);V.log((pe.neu?"Person hinzugefügt: ":"Person geändert: ")+pe.email);pe=null;msg("Gespeichert. Gilt beim nächsten Öffnen der App durch die Person.");V.render()}catch(x){pm("Das konnte nicht gespeichert werden (fehlende Berechtigung?).","er")}
       return}
+    if(t.id==="oabg"){if(!t.dataset.arm){t.dataset.arm="1";t.textContent="Wirklich abgeben? Dann hast du keine Administratorrechte mehr";return}try{await V.fs().doc("ownercheck/frei").set({at:new Date().toISOString()});V.log("Besitzer hat Administratorrechte abgegeben");location.reload()}catch(x){const o=q("#omsg",el);if(o){o.textContent="Das hat nicht geklappt.";o.className="vmsg er"}}return}
+    if(t.id==="obk"){try{await V.fs().doc("ownercheck/frei").delete();location.reload()}catch(x){const o=q("#omsg",el);if(o){o.textContent="Das hat nicht geklappt.";o.className="vmsg er"}}return}
     const md=t.closest("[data-md]");if(md){if(!md.dataset.arm){md.dataset.arm="1";md.textContent="Wirklich entfernen?";return}try{await V.fs().doc("mitglieder/"+md.dataset.md).delete();V.log("Person entfernt: "+md.dataset.md);msg("Entfernt. Die Person kommt ab sofort nicht mehr hinein.")}catch(x){msg("Das konnte nicht gespeichert werden.","er")}return}
     if(t.id==="anewb"){const r=q("#anewrow",el);if(r){r.hidden=false;const i=q("#anew",el);if(i)i.focus()}return}
     if(t.id==="areset"){if(!t.dataset.arm){t.dataset.arm="1";t.textContent="Wirklich zurücksetzen?";return}if(await saveArten(JSON.parse(JSON.stringify(W.__ARTEN_STD||[])),"Rollen auf Standard zurückgesetzt"))V.render();return}
@@ -6285,7 +6301,8 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
 
 /* ---------- Einstellungen des Vereins (Name, Saison, Logo) ---------- */
 let sMsg="",sMsgK="ok",sLogo=null,kcD=null,lkxHome=null,vaSel=new Set(),vaRole="admin";
-const lkxPark=()=>{const n=document.getElementById("lkx");if(n&&lkxHome&&lkxHome.parentNode&&!n.parentNode.contains(lkxHome))lkxHome.parentNode.insertBefore(n,lkxHome)};
+let lkpHome=null;
+const lkxPark=()=>{[["lkx",lkxHome],["lkp",lkpHome]].forEach(([id,hm])=>{const n=document.getElementById(id);if(n&&hm&&hm.parentNode&&!n.parentNode.contains(hm))hm.parentNode.insertBefore(n,hm);if(id==="lkp"){n.style.marginTop="12px";n.style.marginBottom=""}})};
 const shrinkLogo=(file)=>new Promise((res)=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const sc=Math.min(1,400/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/png"))};im.onerror=()=>res(null);im.src=u});
 V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
   if(V.typing())return;
@@ -6294,7 +6311,11 @@ V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
   {const dz=W.__dz,cur=dz?dz.get():"ruhig",ACCN=(()=>{const e=document.getElementById("dzacc");return e?Array.from(e.options).map((o)=>[o.value,o.textContent]):[["","Standard"]]})(),GLN=(()=>{const e=document.getElementById("dzgl");return e?Array.from(e.options).map((o)=>[o.value,o.textContent]):[["std","Standard"]]})(),ac=(document.getElementById("dzacc")||{}).value||"",gl=(document.getElementById("dzgl")||{}).value||"std",th=(document.getElementById("th")||{}).value||"";
     const op=(L,v)=>L.map((x)=>'<option value="'+E(x[0])+'"'+(x[0]===v?" selected":"")+'>'+E(x[1])+'</option>').join("");
     h+='<div class="card vc"><h3>Design und Darstellung</h3><div class="note" style="margin-bottom:8px">Gilt für dein Konto auf allen Seiten – du musst dafür in keine Mannschaft wechseln.</div><div class="vrow"><label>Design<select id="vdz_app">'+op([["ruhig","Klar & ruhig"],["glas","Liquid Glass"]],cur)+'</select></label><label>Farbe<select id="vdz_acc">'+op(ACCN,ac)+'</select></label><label>Glas-Transparenz<select id="vdz_gl"'+(cur==="glas"?"":" disabled")+'>'+op(GLN,gl)+'</select></label><label>Darstellung<select id="vdz_th">'+op([["","Automatisch"],["light","Hell"],["dark","Dunkel"]],th)+'</select></label></div></div>'}
-  if(V.isAdmin())h+='<div class="card vc"><h3>Externe Links (nur ansehen)</h3><div class="note" style="margin-bottom:8px">Vollansicht, Struktur (anonym) und Demo kann nur der Administrator anlegen. Die Links gelten für eine Mannschaft – wähle sie hier. Ein Link zeigt immer die Ansicht der Mannschaft; wie die App für andere Rollen aussieht, siehst du unten bei „Ansicht als Rolle“. Links nur für die Terminpläne findest du bei der jeweiligen Mannschaft.</div><div class="vrow"><label>Links für Mannschaft<select id="vlk_t">'+V.teams().filter((t)=>t.aktiv!==false).map((t)=>'<option value="'+E(t.id)+'"'+(t.id===W.__TID?" selected":"")+'>'+E(t.name+(t.ak?" ("+t.ak+")":""))+'</option>').join("")+'</select></label></div><div id="vlkx"></div></div>';
+  if(V.isAdmin()){const RO=W.__DEMO_ROLLEN||{},dl=(v.demoLinks||[]),url=(r)=>(W.__WEB_BASE0||location.href.split("#")[0])+"#demo:"+r,ropt=(sel)=>Object.keys(RO).map((k)=>'<option value="'+E(k)+'"'+(k===sel?" selected":"")+'>'+E(RO[k].n)+'</option>').join("");
+    h+='<div class="card vc"><h3>Demo-Links zum Verschicken</h3><div class="note" style="margin-bottom:8px">Für Vorführungen: Du legst einen Link an und wählst, welche Rolle er darstellt (zum Beispiel Trainer, Jugendleiter oder Administrator). Wer den Link öffnet, sieht die ganze App wie diese Rolle und kann sich selbst durchklicken, auf jedem Gerät, ohne Anmeldung. <b>Es sind ausschließlich erfundene Beispieldaten</b> (erfundene Namen und Vereine). Eure echten Daten sind nicht erreichbar, nichts wird gespeichert, und ein Neuladen setzt alles zurück.</div>'
+    +(dl.length?dl.map((x,i)=>'<div class="vrow" style="align-items:center;border-top:1px solid var(--ln);padding-top:8px"><span style="flex:1;min-width:150px"><b>'+E(x.name||"Demo")+'</b><div class="note">'+E((RO[x.rolle]||{}).n||x.rolle)+'</div></span><button class="btn" data-dlc="'+i+'">Link kopieren</button><a class="btn" href="'+E(url(x.rolle))+'" target="_blank" rel="noopener">Ansehen</a><button class="btn" data-dld="'+i+'">Löschen</button></div>').join(""):'<div class="note">Noch kein Demo-Link angelegt.</div>')
+    +'<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px;margin-top:8px"><label>Bezeichnung (nur für dich)<input id="dl_n" maxlength="40" placeholder="z. B. Vorstand Vorführung" style="min-width:200px"></label><label>Stellt diese Rolle dar<select id="dl_r">'+ropt("trainer")+'</select></label><button class="btn" id="dl_add" type="button">Link anlegen</button></div><div class="vmsg" id="dl_m"></div></div>'}
+  if(V.isAdmin())h+='<div class="card vc"><h3>Externe Links (nur ansehen)</h3><div class="note" style="margin-bottom:8px">Vollansicht, Struktur (anonym) und Demo kann nur der Administrator anlegen. Die Links gelten für eine Mannschaft – wähle sie hier. Diese Links zeigen die echten Daten einer Mannschaft (nur ansehen). Für Vorführungen mit der ganzen App nimm die Demo-Links oben. Links nur für die Terminpläne findest du bei der jeweiligen Mannschaft.</div><div class="vrow"><label>Links für Mannschaft<select id="vlk_t">'+V.teams().filter((t)=>t.aktiv!==false).map((t)=>'<option value="'+E(t.id)+'"'+(t.id===W.__TID?" selected":"")+'>'+E(t.name+(t.ak?" ("+t.ak+")":""))+'</option>').join("")+'</select></label></div><div id="vlkx"></div></div>';
   if(V.isAdmin()){const arts=V.arten().filter((x)=>x.id!=="platzwart"),tms=V.teams().filter((t)=>t.aktiv!==false);
     h+='<div class="card vc"><h3>Ansicht als Rolle (Vorschau)</h3><div class="note" style="margin-bottom:8px">Zeigt dir die App so, wie sie die gewählte Rolle sieht – zum Testen, für Vorführungen oder einen Pitch. Du bleibst dabei Administrator; oben im Menü beendest du die Vorschau mit einem Klick. Verschickbare Links für einzelne Rollen kommen in einer späteren Stufe (der bestehende „Demo“-Link je Mannschaft zeigt schon Zufallsdaten ohne Anmeldung).</div>'
      +'<div class="vrow"><label>Rolle<select id="va_r"><option value="admin">Administrator</option><option value="jugendleiter"'+(vaRole==="jugendleiter"?" selected":"")+'>Jugendleitung</option>'+arts.map((x)=>'<option value="a:'+E(x.id)+'"'+(vaRole==="a:"+x.id?" selected":"")+'>'+E(x.name)+'</option>').join("")+'</select></label></div><div class="vrow"><span class="note">Für welche Mannschaften (mehrere möglich):</span><span class="vch'+(!vaSel.size?" on":"")+'" data-vaa="1" role="button" tabindex="0">Alle Mannschaften</span>'+tms.map((t)=>'<span class="vch'+(vaSel.has(t.id)?" on":"")+'" data-vat="'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join("")+'</div><div class="vrow"><button class="btn" id="va_go">Vorschau starten</button></div></div>'}
@@ -6308,11 +6329,17 @@ V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
   h+='<div class="card vc"><h3>Weitere Einstellungen</h3><div class="note">Erinnerungs- und Ausgrau-Fristen findest du unter <b>Mannschaften</b>, die Aufbewahrungsfrist für ausgeschiedene Spieler unter <b>Datenschutz</b>.</div></div>';
   h+='<div class="vmsg '+sMsgK+'" id="svm">'+E(sMsg)+'</div>';
   lkxPark();el.innerHTML=h;
-  {const n=document.getElementById("lkx"),h2=q("#vlkx",el);if(n&&h2){if(!lkxHome){const ph=document.createComment("lkx");n.parentNode.insertBefore(ph,n);lkxHome=ph}h2.appendChild(n);try{window.renderLinks&&window.renderLinks()}catch(x){}}}
+  {const n=document.getElementById("lkx"),np=document.getElementById("lkp"),h2=q("#vlkx",el);if(n&&h2){if(!lkxHome){const ph=document.createComment("lkx");n.parentNode.insertBefore(ph,n);lkxHome=ph}
+    if(np&&!lkpHome){const ph=document.createComment("lkp");np.parentNode.insertBefore(ph,np);lkpHome=ph}
+    if(np){np.style.marginTop="0";np.style.marginBottom="12px";h2.appendChild(np)}h2.appendChild(n);try{window.renderLinks&&window.renderLinks()}catch(x){}}}
   const msg=(t,k)=>{sMsg=t;sMsgK=k||"ok";const m=q("#svm",el);if(m){m.textContent=t;m.className="vmsg "+sMsgK}};
   const saveLogo=async(logoVal,txt)=>{try{const nv=await V.saveVerein({logo:logoVal});V.log(txt);sLogo=null;msg("Logo gespeichert. Es gilt sofort überall.");V.render();try{const i=document.querySelector("#vnav .vlogo img");if(i)i.src=W.__CLUBLOGO}catch(x){}try{if(typeof renderLogo==="function")renderLogo()}catch(x){}}catch(x){msg("Das konnte nicht gespeichert werden.","er")}};
   el.onclick=async(e)=>{
     const t=e.target;
+    {const dm=(x,k)=>{const o=q("#dl_m",el);if(o){o.textContent=x;o.className="vmsg "+(k||"ok")}},dl=(v.demoLinks||[]).slice(),urlOf=(r)=>(W.__WEB_BASE0||location.href.split("#")[0])+"#demo:"+r;
+      if(t.id==="dl_add"){const r=q("#dl_r",el).value,n=q("#dl_n",el).value.trim()||((W.__DEMO_ROLLEN||{})[r]||{}).n||"Demo";dl.push({id:V.id("dl"),name:n,rolle:r});try{await V.saveVerein({demoLinks:dl});V.log("Demo-Link angelegt: "+n);V.render()}catch(x){dm("Das hat nicht geklappt.","er")}return}
+      const dd=t.closest("[data-dld]");if(dd){if(!dd.dataset.arm){dd.dataset.arm="1";dd.textContent="Sicher?";return}dl.splice(+dd.dataset.dld,1);try{await V.saveVerein({demoLinks:dl});V.render()}catch(x){dm("Das hat nicht geklappt.","er")}return}
+      const dc=t.closest("[data-dlc]");if(dc){const u=urlOf(dl[+dc.dataset.dlc].rolle);try{await navigator.clipboard.writeText(u);dc.textContent="Kopiert ✓"}catch(x){dm(u)}return}}
     if(t.id==="sv_save"){const n=q("#sv_n",el).value.trim(),s=q("#sv_s",el).value.trim();if(!n){msg("Bitte einen Vereinsnamen eintragen.","er");return}try{await V.saveVerein({name:n,saison:s||v.saison});V.log("Vereinsname/Saison geändert");msg("Gespeichert.");V.render()}catch(x){msg("Das konnte nicht gespeichert werden.","er")}return}
     const kcRead=()=>{el.querySelectorAll("[data-kct]").forEach((x)=>{kcD[+x.dataset.kct].titel=x.value});el.querySelectorAll("[data-kcz]").forEach((x)=>{kcD[+x.dataset.kcz].zeilen=x.value})};
     const kca=t.closest("[data-kca]");if(kca){kcRead();kcD[+kca.dataset.kca].fuer={alle:true};V.render();return}
