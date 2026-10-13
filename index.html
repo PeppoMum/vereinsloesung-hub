@@ -276,6 +276,7 @@ html[data-design="ruhig"][data-theme="dark"]{--onac:#0f1311}html[data-design="gl
 <div class="gr" style="margin-top:0"><div class="card"><h3>Saison</h3><label class="note">Saison (z. B. 2026/27)<br><input id="esa" style="width:120px" autocomplete="off"></label> <label class="note" style="margin-left:12px">Mannschaft (z. B. U13)<br><input id="emn" style="width:90px" autocomplete="off"></label><p class="note" id="emsg" style="margin:8px 0 0">Die Saison bestimmt die zwölf Monate im Bereich Training (Juli bis Juni).</p></div>
 <div class="card"><h3>Zählende Abwesenheiten</h3><p class="note" style="margin-top:0">Diese Status zählen bei der gewichteten Trainingsbeteiligung als Fehlen. Die übrigen werden nicht gezählt.</p><div id="ezl"></div></div></div>
 <div class="card" id="fgcard" style="margin-top:12px"><h3>Farbgrenzen</h3><p class="note" style="margin-top:0">Ab welchem Wert die Farben Rot, Orange, Gelb und Grün erscheinen – in der Saisonübersicht, im Profil, in den Diagrammen und in den Exporten. Die Warnung ⚠ bei der Spielzeit gilt unter der Rot-Grenze. Voreinstellung: Beteiligung 80 / 85 / 90, Spielzeit 50 / 60 / 70.</p><div id="fgbox"></div><div class="bar" style="margin:10px 0 0"><button class="btn" id="fgreset">Voreinstellung wiederherstellen</button><span class="note" id="fgmsg"></span></div></div>
+<div class="card" style="margin-top:12px"><h3>Spielsystem der Mannschaft</h3><p class="note" style="margin-top:0">Vorbelegt nach Altersklasse (ab U14 11 gegen 11, D-Jugend 9 gegen 9, E-Jugend 7 gegen 7, F-Jugend TwinGames, Bambini 5 gegen 5). Hier stellst du ein, was bei dieser Mannschaft Standard ist und was in der Meisterschaft gespielt wird.</p><div class="grid"><label class="note">Standard (Testspiele)<br><select id="esy1"><option value="5">5 gegen 5</option><option value="7">7 gegen 7</option><option value="9">9 gegen 9</option><option value="11">11 gegen 11</option><option value="Twin">TwinGames</option></select></label><label class="note">Meisterschaft<br><select id="esy2"><option value="">keine Meisterschaft</option><option value="5">5 gegen 5</option><option value="7">7 gegen 7</option><option value="9">9 gegen 9</option><option value="11">11 gegen 11</option></select></label><button class="btn" id="esyr" style="align-self:flex-end" title="Spielarten und Spielformen wieder aus dem Spielsystem ableiten">Spielarten und Spielformen zurücksetzen</button></div></div>
 <div class="card" style="margin-top:12px"><h3>Spielformen</h3><p class="note" style="margin-top:0">Die Voreinstellung „gewichtet" gilt für neue Spiele. Bestehende Spiele behalten ihre Gewichtung.</p><div class="tw"><table id="efm"></table></div>
 <div class="bar" style="margin:12px 0 0"><label>Kürzel <input id="efk" style="width:90px" autocomplete="off"></label><label>Name <input id="efn" style="width:170px" autocomplete="off"></label><label><input type="checkbox" id="efg" checked> gewichtet</label><button class="btn" id="efa">＋ Spielform hinzufügen</button><span class="note" id="efm2"></span></div></div>
 <div class="card" style="margin-top:12px"><h3>Spielarten</h3><p class="note" style="margin-top:0">Jedes Spiel hat eine Spielart. „Gewertet“ bestimmt, ob das Ergebnis in der Bilanz zählt. Beim Anlegen eines Spiels werden Wertung, Spielform und Spielerzahl daraus vorbelegt und lassen sich pro Spiel ändern.</p><div class="tw"><table id="ear"></table></div>
@@ -627,11 +628,13 @@ function renderTrain(){
   if(!D.ready){$("#tg").innerHTML='<tr><td class="empty" style="text-align:center">Daten werden geladen …</td></tr>';$("#tn").textContent="";return}
   if(!P.length){$("#tg").innerHTML='<tr><td class="empty" style="text-align:center">Noch keine Spieler. Unter „Stammdaten“ anlegen.</td></tr>';$("#tn").textContent="";return}
   const wd=(iso)=>["So","Mo","Di","Mi","Do","Fr","Sa"][new Date(iso+"T12:00:00").getDay()];
+  const allT=D.trainings.slice().sort((a,b)=>a.datum.localeCompare(b.datum)),td0=today(),pa0=allT.filter((t)=>t.datum<td0),fu0=allT.filter((t)=>t.datum>=td0),foc=[pa0[pa0.length-1],fu0[0]].filter(Boolean);
+  const cols=foc.map((t)=>({t,f:1})).concat(ts.map((t)=>({t}))),sepI=foc.length&&ts.length?foc.length:-1,bl=(i)=>i===sepI?' style="border-left:3px solid var(--mu)"':"";
   const zl0=(D.config&&D.config.zaehlendeAbwesenheiten)||{e:true,u:true,v:false,t:false},QS=P.map((p)=>U13.trainStats(p.id,ts,zl0,cm)),pl=(v,c)=>'<span class="pl'+(c?" p"+c:"")+'">'+pc(v)+"</span>";
-  let h='<tr><th>#</th><th style="text-align:left">Spieler</th>'+ts.map((t)=>"<th>"+wd(t.datum)+"<br>"+t.datum.slice(8)+"."+t.datum.slice(5,7)+'.<br><button class="rm" data-bwopen="'+t.id+'" title="Training bewerten" aria-label="Training bewerten">'+(typeof bwRated==="function"&&bwRated(t.id)?"⭐":"☆")+'</button><button class="rm'+(armed===t.id?" arm":"")+'" data-del="'+t.id+'" title="Training löschen">'+(armed===t.id?"Löschen?":"✕")+"</button></th>").join("")+'<th>Teilgen.</th><th title="Teilnahmequote gewichtet in diesem Monat">Quote gew.</th><th title="Teilnahmequote absolut in diesem Monat">Quote abs.</th></tr>';
-  h+=P.map((p,i)=>{const st=ts.map((t)=>(t.spieler||{})[p.id]||""),q=QS[i];return"<tr><td>"+esc(p.nr||"")+"</td><td>"+esc(nm(p))+"</td>"+st.map((c,j)=>'<td><button class="s '+(c||"o")+'" data-t="'+ts[j].id+'" data-p="'+p.id+'" aria-label="'+nm(p)+", "+ts[j].datum+'">'+(c==="K"?"k":c||"·")+"</button></td>").join("")+"<td>"+st.filter((c)=>c==="x"||c==="K").length+"/"+ts.length+"</td><td>"+pl(q.gewichtet,U13.farbeTraining(q.gewichtet))+"</td><td>"+pl(q.abs,0)+"</td></tr>"}).join("");
-  const av=(f)=>{const v=QS.map(f).filter((x)=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null},cnt=ts.map((t)=>{const a=anw(P,t);return[a.c,a.tot,a.f+"+"+a.g,a.k]});
-  h+='<tr style="font-weight:600"><td></td><td>Anwesend</td>'+cnt.map((c)=>'<td style="text-align:center;white-space:nowrap">'+'<span style="display:block;text-align:center">'+c[2]+"/"+c[1]+'</span><span style="display:block;height:1px;width:60%;margin:3px auto;background:var(--mu);opacity:.45"></span><span style="display:block;text-align:center">'+c[0]+"/"+c[1]+"</span></td>").join("")+'<td></td><td>Ø '+pc(av((q)=>q.gewichtet))+"</td><td>Ø "+pc(av((q)=>q.abs))+'</td></tr><tr><td></td><td class="note" style="font-weight:400">Quote</td>'+cnt.map((c)=>'<td style="text-align:center" class="note">'+(c[1]?Math.round(c[0]/c[1]*100)+" %":"–")+"</td>").join("")+"<td></td><td></td><td></td></tr>";
+  let h='<tr><th>#</th><th style="text-align:left">Spieler</th>'+cols.map((c,i)=>{const t=c.t;return "<th"+bl(i)+">"+(c.f?'<span style="color:var(--ac);font-weight:700">'+(t.datum<td0?"vorher":"nächstes")+"</span><br>":"")+wd(t.datum)+"<br>"+t.datum.slice(8)+"."+t.datum.slice(5,7)+'.<br><button class="rm" data-bwopen="'+t.id+'" title="Training bewerten" aria-label="Training bewerten">'+(typeof bwRated==="function"&&bwRated(t.id)?"⭐":"☆")+'</button><button class="rm'+(armed===t.id?" arm":"")+'" data-del="'+t.id+'" title="Training löschen">'+(armed===t.id?"Löschen?":"✕")+"</button></th>"}).join("")+'<th>Teilgen.</th><th title="Teilnahmequote gewichtet in diesem Monat">Quote gew.</th><th title="Teilnahmequote absolut in diesem Monat">Quote abs.</th></tr>';
+  h+=P.map((p,i)=>{const st=ts.map((t)=>(t.spieler||{})[p.id]||""),st2=cols.map((c)=>(c.t.spieler||{})[p.id]||""),q=QS[i];return"<tr><td>"+esc(p.nr||"")+"</td><td>"+esc(nm(p))+"</td>"+st2.map((c,j)=>'<td'+bl(j)+'><button class="s '+(c||"o")+'" data-t="'+cols[j].t.id+'" data-p="'+p.id+'" aria-label="'+nm(p)+", "+cols[j].t.datum+'">'+(c==="K"?"k":c||"·")+"</button></td>").join("")+"<td>"+st.filter((c)=>c==="x"||c==="K").length+"/"+ts.length+"</td><td>"+pl(q.gewichtet,U13.farbeTraining(q.gewichtet))+"</td><td>"+pl(q.abs,0)+"</td></tr>"}).join("");
+  const av=(f)=>{const v=QS.map(f).filter((x)=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null},cnt=cols.map((cc)=>{const t=cc.t,a=anw(P,t);return[a.c,a.tot,a.f+"+"+a.g,a.k]});
+  h+='<tr style="font-weight:600"><td></td><td>Anwesend</td>'+cnt.map((c,i)=>'<td style="text-align:center;white-space:nowrap'+(i===sepI?';border-left:3px solid var(--mu)':'')+'">'+'<span style="display:block;text-align:center">'+c[2]+"/"+c[1]+'</span><span style="display:block;height:1px;width:60%;margin:3px auto;background:var(--mu);opacity:.45"></span><span style="display:block;text-align:center">'+c[0]+"/"+c[1]+"</span></td>").join("")+'<td></td><td>Ø '+pc(av((q)=>q.gewichtet))+"</td><td>Ø "+pc(av((q)=>q.abs))+'</td></tr><tr><td></td><td class="note" style="font-weight:400">Quote</td>'+cnt.map((c,i)=>'<td style="text-align:center'+(i===sepI?';border-left:3px solid var(--mu)':'')+'" class="note">'+(c[1]?Math.round(c[0]/c[1]*100)+" %":"–")+"</td>").join("")+"<td></td><td></td><td></td></tr>";
   $("#tg").innerHTML=ts.length?h:'<tr><td class="empty" style="text-align:center">Noch keine Trainings in '+mname(cm)+'. Oben ein Datum wählen und „Training hinzufügen“.</td></tr>';
   $("#tn").textContent=ts.length?ts.length+" Trainingseinheiten in "+mname(cm)+". Neue Trainings sind zunächst für alle Spieler auf x gesetzt.":"";
 }
@@ -658,11 +661,19 @@ function syncSort(){const grp=VIEW==="sp"?"sp":VIEW==="tr"?"tr":"";[...$("#so").
 $("#vw").onclick=(e)=>{const b=e.target.closest("button");if(!b)return;VIEW=b.dataset.v;[...$("#vw").children].forEach((x)=>x.classList.toggle("on",x===b));syncSort();renderSaison()};
 /* ---------- Spiele ---------- */
 $("#l2").innerHTML=[["k","im Kader"],["t","abwesend"],["v","verletzt"],["n","nicht nominiert"]].map((a)=>'<i><span class="s '+a[0]+'" style="cursor:default">'+(a[0]==="t"?"a":a[0])+"</span>"+a[1]+"</i>").join("");
-const FORMS_DEFAULT=[{kuerzel:"9gg9",name:"9 gegen 9",gewichtet:true},{kuerzel:"Twin",name:"TwinGames",gewichtet:false},{kuerzel:"Turnier",name:"(Feld-)Turnier",gewichtet:true},{kuerzel:"Halle",name:"Hallenturnier",gewichtet:false},{kuerzel:"11gg11",name:"11 gegen 11",gewichtet:true}];
-const forms=()=>(D.config&&D.config.spielformen)||FORMS_DEFAULT;
+const FD={"5gg5":{kuerzel:"5gg5",name:"5 gegen 5",gewichtet:true},"7gg7":{kuerzel:"7gg7",name:"7 gegen 7",gewichtet:true},"9gg9":{kuerzel:"9gg9",name:"9 gegen 9",gewichtet:true},"11gg11":{kuerzel:"11gg11",name:"11 gegen 11",gewichtet:true},Twin:{kuerzel:"Twin",name:"TwinGames",gewichtet:false},Turnier:{kuerzel:"Turnier",name:"(Feld-)Turnier",gewichtet:true},Halle:{kuerzel:"Halle",name:"Hallenturnier",gewichtet:false},Frei:{kuerzel:"Frei",name:"Freie Größe (Testspiel)",gewichtet:true}};
+/* Spielsystem je Altersklasse: Standard (Testspiele) und Meisterschaft. Aus der Altersklasse vorbelegt, in den Einstellungen änderbar. */
+const ageN=()=>{const m=/U\s?(\d+)/i.exec((window.__TEAM&&window.__TEAM.ak)||(D.config&&D.config.mannschaft)||"U13");return m?+m[1]:13};
+const SYS=()=>{const c=D.config&&D.config.spielsys;if(c&&c.def)return{def:String(c.def),meister:c.meister==null?"":String(c.meister)};const n=ageN();return n>=14?{def:"11",meister:"11"}:n>=12?{def:"9",meister:"9"}:n>=10?{def:"7",meister:"7"}:n>=8?{def:"Twin",meister:""}:{def:"5",meister:""}};
+const sysForm=(x)=>x==="Twin"?"Twin":x?x+"gg"+x:"";
+function formsDefault(){const n=ageN(),k=n>=14?["11gg11","Turnier","Halle","Frei"]:n>=12?["9gg9","Twin","Turnier","Halle","11gg11","Frei"]:n>=10?["7gg7","9gg9","Twin","Turnier","Halle","Frei"]:["Twin","5gg5","7gg7","Turnier","Halle","Frei"];return k.map((x)=>FD[x])}
+const forms=()=>(D.config&&D.config.spielformen&&D.config.spielformen.length)?D.config.spielformen:formsDefault();
 const vidOk=(u)=>/^https?:\/\//i.test(u||""),vidIcon=(g)=>vidOk(g.video)?' <a href="'+esc(g.video)+'" target="_blank" rel="noopener noreferrer" title="Aufnahme öffnen" data-vid="1" style="text-decoration:none">🎥</a>':"";
-const ARTEN_DEFAULT=[{name:"Meisterschaft",gewertet:true,form:"9gg9",spielerzahl:9},{name:"Testspiel",gewertet:true,form:"9gg9",spielerzahl:9},{name:"Leistungsvergleich",gewertet:false,form:"9gg9",spielerzahl:9},{name:"Turnier",gewertet:true,form:"9gg9",spielerzahl:9},{name:"Hallenturnier",gewertet:true,form:"Halle"},{name:"TwinGame",gewertet:false,form:"Twin",spielerzahl:12,dauer:30}];
-const arten=()=>(D.config&&D.config.spielarten)||ARTEN_DEFAULT;
+function artenDefault(){const y=SYS(),n=ageN(),f=sysForm(y.def),z=y.def==="Twin"?12:+y.def,fr=n>=14,out=[];
+  if(y.meister)out.push({name:"Meisterschaft",gewertet:true,form:sysForm(y.meister),spielerzahl:+y.meister});
+  out.push({name:"Testspiel",gewertet:true,form:fr?"Frei":f,spielerzahl:fr?11:z},{name:"Leistungsvergleich",gewertet:false,form:fr?"Frei":f,spielerzahl:fr?11:z},{name:"Turnier",gewertet:true,form:fr?"Frei":f,spielerzahl:fr?11:z},{name:"Hallenturnier",gewertet:true,form:"Halle"});
+  if(!fr)out.push({name:"TwinGame",gewertet:false,form:"Twin",spielerzahl:12,dauer:30});return out}
+const arten=()=>(D.config&&D.config.spielarten&&D.config.spielarten.length)?D.config.spielarten:artenDefault();
 const artDauer=(a)=>+a.dauer>0?+a.dauer:/twin/i.test((a.form||"")+" "+(a.name||""))?30:0;
 const HAL={H:"Heim",A:"Auswärts",N:"Neutral"};
 const ergTag=(g)=>{const e=U13.ergebnis(g);return e?'<span class="s '+({S:"x",U:"e",N:"u"})[e.art]+'" style="cursor:default;width:auto;padding:0 8px">'+e.text+"</span>":(g.wertung?'<span class="note" title="Gewertet, aber ohne Ergebnis">offen</span>':'<span class="note">nicht gewertet</span>')};
@@ -712,7 +723,7 @@ function gFill(){
 }
 function openGame(id){
   const P=active(),old=id?D.spiele.find((g)=>g.id===id):null,nr=old?old.nr:Math.max(0,...D.spiele.map((g)=>g.nr))+1,last=D.spiele.slice().sort((a,b)=>b.nr-a.nr)[0];
-  const g=old||{id:"g"+nr,nr,datum:today(),gegner:"",art:"Testspiel",ha:"H",wertung:true,tore:null,gt:null,form:"9gg9",dauer:60,gewichtet:true,spielerzahl:9,spieler:{}};
+  const g=old||{id:"g"+nr,nr,datum:today(),gegner:"",art:"Testspiel",ha:"H",wertung:true,tore:null,gt:null,form:(arten().find((x)=>x.name==="Testspiel")||{}).form||"9gg9",dauer:60,gewichtet:true,spielerzahl:(arten().find((x)=>x.name==="Testspiel")||{}).spielerzahl||9,spieler:{}};
   gOpen=g.id;gArmed=false;
   $("#gd").hidden=false;
   $("#gd").innerHTML='<div class="card" style="margin-top:14px"><div class="bar"><b style="font-size:16px">'+(old?"Spiel "+g.nr+" · "+esc(g.gegner):"Neues Spiel (Nr. "+nr+")")+'</b><span style="flex:1"></span>'+(old?'<button class="btn" id="glv" title="Aufstellung, Ansprache, Skizzen, Live-Spielzeit und Notizblatt für diesen Spieltag">🏟 Spieltag</button><button class="btn" id="glvl" title="Direkt zur Live-Spielzeit-Erfassung">⏱ Live-Spielzeit</button><span class="note">A4-Export</span><div class="seg" id="xg1"><button data-f="png">PNG</button><button data-f="jpg">JPG</button><button data-f="pdf">PDF</button></div><button class="btn" id="gdel">Spiel löschen</button>':"")+'<button class="btn" id="gcl">Schließen</button><button class="btn" id="gsv" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button></div>'
@@ -1252,6 +1263,7 @@ let fArm=null,aArm=null;
 const zlNow=()=>({e:true,u:true,v:false,t:false,...((D.config&&D.config.zaehlendeAbwesenheiten)||{})});
 function renderSettings(){
   const root=$("#e");if(root.hidden===false&&root.contains(document.activeElement)&&document.activeElement.tagName==="INPUT"&&document.activeElement.type!=="checkbox")return;
+  {const y=SYS();if(document.activeElement!==$("#esy1"))$("#esy1").value=y.def;if(document.activeElement!==$("#esy2"))$("#esy2").value=y.meister}
   renderPos();renderStamm();renderArten();renderHints();renderFarben();
   $("#esa").value=(D.config&&D.config.saison)||"2026/27";if(document.activeElement!==$("#emn"))$("#emn").value=mann();
   const zl=zlNow();$("#ezl").innerHTML=["e","u","v","t"].map((k)=>'<label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" data-zl="'+k+'"'+(zl[k]?" checked":"")+'><span><b>'+k+"</b> "+ZL_LABEL[k]+"</span></label>").join("");
@@ -1278,8 +1290,10 @@ $("#e").addEventListener("click",(e)=>{
     m.textContent="";psave(posCfg().concat([n?{kuerzel:k,name:n,aktiv:true}:{kuerzel:k,aktiv:true}]));$("#epk").value=$("#epn").value=""}
 });
 const fmSave=(arr)=>save("config","main",{...(D.config||{}),spielformen:arr});
+$("#e").addEventListener("click",(e)=>{if(e.target.id==="esyr"){const n={...(D.config||{})};delete n.spielarten;delete n.spielformen;save("config","main",n)}});
 $("#e").addEventListener("change",(e)=>{
   const t=e.target;
+  if(t.id==="esy1"||t.id==="esy2"){const c=D.config||{},y={...SYS()};if(t.id==="esy1")y.def=t.value;else y.meister=t.value;const n={...c,spielsys:y};delete n.spielarten;delete n.spielformen;save("config","main",n);return}
   if(t.id==="emn"){const v=t.value.trim().slice(0,12);if(!v){t.value=mann();return}save("config","main",{...(D.config||{}),mannschaft:v});return}
   if(t.id==="esa"){const v=t.value.trim();if(!/^\d{4}\/\d{2}$/.test(v)){$("#emsg").textContent="Bitte die Saison im Format 2026/27 eingeben.";$("#emsg").className="note warn";t.value=(D.config&&D.config.saison)||"2026/27";return}$("#emsg").textContent="";save("config","main",{...(D.config||{}),saison:v});return}
   if(t.dataset.zl){const z=zlNow();z[t.dataset.zl]=t.checked;save("config","main",{...(D.config||{}),zaehlendeAbwesenheiten:z});return}
@@ -3066,7 +3080,7 @@ function initP(){const g=game();
   if(!P.a.x){const sp=(g&&g.spieler)||{};P.a.x=Object.keys(sp).filter((id)=>["t","v","n"].indexOf(sp[id]&&sp[id].status)>=0)}}
 
 /* ---------- Aufstellung ---------- */
-const FM={7:["1-2-3-1","1-3-2-1","1-2-2-2","1-3-1-2"],9:["1-3-4-1","1-4-2-2","1-3-3-2","1-3-2-3","1-4-3-1","1-2-4-2"],11:["1-4-4-2","1-4-3-3","1-4-2-3-1","1-3-5-2","1-4-1-4-1"]};
+const FM={5:["1-2-2","1-2-1-1","1-1-2-1","1-3-1"],7:["1-2-3-1","1-3-3","1-2-2-2","1-3-2-1"],9:["1-3-4-1","1-4-2-2","1-3-3-2","1-3-2-3","1-4-3-1","1-2-4-2"],11:["1-4-4-2","1-4-3-3","1-4-2-3-1","1-3-5-2","1-4-1-4-1","1-3-4-3","1-5-3-2","1-4-5-1","1-4-1-3-2"]};
 function nPl(){const g=game(),m=/(\d+)\s*g+\s*(\d+)/i.exec((g&&g.form)||""),f=m&&+m[1]===+m[2]?+m[1]:0,n=f||+(g&&g.spielerzahl)||9;return Math.max(2,Math.min(11,n))}
 const fmList=(n)=>FM[n]||(()=>{const r=n-1,a=Math.floor(r/3),b=Math.floor((r-a)/2);return["1-"+a+"-"+b+"-"+(r-a-b)]})();
 /* Reihen von hinten nach vorn; bei Viererkette stehen die Außenverteidiger etwas höher als die Innenverteidiger */
@@ -5463,7 +5477,8 @@ function syncTitles(){
 }
 /* Offene Hinweise der eigenen Mannschaft */
 V.hin=[];
-const hAct=(x)=>!x.erledigt&&(!x.bis||x.bis>=V.today());
+const hAct=(x)=>!x.erledigt&&(!x.bis||x.bis>=V.today())&&(!x.ab||x.ab<=V.today());
+let hSel=new Set();
 let hEdit=null;
 function subHinweise(){
   V.fs().collection(W.__TID+"__vhinweise").onSnapshot((s)=>{
@@ -5572,27 +5587,33 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
     if(need.length)h+=need.filter((t)=>hinT.some((x)=>x.id===t.id)).map((t)=>{const s=V.st[t.id],p=V.pflege(s),why=[];
       if(!s)why.push("noch keine Daten");else{if(p.art)why.push("zuletzt gepflegt "+V.pflegeTxt(p));if(s.fzeit>0&&s.fzeit<=2)why.push("Spielzeit niedrig ("+pcx(s.zeit)+")");if(s.fbet>0&&s.fbet<=2)why.push("Training niedrig ("+pcx(s.bet)+")");if(s.low)why.push(s.low+" Spieler mit zu wenig Spielzeit")}
       return '<div class="vrow"><b style="min-width:110px">'+E(V.tname(t.id))+'</b><span class="note" style="flex:1;min-width:200px">'+E(why.join(" · "))+'</span><button class="btn" data-rem="'+E(t.id)+'">Erinnern</button></div>'}).join("");
-    h+='<div class="vrow" style="margin-top:8px"><label>Mannschaft<select id="slt">'+hinT.map((t)=>'<option value="'+E(t.id)+'">'+E(V.tname(t.id))+'</option>').join("")+'</select></label><label style="flex:1;min-width:220px">Hinweis<input id="slx" maxlength="300" placeholder="z. B. Bitte die Spielzeit vom letzten Wochenende nachtragen"></label><label>angezeigt bis (optional)<input id="slb" type="date"></label><label style="flex-direction:row;align-items:center;gap:6px;align-self:flex-end"><input type="checkbox" id="sla"> muss als erledigt markiert werden</label><button class="btn" id="slsend" type="button" style="align-self:flex-end">Senden</button><button class="btn" id="slcan" type="button" style="align-self:flex-end" hidden>Abbrechen</button></div><div class="note">Der Hinweis erscheint bei den Trainern der Mannschaft oben im Menü und in der Übersicht. Ohne Haken ist er nur eine Info und verschwindet nach dem Datum (oder wenn du ihn löschst). Mit Haken müssen die Trainer ihn als erledigt markieren.</div><div class="vmsg" id="slm"></div>';
+    h+='<div class="vrow" style="margin-top:8px"><div style="flex:1 1 100%"><div class="note" style="margin-bottom:4px">An welche Mannschaften?</div><div id="slt">'+(hEdit?'':'<span class="vch'+(hinT.length&&hinT.every((t)=>hSel.has(t.id))?' on':'')+'" data-sta="1" role="button" tabindex="0">Alle Mannschaften</span>'+V.bereiche().filter((b)=>(b.teams||[]).some((id)=>hinT.some((t)=>t.id===id))).map((b)=>'<span class="vch" data-stb="'+E(b.id)+'" role="button" tabindex="0">Bereich '+E(b.name)+'</span>').join(""))+hinT.filter((t)=>!hEdit||hSel.has(t.id)).map((t)=>'<span class="vch'+(hSel.has(t.id)?' on':'')+'" data-st="'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join("")+'</div></div><label style="flex:1;min-width:220px">Hinweis<input id="slx" maxlength="300" placeholder="z. B. Bitte die Spielzeit vom letzten Wochenende nachtragen"></label><label>angezeigt ab (optional)<input id="slv" type="date"></label><label>angezeigt bis (optional)<input id="slb" type="date"></label><label style="flex-direction:row;align-items:center;gap:6px;align-self:flex-end"><input type="checkbox" id="sla"> muss als erledigt markiert werden</label><button class="btn" id="slsend" type="button" style="align-self:flex-end">Senden</button><button class="btn" id="slcan" type="button" style="align-self:flex-end" hidden>Abbrechen</button></div><div class="note">Der Hinweis erscheint bei den Trainern der Mannschaft oben im Menü und in der Übersicht. Ohne Haken ist er nur eine Info und verschwindet nach dem Datum (oder wenn du ihn löschst). Mit Haken müssen die Trainer ihn als erledigt markieren.</div><div class="vmsg" id="slm"></div>';
     const all=[];hinT.forEach((t)=>(V.st["~h"+t.id]||[]).forEach((x)=>all.push({...x,tid:t.id})));all.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
-    if(all.length)h+='<div class="tw" style="margin-top:6px"><table class="vt"><thead><tr><th>Datum</th><th>Mannschaft</th><th>Hinweis</th><th>Von</th><th>Gültig bis</th><th>Stand</th><th></th></tr></thead><tbody>'+all.slice(0,30).map((x)=>'<tr data-hr="'+E(x.tid+"|"+x.id)+'"><td>'+E(V.fdl(String(x.at||"").slice(0,10)))+'</td><td>'+E(V.tshort(x.tid))+'</td><td style="white-space:normal">'+E(x.text)+'</td><td class="note">'+E(x.von||"")+'</td><td class="note">'+(x.bis?E(V.fdl(x.bis)):"–")+'</td><td>'+(x.erledigt?'<span class="vbad g">erledigt</span>':(x.bis&&x.bis<V.today())?'<span class="vbad">abgelaufen</span>':x.ack===false?'<span class="vbad">Info</span>':'<span class="vbad o">offen</span>')+'</td><td style="white-space:nowrap"><button class="btn" data-hed="'+E(x.tid+"|"+x.id)+'">Bearbeiten</button> <button class="btn" data-hdel="'+E(x.tid+"|"+x.id)+'">Löschen</button></td></tr>').join("")+'</tbody></table></div>';
+    if(all.length)h+='<div class="tw" style="margin-top:6px"><table class="vt"><thead><tr><th>Datum</th><th>Mannschaft</th><th>Hinweis</th><th>Von</th><th>Gültig ab</th><th>Gültig bis</th><th>Stand</th><th></th></tr></thead><tbody>'+all.slice(0,30).map((x)=>'<tr data-hr="'+E(x.tid+"|"+x.id)+'"><td>'+E(V.fdl(String(x.at||"").slice(0,10)))+'</td><td>'+E(V.tshort(x.tid))+'</td><td style="white-space:normal">'+E(x.text)+'</td><td class="note">'+E(x.von||"")+'</td><td class="note">'+(x.ab?E(V.fdl(x.ab)):"–")+'</td><td class="note">'+(x.bis?E(V.fdl(x.bis)):"–")+'</td><td>'+(x.erledigt?'<span class="vbad g">erledigt</span>':(x.bis&&x.bis<V.today())?'<span class="vbad">abgelaufen</span>':x.ack===false?'<span class="vbad">Info</span>':'<span class="vbad o">offen</span>')+'</td><td style="white-space:nowrap"><button class="btn" data-hed="'+E(x.tid+"|"+x.id)+'">Bearbeiten</button> <button class="btn" data-hdel="'+E(x.tid+"|"+x.id)+'">Löschen</button></td></tr>').join("")+'</tbody></table></div>';
     h+='</div>';
     if(!hSub.length)hinT.forEach((t)=>{hSub.push(V.fs().collection(t.id+"__vhinweise").onSnapshot((s)=>{V.st["~h"+t.id]=s.docs.map((d)=>({id:d.id,...d.data()}));if(V.cur==="uebersicht"&&!V.typing())V.render()},()=>{}))});
   }
   const L=U13.grTexte("t"),L2=U13.grTexte("s");
   h+='<p class="note" style="margin-top:10px">Training = Beteiligung im Durchschnitt, Spielzeit = gewichteter Anteil. Farben: rot '+E(L[0])+' · orange '+E(L[1])+' · gelb '+E(L[2])+' · grün '+E(L[3])+' (Training); Spielzeit rot '+E(L2[0])+' … grün '+E(L2[3])+'. Mannschaften, die lange nicht gepflegt wurden, erscheinen ausgegraut (Einstellung unter „Mannschaften“).</p>';
   el.innerHTML=h;
-  const send=async(tid,text,art,o)=>{const m=q("#slm",el);o=o||{};try{await V.fs().doc(tid+"__vhinweise/"+V.id("h")).set({text,von:(W.__VME&&(W.__VME.name||W.__VME.email))||"",at:new Date().toISOString(),erledigt:false,art:art||"hinweis",ack:art==="erinnerung"?true:!!o.ack,...(o.bis?{bis:o.bis}:{})});V.log("Hinweis an "+V.tshort(tid),tid);if(m){m.className="vmsg ok";m.textContent="Gesendet an "+V.tshort(tid)+"."}return true}catch(e){if(m){m.className="vmsg er";m.textContent="Das hat nicht geklappt."}return false}};
+  const send=async(tid,text,art,o)=>{const m=q("#slm",el);o=o||{};try{await V.fs().doc(tid+"__vhinweise/"+V.id("h")).set({text,von:(W.__VME&&(W.__VME.name||W.__VME.email))||"",at:new Date().toISOString(),erledigt:false,art:art||"hinweis",ack:art==="erinnerung"?true:!!o.ack,...(o.bis?{bis:o.bis}:{}),...(o.ab?{ab:o.ab}:{})});V.log("Hinweis an "+V.tshort(tid),tid);if(m){m.className="vmsg ok";m.textContent="Gesendet an "+V.tshort(tid)+"."}return true}catch(e){if(m){m.className="vmsg er";m.textContent="Das hat nicht geklappt."}return false}};
   el.onclick=async(e)=>{
     const fb=e.target.closest("[data-f]");if(fb){ufilt=fb.dataset.f;try{localStorage.setItem("u13uf",ufilt)}catch(x){}V.render();return}
     const g=e.target.closest("[data-go]");if(g){if(g.dataset.go===W.__TID)V.go("mannschaft");else V.setTeam(g.dataset.go);return}
     const o=e.target.closest("[data-ok]");if(o){try{await V.fs().doc(W.__TID+"__vhinweise/"+o.dataset.ok).update({erledigt:true,erledigtAm:new Date().toISOString()})}catch(x){}return}
     const r=e.target.closest("[data-rem]");if(r){await send(r.dataset.rem,"Bitte die Daten der Mannschaft aktualisieren (Anwesenheit und Spielzeit nachtragen).","erinnerung");return}
-    const hed=e.target.closest("[data-hed]");if(hed){const [t,id]=hed.dataset.hed.split("|"),x=(V.st["~h"+t]||[]).find((y)=>y.id===id);if(x){hEdit={t,id};q("#slt",el).value=t;q("#slt",el).disabled=true;q("#slx",el).value=x.text||"";q("#slb",el).value=x.bis||"";q("#sla",el).checked=x.ack!==false;q("#slsend",el).textContent="Änderung speichern";q("#slcan",el).hidden=false;q("#slx",el).focus()}return}
+    const hed=e.target.closest("[data-hed]");if(hed){const [t,id]=hed.dataset.hed.split("|"),x=(V.st["~h"+t]||[]).find((y)=>y.id===id);if(x){hSel=new Set([t]);hEdit={t,id};V.render();q("#slx",el).value=x.text||"";q("#slb",el).value=x.bis||"";q("#slv",el).value=x.ab||"";q("#sla",el).checked=x.ack!==false;q("#slsend",el).textContent="Änderung speichern";q("#slcan",el).hidden=false;q("#slx",el).focus()}return}
     const hdl=e.target.closest("[data-hdel]");if(hdl){if(!hdl.dataset.arm){hdl.dataset.arm="1";hdl.textContent="Sicher?";return}const [t,id]=hdl.dataset.hdel.split("|");try{await V.fs().doc(t+"__vhinweise/"+id).delete();V.log("Hinweis gelöscht",t)}catch(x){}return}
-    if(e.target.id==="slcan"){hEdit=null;V.render();return}
-    if(e.target.id==="slsend"){const t=q("#slt",el).value,x=q("#slx",el).value.trim(),bis=q("#slb",el).value,ack=q("#sla",el).checked;if(!x){const m=q("#slm",el);m.className="vmsg er";m.textContent="Bitte einen Text eintragen.";return}
-      if(hEdit){try{await V.fs().doc(hEdit.t+"__vhinweise/"+hEdit.id).update({text:x,ack,bis:bis||"",erledigt:false});V.log("Hinweis geändert",hEdit.t);hEdit=null;V.render()}catch(e2){const m=q("#slm",el);m.className="vmsg er";m.textContent="Das hat nicht geklappt."}return}
-      if(await send(t,x,"hinweis",{ack,bis}))q("#slx",el).value=""}
+    const sta=e.target.closest("[data-sta]");if(sta){const all=hinT.every((t)=>hSel.has(t.id));hSel=all?new Set():new Set(hinT.map((t)=>t.id));V.render();return}
+    const stb=e.target.closest("[data-stb]");if(stb){const b=V.bereiche().find((x)=>x.id===stb.dataset.stb);if(b)(b.teams||[]).forEach((id)=>{if(hinT.some((t)=>t.id===id))hSel.add(id)});V.render();return}
+    const st1=e.target.closest("[data-st]");if(st1&&!hEdit){const id=st1.dataset.st;if(hSel.has(id))hSel.delete(id);else hSel.add(id);V.render();return}
+    if(e.target.id==="slcan"){hEdit=null;hSel=new Set();V.render();return}
+    if(e.target.id==="slsend"){const x=q("#slx",el).value.trim(),bis=q("#slb",el).value,ab=q("#slv",el).value,ack=q("#sla",el).checked;if(!x){const m=q("#slm",el);m.className="vmsg er";m.textContent="Bitte einen Text eintragen.";return}
+      if(bis&&ab&&ab>bis){const m=q("#slm",el);m.className="vmsg er";m.textContent="„Angezeigt ab“ darf nicht nach „angezeigt bis“ liegen.";return}
+      if(!hEdit&&!hSel.size){const m=q("#slm",el);m.className="vmsg er";m.textContent="Bitte mindestens eine Mannschaft wählen.";return}
+      if(hEdit){try{await V.fs().doc(hEdit.t+"__vhinweise/"+hEdit.id).update({text:x,ack,bis:bis||"",ab:ab||"",erledigt:false});V.log("Hinweis geändert",hEdit.t);hEdit=null;hSel=new Set();V.render()}catch(e2){const m=q("#slm",el);m.className="vmsg er";m.textContent="Das hat nicht geklappt."}return}
+      const ts=Array.from(hSel);let okAll=true;for(const t of ts){if(!(await send(t,x,"hinweis",{ack,bis,ab})))okAll=false}
+      if(okAll){q("#slx",el).value="";const m=q("#slm",el);if(m){m.className="vmsg ok";m.textContent="Gesendet an "+(ts.length===1?V.tshort(ts[0]):ts.length+" Mannschaften")+"."}hSel=new Set()}}
   };
   el.onkeydown=(e)=>{if((e.key==="Enter"||e.key===" ")&&e.target.dataset&&e.target.dataset.go){e.preventDefault();e.target.click()}};
 }});
@@ -6010,7 +6031,7 @@ function kabBoot(){
   const go=()=>{
     if(!W.__kabOk){root.innerHTML='<div class="card" style="margin-top:8vh"><b>Dieser Link ist nicht (mehr) gültig.</b><div class="note">Bitte bei der Jugendleitung einen neuen Link anfragen.</div></div>';return}
     const db=W.__kabFs;
-    const redraw=()=>{renderKab(root,{db,edit:true,kab:true,redraw})};
+    const redraw=()=>{renderKab(root,{db,edit:!W.__KABRO,kab:true,redraw})};
     V.kabRender=redraw;
     V.subPlan();redraw();
   };
@@ -6028,7 +6049,7 @@ const V=W.__V,E=V.E,q=V.q;
 const R=V.ROLLEN;
 /* ---------- Personen & Rechte ---------- */
 let mem=null,mUnsub=null,mMsg="",mMsgK="ok",pe=null;
-const GR={admin:"Administrator",jugendleiter:"Jugendleitung",platzwart:"Platzwart",team:"Mitglied"};
+const GR={admin:"Administrator",jugendleiter:"Jugendleitung",platzwart:"Platzwart (alt, nur Kabinen)",team:"Mitglied"};
 const mailOk=(m)=>/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(m);
 const slug=(x)=>String(x).toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9]/g,"").slice(0,20);
 const seasonEnd=()=>{const m=/(\d{4})\s*\/\s*(\d{2,4})/.exec((W.__VEREIN&&W.__VEREIN.saison)||"");let y=m?+m[1]+1:new Date().getFullYear()+1;return y+"-06-30"};
@@ -6055,6 +6076,7 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   if(!mUnsub){mUnsub=V.fs().collection("mitglieder").onSnapshot((s)=>{mem=s.docs.map((d)=>({id:d.id,...d.data()})).sort((a,b)=>a.id<b.id?-1:1);if(V.cur==="personen"&&!V.typing())V.render()},()=>{mem=[]})}
   if(V.typing())return;
   const teams=V.teams().filter((t)=>t.aktiv!==false),arten=V.arten(),bs=V.bereiche(),adm=V.isAdmin();
+  if(adm&&!arten.some((x)=>x.id==="platzwart")&&!W.__pwMig){W.__pwMig=1;V.saveVerein({arten:arten.concat([{id:"platzwart",name:"Platzwart",rechte:[],gl:["plan"]}])}).then(()=>V.render()).catch(()=>{})}
   let h='<h2>Personen &amp; Rechte</h2><p class="sub note">Zwei Teile: oben die Personen, darunter die Rollen mit ihren Berechtigungen. Wer darf die App öffnen und was darf er in welcher Mannschaft? Die Person meldet sich mit genau dieser E-Mail-Adresse an (Google oder E-Mail). Änderungen gelten beim nächsten Öffnen der App.</p>';
   h+='<div class="card vc"><div class="vhd"><h3>Personen</h3>'+(pe?'':'<button class="btn" id="pnew" type="button">＋ Person hinzufügen</button>')+'</div><div class="tw"><table class="vt" id="vpt"><thead><tr><th>Person</th><th>Rolle und Zuordnung</th><th>Aktion</th></tr></thead><tbody>';
   h+='<tr><td colspan="3" class="note">Fest eingetragene Besitzer (Administratoren) stehen in den Zugriffsregeln und sind hier nicht aufgeführt. Sie können nicht entfernt werden.</td></tr>';
@@ -6064,9 +6086,11 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   if(!mem)h+='<tr><td colspan="3" class="note">Lädt …</td></tr>';
   h+='</tbody></table></div><div class="vmsg '+mMsgK+'" id="vmm">'+E(mMsg)+'</div>'+'</div>';
   if(pe){
-    h+='<div class="card vc" id="pcard"><h3>'+(pe.neu?"Person hinzufügen":"Person bearbeiten")+'</h3><div class="vrow"><label>E-Mail-Adresse<input id="pe_e" type="email" autocomplete="off" style="min-width:230px" value="'+E(pe.email)+'"'+(pe.neu?"":" disabled")+'></label><label>Name<input id="pe_n" maxlength="60" style="width:180px" value="'+E(pe.name)+'"></label><label>Zugang<select id="pe_r">'+["team","platzwart"].concat(adm?["jugendleiter","admin"]:[]).map((r)=>'<option value="'+r+'"'+(r===pe.rolle?" selected":"")+'>'+E(r==="team"?"Mitglied (Rolle je Mannschaft)":GR[r])+'</option>').join("")+'</select></label></div>';
+    h+='<div class="card vc" id="pcard"><h3>'+(pe.neu?"Person hinzufügen":"Person bearbeiten")+'</h3><div class="vrow"><label>E-Mail-Adresse<input id="pe_e" type="email" autocomplete="off" style="min-width:230px" value="'+E(pe.email)+'"'+(pe.neu?"":" disabled")+'></label><label>Name<input id="pe_n" maxlength="60" style="width:180px" value="'+E(pe.name)+'"></label></div>';
+    const roleSel=(i,glob)=>'<label>Rolle<select data-za="'+i+'">'+(glob?'<optgroup label="Für den ganzen Verein">'+[["admin","Administrator"],["jugendleiter","Jugendleiter"]].filter(()=>adm).map((r)=>'<option value="g:'+r[0]+'"'+(pe.rolle===r[0]?" selected":"")+'>'+r[1]+'</option>').join("")+'</optgroup>':"")+'<optgroup label="In Mannschaften">'+arten.map((a)=>'<option value="a:'+E(a.id)+'"'+(pe.rolle==="team"&&pe.zu[i]&&pe.zu[i].art===a.id?" selected":"")+'>'+E(a.name)+'</option>').join("")+'</optgroup></select></label>';
+    if(pe.rolle!=="team")h+='<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px;margin-top:8px">'+roleSel(0,true)+'<span class="note" style="align-self:center">Diese Rolle gilt für den ganzen Verein. Für eine Mannschaftsrolle (zum Beispiel Trainer oder Sportlicher Leiter) oben eine Rolle aus „In Mannschaften“ wählen.</span></div>';
     if(pe.rolle==="team"){
-      h+='<h4 style="margin:12px 0 6px">Rollen und Mannschaften</h4>'+pe.zu.map((z,i)=>'<div class="vrow" style="align-items:flex-start;border-top:1px solid var(--ln);padding-top:8px"><label>Rolle<select data-za="'+i+'">'+arten.map((a)=>'<option value="'+E(a.id)+'"'+(a.id===z.art?" selected":"")+'>'+E(a.name)+'</option>').join("")+'</select></label>'
+      h+='<h4 style="margin:12px 0 6px">Rollen und Mannschaften</h4>'+pe.zu.map((z,i)=>'<div class="vrow" style="align-items:flex-start;border-top:1px solid var(--ln);padding-top:8px">'+roleSel(i,i===0)
         +'<label>Für<select data-zb="'+i+'"><option value="*'+(z.alle?" selected":"")+'">alle Mannschaften</option><option value=""'+(!z.alle&&!z.bereich?" selected":"")+'">einzelne Mannschaften</option>'+bs.map((b)=>'<option value="'+E(b.id)+'"'+(b.id===z.bereich?" selected":"")+'>Bereich '+E(b.name)+'</option>').join("")+'</select></label>'
         +'<span style="flex:1;min-width:200px;align-self:center">'+(z.alle?'<span class="note">Diese Rolle gilt für alle Mannschaften des Vereins, auch für später angelegte.</span>':z.bereich?'<span class="note">'+(((bs.find((b)=>b.id===z.bereich)||{}).teams||[]).map((t)=>V.tshort(t)).join(", ")||"Der Bereich enthält noch keine Mannschaften.")+'</span>':teams.map((t)=>'<span class="vch'+((z.teams||[]).indexOf(t.id)>=0?" on":"")+'" data-zt="'+i+'|'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join(""))+'</span><button class="btn" data-zx="'+i+'" aria-label="Zuordnung entfernen">✕</button></div>').join("")
         +'<button class="btn" id="pzadd" type="button" style="margin-top:6px">＋ Weitere Rolle hinzufügen</button>';
@@ -6077,14 +6101,14 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
     h+='<div class="vrow" style="margin-top:12px"><button class="btn" id="psave" type="button" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button><button class="btn" id="pcancel" type="button">Abbrechen</button></div><div class="vmsg" id="pem"></div></div>';
   }
   /* Rollen und Berechtigungen */
-  const FIX=[["admin","Administrator"],["jugendleiter","Jugendleiter"],["platzwart","Platzwart"]];
+  const FIX=[["admin","Administrator"],["jugendleiter","Jugendleiter"]];
   /* Zeilen, die fest in den Sicherheitsregeln stehen: [Text, Administrator, Jugendleiter, Platzwart, alle anderen Rollen] */
   const FEST=[["Platzbelegung ansehen",1,1,1,1],["Kabinenbelegung ansehen",1,1,1,1],["Mannschaften verwalten (anlegen, Bereiche)",1,1,0,0],["Personen und Rechte verwalten",1,"nur untergeordnete",0,0],["Datenschutz-Center",1,1,0,0],["Einstellungen des Vereins (Logo, Saison, Fristen)",1,1,0,0]];
-  const nCol=arten.length+4;
+  const nCol=arten.length+3;
   const ck=(v)=>v==="nur untergeordnete"?'<span class="note" style="white-space:normal">nur untergeordnete</span>':'<input type="checkbox"'+(v?" checked":"")+' disabled aria-label="fest">';
-  const fixV=(id,r,g)=>id==="platzwart"?(r==="plan"&&g?1:0):1;
+  const fixV=()=>1;
   h+='<div class="card vc"><div class="vhd"><h3>Rollen und Berechtigungen</h3>'+(adm?'<span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="anewb" type="button" style="background:var(--ac);color:#fff;border-color:var(--ac)">＋ Neue Rolle</button><button class="btn" id="areset" type="button">Auf Standard zurücksetzen</button></span>':"")+'</div>';
-  h+='<div class="note" style="margin:0 0 8px">Jede Spalte ist eine Rolle. Setze Haken, was die Rolle darf. '+(adm?"":"Ändern kann das nur der Administrator. ")+'Die Spalten Administrator, Jugendleiter und Platzwart sind fest in den Sicherheitsregeln der Datenbank verankert und hier nur zur Übersicht aufgeführt.</div>';
+  h+='<div class="note" style="margin:0 0 8px">Jede Spalte ist eine Rolle. Setze Haken, was die Rolle darf. '+(adm?"":"Ändern kann das nur der Administrator. ")+'Die Spalten Administrator und Jugendleiter sind fest in den Sicherheitsregeln der Datenbank verankert und hier nur zur Übersicht aufgeführt.</div>';
   if(adm)h+='<div class="vrow" id="anewrow" hidden style="margin:0 0 10px"><label>Name der neuen Rolle<input id="anew" maxlength="30" placeholder="z. B. Videoanalyst"></label><button class="btn" id="aadd" type="button" style="align-self:flex-end">Rolle anlegen</button></div>';
   h+='<div class="tw"><table class="vt vmx"><thead><tr><th>Berechtigung</th>'+FIX.map((f)=>'<th class="c" style="white-space:normal;min-width:88px">'+f[1]+'<div class="note" style="font-weight:400">fest</div></th>').join("")+arten.map((a)=>'<th class="c" style="white-space:normal;min-width:88px">'+E(a.name)+(adm?'<br><button class="btn" data-adel="'+E(a.id)+'" style="padding:1px 8px;font-size:11px;margin-top:3px">Löschen</button>':"")+'</th>').join("")+'</tr></thead><tbody>';
   const grp=(t)=>'<tr class="vgrp"><td colspan="'+nCol+'">'+t+'</td></tr>';
@@ -6095,7 +6119,7 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   V.GN.forEach((r)=>{
     h+='<tr><td style="white-space:normal">'+E(V.RN[r])+'</td>'+FIX.map((f)=>'<td class="c fix">'+ck(fixV(f[0],r,true))+'</td>').join("")+arten.map((a)=>{const on=(a.gl||[]).indexOf(r)>=0;return '<td class="c"><input type="checkbox" data-ar="'+E(a.id)+'|'+r+'|g"'+(on?" checked":"")+(adm?"":" disabled")+' aria-label="'+E(a.name+": "+V.RN[r])+'"></td>'}).join("")+'</tr>'});
   h+=grp("Nur Verwaltung (fest)");
-  FEST.forEach((f)=>{h+='<tr><td style="white-space:normal">'+E(f[0])+'</td>'+[1,2,3].map((i)=>'<td class="c fix">'+ck(f[i])+'</td>').join("")+arten.map(()=>'<td class="c fix">'+ck(f[4])+'</td>').join("")+'</tr>'});
+  FEST.forEach((f)=>{h+='<tr><td style="white-space:normal">'+E(f[0])+'</td>'+[1,2].map((i)=>'<td class="c fix">'+ck(f[i])+'</td>').join("")+arten.map(()=>'<td class="c fix">'+ck(f[4])+'</td>').join("")+'</tr>'});
   h+='</tbody></table></div>';
   h+='<div class="note" style="margin-top:8px">„Sportlicher Leiter“ vergibst du bei der Person oben entweder für <b>alle Mannschaften</b> oder nur für einen <b>Bereich</b> beziehungsweise einzelne Mannschaften. Dann sieht er auch nur diese Mannschaften. „Einstellungen, Links und Sicherung“ steuert, was in der Mannschafts-App angezeigt wird. Alle anderen Rechte werden zusätzlich von den Sicherheitsregeln der Datenbank durchgesetzt. Änderungen gelten für alle Personen mit dieser Rolle, sobald sie die App neu öffnen.</div><div class="vmsg" id="amsg"></div></div>';
   el.innerHTML=h;
@@ -6107,8 +6131,7 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   const saveArten=async(arr,txt)=>{try{await V.saveVerein({arten:arr});V.log(txt);await V.resync();am("Gespeichert.");return true}catch(x){am("Das konnte nicht gespeichert werden.","er");return false}};
   el.onchange=async(e)=>{
     const t=e.target,d=t.dataset||{};
-    if(t.id==="pe_r"){readEd();pe.rolle=t.value;if(pe.rolle==="team"&&!pe.zu.length)pe.zu=[emptyZu()];V.render();return}
-    if(d.za!=null){readEd();pe.zu[+d.za].art=t.value;return}
+    if(d.za!=null){readEd();const v=t.value;if(v.indexOf("g:")===0){pe.rolle=v.slice(2);pe.zu=[];V.render();return}const was=pe.rolle;pe.rolle="team";if(!pe.zu.length)pe.zu=[emptyZu()];pe.zu[+d.za].art=v.slice(2);if(was!=="team")V.render();return}
     if(d.zb!=null){readEd();const z=pe.zu[+d.zb];z.alle=t.value==='*';z.bereich=z.alle?'':t.value;V.render();return}
     if(d.kd){const ms=endMs(t.value);if(ms)pe.kader[d.kd]=ms;V.render();return}
     if(d.ar){const [aid,r,k]=d.ar.split("|");await saveArten(arten.map((a)=>{if(a.id!==aid)return a;const key=k==="g"?"gl":"rechte",L=(a[key]||[]).slice(),i=L.indexOf(r);if(t.checked&&i<0)L.push(r);if(!t.checked&&i>=0)L.splice(i,1);return{...a,[key]:L}}),"Rechte der Rolle geändert: "+aid);return}
@@ -6127,7 +6150,7 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
       readEd();
       if(!mailOk(pe.email)){pm("Bitte eine gültige E-Mail-Adresse eintragen.","er");return}
       if(pe.neu&&get(pe.email)){pm("Diese Person gibt es schon. Bitte in der Liste bearbeiten.","er");return}
-      if(pe.rolle==="team"&&pe.zu.some((z)=>!z.alle&&!z.bereich&&!(z.teams||[]).length)){pm("Bitte bei jeder Rolle mindestens eine Mannschaft oder einen Bereich wählen.","er");return}
+      if(pe.rolle==="team"&&pe.zu.some((z)=>!z.alle&&!z.bereich&&!(z.teams||[]).length&&((arten.find((x)=>x.id===z.art)||{}).rechte||[]).length)){pm("Bitte bei jeder Rolle mindestens eine Mannschaft oder einen Bereich wählen.","er");return}
       const ex=pe.rolle==="team"?V.expandZu(pe.zu):{tr:{},g:[]};
       const doc={email:pe.email,name:pe.name,rolle:pe.rolle,zu:pe.rolle==="team"?pe.zu:[],tr:ex.tr,g:ex.g,kader:pe.rolle==="team"?pe.kader:{},am:new Date().toISOString()};
       try{await V.fs().doc("mitglieder/"+pe.email).set(doc);V.log((pe.neu?"Person hinzugefügt: ":"Person geändert: ")+pe.email);pe=null;msg("Gespeichert. Gilt beim nächsten Öffnen der App durch die Person.");V.render()}catch(x){pm("Das konnte nicht gespeichert werden (fehlende Berechtigung?).","er")}
