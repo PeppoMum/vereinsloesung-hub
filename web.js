@@ -139,10 +139,28 @@ function colW(ref){return{get:()=>ref.get(),onSnapshot:(a,b)=>ref.onSnapshot(a,b
 const wrap=()=>({collection:(n)=>colW(fs.collection(T(n))),doc:(p)=>docW(fs.doc(T(p)))});
 
 /* ---------- Verein: Rollen, Mannschaften ---------- */
-const ROLLEN_V=["admin","jugendleiter","sportleiter","trainer","cotrainer","lesen","scout","platzwart"];
-const LEG={admin:"voll",jugendleiter:"voll",sportleiter:"lesen",trainer:"voll",cotrainer:"voll",lesen:"lesen",scout:"scout",platzwart:"lesen"};
-const ALLE_TEAMS=["admin","jugendleiter","sportleiter","lesen"];
+/* Globale Rollen: admin, jugendleiter, platzwart, team. Bei "team" ergeben sich die Rechte je Mannschaft aus den Trainerarten (verein/main.arten). */
+const ROLLEN_V=["admin","jugendleiter","platzwart","team"];
+const RECHTE_ALLE=["sehen","bearbeiten","einstellungen","notizen","kader","kaderbearb","hinweise","fachlesen","tw","ath"];
+const ARTEN_STD=[
+ {id:"trainer",name:"Trainer",rechte:["sehen","bearbeiten","einstellungen","notizen","kader","kaderbearb","fachlesen"],gl:["kurz"]},
+ {id:"cotrainer",name:"Co-Trainer",rechte:["sehen","bearbeiten","notizen","kader","kaderbearb","fachlesen"],gl:["kurz"]},
+ {id:"sportleiter",name:"Sportlicher Leiter",rechte:["sehen","notizen","kader","hinweise"],gl:["plan"]},
+ {id:"torwart",name:"Torwarttrainer",rechte:["sehen","tw"],gl:[]},
+ {id:"athletik",name:"Athletiktrainer",rechte:["sehen","ath"],gl:[]},
+ {id:"lesen",name:"Nur lesen",rechte:["sehen","notizen","kader"],gl:[]},
+ {id:"scout",name:"Scout",rechte:["kader","kaderbearb"],gl:[]}];
+window.__ARTEN_STD=ARTEN_STD;window.__RECHTE_ALLE=RECHTE_ALLE;
 const STD_TEAMS=[["a1","A1","U19",1],["b1","B1","U17",1],["b2","B2","U16",0],["c1","C1","U15",1],["c2","C2","U14",1],["d1","D1","U13",1],["d2","D2","U12",1],["e1","E1","U11",1],["e2","E2","U10",1],["f1","F1","U9",1],["f2","F2","U8",1],["g","G","U7",1],["minis","Minis","U6",1]];
+/* Rechte einer Person in einer Mannschaft (Liste), unter Berücksichtigung der Kaderfreigabe mit Ablaufzeit */
+function rightsIn(me,rolle,tid){
+  if(rolle==="admin"||rolle==="jugendleiter")return RECHTE_ALLE.slice();
+  const r=((me&&me.tr&&me.tr[tid])||[]).slice();
+  if(me&&me.kader&&(me.kader[tid]||0)>Date.now()){["kader","kaderbearb"].forEach((x)=>{if(r.indexOf(x)<0)r.push(x)})}
+  return r;
+}
+/* Betriebsart der bisherigen Mannschafts-App: voll (bearbeiten), lesen (nur ansehen), scout (nur Kader & Scouting) */
+function modeOf(rights){return rights.indexOf("bearbeiten")>=0?"voll":rights.indexOf("sehen")>=0?"lesen":(rights.indexOf("kader")>=0||rights.indexOf("kaderbearb")>=0)?"scout":null}
 const lowC=(s)=>String(s||"").trim().toLowerCase();
 function showInfo(title,html,btn){
   const o=overlay('<div class="ms er" style="font-size:15px">'+E(title)+'</div><p class="sb">'+html+'</p><button id="u13so">'+(btn||"Abmelden")+'</button>');
@@ -155,7 +173,7 @@ function showClubSetup(email){
     o.querySelector("#vgo").onclick=async()=>{
       const teams=STD_TEAMS.filter((t)=>o.querySelector('[data-t="'+t[0]+'"]').checked).map((t)=>({id:t[0],name:t[1],ak:t[2],aktiv:!!t[3]}));
       if(!teams.length){m.className="ms er";m.textContent="Bitte mindestens eine Mannschaft wählen.";return}
-      const v={name:o.querySelector("#vn").value.trim()||"Verein",saison:o.querySelector("#vs").value.trim()||"2026/27",teams,settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},erstellt:new Date().toISOString()};
+      const v={name:o.querySelector("#vn").value.trim()||"Verein",saison:o.querySelector("#vs").value.trim()||"2026/27",teams,arten:ARTEN_STD,bereiche:[],settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},erstellt:new Date().toISOString()};
       try{
         await fs.doc("verein/main").set(v);
         await fs.doc("plaene/platz").set({plaetze:[],kabinen:["0","1","2","3","4"],extern:[{id:"erste",name:"1. Mannschaft"},{id:"ah",name:"Alte Herren"}],stdKabine:{},slots:[]});
@@ -164,11 +182,12 @@ function showClubSetup(email){
 }
 function chooseTeam(V,me,rolle){
   const act=(V.teams||[]);
-  const allowed=ALLE_TEAMS.indexOf(rolle)>=0?act:act.filter((t)=>(me.teams||[]).indexOf(t.id)>=0);
+  const allowed=act.filter((t)=>rightsIn(me,rolle,t.id).length>0);
   let want=TQ;
   try{want=want||localStorage.getItem("u13team")||""}catch(e){}
   const hit=allowed.find((t)=>t.id===want);
-  const first=allowed.find((t)=>t.aktiv!==false)||allowed[0];
+  const mine=allowed.find((t)=>t.aktiv!==false&&rightsIn(me,rolle,t.id).indexOf("bearbeiten")>=0&&rolle==="team");
+  const first=mine||allowed.find((t)=>t.aktiv!==false)||allowed[0];
   return{allowed,team:hit||first||null};
 }
 async function clubInit(u){
@@ -190,12 +209,16 @@ async function clubInit(u){
   }
   const rolle=fixed?"admin":(me&&me.rolle);
   if(!rolle||ROLLEN_V.indexOf(rolle)<0){showInfo("Dieses Konto ist nicht freigegeben.","Angemeldet als <b>"+E(em)+"</b>. Zugriff haben nur Personen, die der Verein freigegeben hat.");return null}
-  me=me||{email:em,rolle:rolle,teams:[]};
+  me=me||{email:em,rolle:rolle,zu:[],tr:{},g:[],kader:{}};
+  if(fixed&&me.rolle!=="admin")me={...me,rolle:"admin"};
   try{localStorage.setItem("u13v:"+em,JSON.stringify({fixed:!!fixed,me,V}))}catch(e){}
   const ch=chooseTeam(V,me,rolle);
-  window.__VEREIN=V;window.__VME={email:em,rolle,teams:me.teams||[],name:me.name||""};window.__VROLLE=rolle;window.__VFIXED=!!fixed;window.__VALLOWED=ch.allowed.map((t)=>t.id);
+  window.__VEREIN=V;window.__VROLLE=rolle;window.__VFIXED=!!fixed;window.__VALLOWED=ch.allowed.map((t)=>t.id);
+  window.__VME={email:em,rolle,name:me.name||"",zu:me.zu||[],tr:me.tr||{},g:me.g||[],kader:me.kader||{},teams:ch.allowed.map((t)=>t.id)};
   if(rolle==="platzwart"){window.__KABACCT=true;return{kabOnly:true}}
   if(!ch.team){showInfo("Du bist noch keiner Mannschaft zugeordnet.","Angemeldet als <b>"+E(em)+"</b>. Bitte die Jugendleitung bitten, dich unter „Personen &amp; Rechte“ einer Mannschaft zuzuordnen.");return null}
+  const rights=rightsIn(me,rolle,ch.team.id);
+  window.__VRIGHTS=rights;window.__VMODE=modeOf(rights)||"lesen";
   window.__TID=ch.team.id;window.__TEAM=ch.team;window.__WEB_BASE=window.__WEB_BASE0+"?t="+ch.team.id;
   try{localStorage.setItem("u13team",ch.team.id)}catch(e){}
   return{team:ch.team};
@@ -229,7 +252,7 @@ async function start(){
   /* Zugriffstest; bei leerer Mannschaft ein Grundgerüst anlegen, damit die Sicherung eingespielt werden kann */
   try{
     const c=await fs.doc(T("config/main")).get();
-    if(!c.exists&&(window.__VROLLE==="admin"||window.__VROLLE==="jugendleiter"||window.__VROLLE==="trainer"))await fs.doc(T("config/main")).set({saison:window.__VEREIN.saison||"2026/27",mannschaft:window.__TEAM.ak||"",zaehlendeAbwesenheiten:{e:true,u:true,v:false,t:false}});
+    if(!c.exists&&(window.__VROLLE==="admin"||window.__VROLLE==="jugendleiter"||window.__VMODE==="voll"))await fs.doc(T("config/main")).set({saison:window.__VEREIN.saison||"2026/27",mannschaft:window.__TEAM.ak||"",zaehlendeAbwesenheiten:{e:true,u:true,v:false,t:false}});
   }catch(e){
     if(denied(e)){showInfo("Kein Zugriff auf diese Mannschaft.","Angemeldet als <b>"+E(u&&u.email)+"</b>.");return new Promise(()=>{})}
     /* offline: weiter, die Daten kommen aus dem Gerätespeicher */
@@ -244,12 +267,12 @@ let scoutKey="";
 const rndKey=()=>{const a=new Uint8Array(18);crypto.getRandomValues(a);return window.__TID+"-"+btoa(String.fromCharCode.apply(null,a)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=/g,"")};
 const denied=(e)=>!!(e&&/permission|denied|insufficient/i.test(String(e.code)+" "+String(e.message)));
 async function afterLogin(){
-  const rolle=window.__VROLLE,owner=rolle==="admin"||rolle==="jugendleiter"||rolle==="trainer";
+  const rolle=window.__VROLLE,rights=window.__VRIGHTS||[],owner=rolle==="admin"||rolle==="jugendleiter"||rights.indexOf("einstellungen")>=0;
   window.__webOwner=owner;
-  window.__ROLE=LEG[rolle];window.__ACCT=(((auth.currentUser&&auth.currentUser.email)||"")+"").toLowerCase().replace(/[^a-z0-9@._-]/g,"_")||"main";
+  window.__ROLE=window.__VMODE;window.__ACCT=(((auth.currentUser&&auth.currentUser.email)||"")+"").toLowerCase().replace(/[^a-z0-9@._-]/g,"_")||"main";
   if(!owner)document.body.classList.add("co");
   if(window.__ROLE==="scout")document.body.classList.add("scoutonly");
-  const lbl={lesen:"· Nur Ansicht",sportleiter:"· Sportlicher Leiter (nur Ansicht)",scout:"· Scouting-Zugang"}[rolle];
+  const lbl={lesen:"· Nur Ansicht",scout:"· Scouting-Zugang"}[window.__ROLE];
   if(lbl){const t=document.querySelector(".top .note");if(t){const sp=document.createElement("span");sp.style.marginLeft="8px";sp.textContent=lbl;t.appendChild(sp)}}
   if(window.__ROLE==="scout"){window.__scoutLink=()=>"(nur für Trainer sichtbar)";return}
   if(window.__ROLE==="lesen"){try{const r=await fs.doc(T("config/scout")).get();scoutKey=(r.exists&&r.data()&&r.data().k)||""}catch(e){}window.__scoutLink=()=>scoutKey?window.__WEB_BASE0+"#scout."+scoutKey:"(nicht verfügbar)";return}

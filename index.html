@@ -1,4 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://accounts.google.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://www.gstatic.com; frame-src https://*.firebaseapp.com https://accounts.google.com https://apis.google.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"><meta name="theme-color" content="#2563eb"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><script src="firebase-config.js"></script><script src="web.js"></script></head><body style="margin:0"><title>TuS Haltern U13 · Teamzentrale</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://accounts.google.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://www.gstatic.com; frame-src https://*.firebaseapp.com https://accounts.google.com https://apis.google.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"><meta name="theme-color" content="#2563eb"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><script src="firebase-config.js"></script><script src="web.js"></script></head><body style="margin:0"><title>TuS Haltern</title>
 <style>
 /* Layout: feste Seitenleiste (auf dem Handy untere Leiste), Inhalt in Karten und Tabellen. Farben aus dem freigegebenen Entwurf. */
 :root{--bg:#f4f5f7;--card:#fff;--tx:#1c1f24;--mu:#6b7280;--ln:#e5e7eb;--ac:#2563eb;--acs:#dbe6fd;--g:#22a06b;--gs:#d8f3e6;--y:#d9a400;--ys:#fbf0c6;--r:#d64545;--rs:#fbdcdc;--o:#e07b1a;--os:#fbe6cf;--gr:#8b93a1;--grs:#e6e8ec;--b:#3b82f6;--bs:#dbe8fd;--vi:#000;--nb:#1e3a8a;--p:#8b5cf6;--ps:#e9defc;--be:#8a6d3b;--bes:#f1e8d6;--n1:#111827;--n1s:#c3c9d4;--n2:#374151;--n2s:#d8dce4;--n3:#6b7280;--n3s:#e6e8ee;--n4:#8b93a1;--n4s:#f0f1f4;--font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Helvetica,Arial,sans-serif}
@@ -5268,7 +5268,7 @@ document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.close
 (function(){
 "use strict";
 const W=window,V=W.__V={tabs:[],st:{},subs:[],plan:null};
-const ROLLEN={admin:"Administrator",jugendleiter:"Jugendleiter",sportleiter:"Sportlicher Leiter",trainer:"Trainer",cotrainer:"Co-Trainer",lesen:"Nur lesen",scout:"Scout",platzwart:"Platzwart"};
+const ROLLEN={admin:"Administrator",jugendleiter:"Jugendleitung",platzwart:"Platzwart",team:"Mitglied"};
 V.ROLLEN=ROLLEN;
 const E=(s)=>String(s==null?"":s).replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 V.E=E;
@@ -5276,9 +5276,37 @@ const q=(s,r)=>(r||document).querySelector(s);
 V.q=q;
 V.fs=()=>W.__webFs||W.__kabFs;
 V.rolle=()=>W.__VROLLE||"";
+const RECHTE=W.__RECHTE_ALLE||["sehen","bearbeiten","einstellungen","notizen","kader","kaderbearb","hinweise","fachlesen","tw","ath"];
+V.RECHTE=RECHTE;
+/* Namen der Rechte (für „Wer darf was?“) */
+V.RN={sehen:"Mannschaftsdaten ansehen",bearbeiten:"Mannschaftsdaten bearbeiten",einstellungen:"Einstellungen, Links und Sicherung der Mannschaft",notizen:"Notizen der Trainer lesen",kader:"Kader & Scouting ansehen",kaderbearb:"Kader & Scouting bearbeiten",hinweise:"Hinweise an die Mannschaft schreiben",fachlesen:"Notizen der Fachtrainer lesen",tw:"Torwart-Notizen schreiben und lesen",ath:"Athletik-Notizen schreiben",plan:"Platz- und Kabinenbelegung pflegen",kurz:"Kurzlinks der Spielerlinks verwalten"};
+V.GN=["plan","kurz"];
+V.me=()=>W.__VME||{tr:{},g:[],kader:{},zu:[]};
 V.isAll=()=>["admin","jugendleiter"].indexOf(V.rolle())>=0;
-V.isStaff=()=>["admin","jugendleiter","sportleiter"].indexOf(V.rolle())>=0;
-V.canPlan=()=>V.isStaff();
+V.isAdmin=()=>V.rolle()==="admin";
+V.rights=(tid)=>{if(V.isAll())return RECHTE.slice();const m=V.me(),r=((m.tr||{})[tid]||[]).slice();if(((m.kader||{})[tid]||0)>Date.now())["kader","kaderbearb"].forEach((x)=>{if(r.indexOf(x)<0)r.push(x)});return r};
+V.has=(tid,r)=>V.rights(tid).indexOf(r)>=0;
+V.hasAnyT=(r)=>V.isAll()||V.teams().some((t)=>V.has(t.id,r));
+V.hasG=(r)=>V.isAll()||(V.me().g||[]).indexOf(r)>=0;
+V.canPlan=()=>V.hasG("plan");
+V.isStaff=()=>V.canPlan();
+V.canWrite=(tid)=>V.has(tid||W.__TID,"bearbeiten");
+V.arten=()=>((W.__VEREIN&&W.__VEREIN.arten)||W.__ARTEN_STD||[]);
+V.bereiche=()=>((W.__VEREIN&&W.__VEREIN.bereiche)||[]);
+V.artName=(id)=>{const a=V.arten().find((x)=>x.id===id);return a?a.name:id};
+/* Aus Zuordnungen (Trainerart + Mannschaften oder Bereich) die Rechte je Mannschaft und für den ganzen Verein berechnen */
+V.expandZu=(zu,arten,bereiche)=>{
+  const tr={},g=new Set();arten=arten||V.arten();bereiche=bereiche||V.bereiche();
+  (zu||[]).forEach((z)=>{const a=arten.find((x)=>x.id===z.art);if(!a)return;
+    const ts=z.bereich?((bereiche.find((b)=>b.id===z.bereich)||{}).teams||[]):(z.teams||[]);
+    ts.forEach((tid)=>{tr[tid]=Array.from(new Set((tr[tid]||[]).concat(a.rechte||[])))});
+    (a.gl||[]).forEach((x)=>g.add(x))});
+  return{tr,g:Array.from(g)};
+};
+V.roleLabel=()=>{const r=V.rolle();if(r!=="team")return ROLLEN[r]||"";
+  const me=V.me(),n=(me.zu||[]).filter((z)=>z.bereich||(z.teams||[]).indexOf(W.__TID)>=0).map((z)=>V.artName(z.art));
+  const u=Array.from(new Set(n));return u.length?u.join(" · "):((me.zu||[])[0]?V.artName(me.zu[0].art):"Mitglied")};
+V.visTeams=()=>V.teams().filter((t)=>V.isAll()||V.has(t.id,"sehen")||V.has(t.id,"bearbeiten"));
 V.teams=()=>(W.__VEREIN&&W.__VEREIN.teams)||[];
 V.set=()=>Object.assign({ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},(W.__VEREIN&&W.__VEREIN.settings)||{});
 V.tname=(id)=>{const t=V.teams().find((x)=>x.id===id);if(t)return t.name+(t.ak?" ("+t.ak+")":"");const e=((V.plan&&V.plan.extern)||[]).find((x)=>x.id===id);return e?e.name:(id||"–")};
@@ -5315,7 +5343,7 @@ function statDoc(){
     fbet:U13.farbeTraining(T.avgBeteiligung),fzeit:U13.farbeSpielzeit(T.avgGewichtet)};
 }
 function pubStat(force){
-  if(!["admin","jugendleiter","trainer","cotrainer"].includes(V.rolle())||typeof D==="undefined"||!D.ready)return;
+  if(!V.canWrite()||typeof D==="undefined"||!D.ready)return;
   let d;try{d=statDoc()}catch(e){return}
   const h=JSON.stringify(d);
   if(h===lastHash&&!lastEdit&&!force)return;
@@ -5330,37 +5358,104 @@ function hookSave(){
   const s1=function(coll){if(coll!=="prefs"&&coll!=="vstat"&&coll!=="vhinweise")lastEdit=new Date().toISOString();return s0.apply(this,arguments)};s1.__v=1;W.save=s1;
 }
 
-/* ---------- Leiste oben ---------- */
-const CSS='#vbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px;background:var(--card);border-bottom:1px solid var(--ln);font-size:13px}'
-+'#vbar .vn{font-size:14px}#vbar select{padding:4px 8px}#vbar .vr{margin-left:auto}#vbar .btn{padding:4px 12px}'
-+'html.kabmode .app,html.kabmode #vbar{display:none!important}'
-+'#vp{position:fixed;inset:0;z-index:400;background:var(--bg);color:var(--tx);overflow:auto;padding-top:env(safe-area-inset-top,0px)}#vp[hidden]{display:none}'
-+'#vp .vph{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--ln)}'
-+'#vp .vtabs{display:flex;gap:4px;flex-wrap:wrap;flex:1;min-width:0}#vp .vtabs button{font:inherit;border:0;background:none;color:var(--tx);padding:7px 12px;border-radius:9px;cursor:pointer}#vp .vtabs button.on{background:var(--acs);color:var(--ac);font-weight:600}'
-+'#vbody{max-width:1180px;margin:0 auto;padding:18px 16px 60px}#vbody h2{font-size:24px;margin:0 0 4px}#vbody .sub{margin:0 0 14px}'
+/* ---------- Gestaltung: ein Menü oben (gleiche Gestaltung wie die Mannschafts-App), Vereinsbereich darunter ---------- */
+const CSS='#vnav{position:sticky;top:0;z-index:340;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px clamp(12px,3vw,40px);background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--ln);font-size:14px}'
++'#vnav .vpill{display:flex;align-items:center;gap:2px;padding:4px;border-radius:99px;background:var(--card);border:1px solid var(--ln);overflow-x:auto;scrollbar-width:none;min-width:0;max-width:100%}#vnav .vpill::-webkit-scrollbar{display:none}'
++'html[data-design="glas"] #vnav .vpill{border-color:var(--edge);box-shadow:var(--gsh),inset 0 1px 0 rgba(255,255,255,.45);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6)}'
++'#vnav .vpill button{flex:none;border:0;background:none;color:var(--mu);font:inherit;font-size:14px;padding:7px 14px;border-radius:99px;cursor:pointer;white-space:nowrap}#vnav .vpill button:hover{color:var(--tx)}'
++'#vnav .vpill button.on{background:var(--tx);color:var(--bg);font-weight:600}html[data-design="glas"] #vnav .vpill button.on{background:var(--segon,#0a84ff);color:var(--segtx,#fff);box-shadow:0 2px 8px rgba(0,0,0,.25)}'
++'#vnav .vpill .vbrand{display:flex;align-items:center;gap:8px;color:var(--tx);font-weight:700;padding:5px 14px 5px 6px;cursor:pointer}#vnav .vlogo{display:grid;place-items:center;min-width:30px;height:30px;padding:0 6px;border-radius:9px;background:var(--ac);color:#fff;font-size:12px;font-weight:800;letter-spacing:-.01em}'
++'#vnav .vr{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:relative}#vnav .vchip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:var(--card);border:1px solid var(--ln);color:var(--tx);font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}'
++'#vnav .vchip b{font-weight:700}#vnav .vchip.err{background:var(--rs);color:var(--r);border-color:transparent}'
++'#vdrop{position:absolute;right:0;top:calc(100% + 8px);width:min(340px,92vw);z-index:430;padding:10px;border-radius:18px;background:var(--cs,var(--card));border:1px solid var(--ln);box-shadow:0 18px 50px rgba(0,0,0,.22);max-height:70vh;overflow:auto}#vdrop[hidden]{display:none}'
++'#vdrop h4{margin:10px 8px 4px;font-size:11px;font-weight:600;color:var(--mu)}#vdrop h4:first-child{margin-top:2px}#vdrop button{display:flex;width:100%;align-items:center;gap:8px;border:0;background:none;color:var(--tx);font:inherit;padding:8px 10px;border-radius:10px;cursor:pointer;text-align:left}#vdrop button:hover{background:var(--soft,var(--grs))}#vdrop button.on{background:var(--acs);color:var(--ac);font-weight:600}#vdrop .sub{margin-left:auto;font-size:12px;color:var(--mu);font-weight:400}#vdrop .dim{padding:6px 10px;font-size:12px;color:var(--mu)}'
++'html.vclub .app{display:block}@media(min-width:761px){html.vclub nav{top:var(--vnh,56px)!important}html.vclub:not([data-design="ruhig"]):not([data-design="glas"]) nav{height:calc(100vh - var(--vnh,56px))}html.vclub:not([data-design="ruhig"]):not([data-design="glas"]) .app{display:grid}}'
++'html.kabmode .app,html.kabmode #vnav{display:none!important}'
++'#vp{position:fixed;left:0;right:0;bottom:0;top:var(--vnh,56px);z-index:400;background:var(--bg);color:var(--tx);overflow:auto}#vp[hidden]{display:none}'
++'html[data-design="glas"] #vp{background:transparent}'
++'#vp .vsub{display:flex;gap:4px;flex-wrap:wrap;max-width:1180px;margin:0 auto;padding:12px clamp(12px,3vw,40px) 0}#vp .vsub button{font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--card);color:var(--mu);padding:5px 14px;border-radius:99px;cursor:pointer}#vp .vsub button.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}'
++'#vbody{max-width:1180px;margin:0 auto;padding:18px clamp(12px,3vw,40px) 70px}#vbody h2{font-size:26px;margin:0 0 4px}#vbody .sub{margin:0 0 14px}'
 +'.vg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px;margin-bottom:12px}.vc{margin:0 0 12px}'
++'.vtg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px;margin:0 0 14px}.vtc{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:var(--rad,16px);background:var(--card);border:1px solid var(--ln);cursor:pointer;text-align:left;color:var(--tx);font:inherit}.vtc:hover{border-color:var(--ac)}.vtc.dim{opacity:.55}.vtc.cur{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}'
++'.vtc .vth{display:flex;align-items:baseline;gap:8px}.vtc .vth b{font-size:20px}.vtc .vth .vn{margin-left:auto;font-size:12px;color:var(--mu)}.vtc .vbar{height:7px;border-radius:99px;background:var(--grs);overflow:hidden}.vtc .vbar i{display:block;height:100%;border-radius:99px}.vtc .vm{font-size:12px;color:var(--mu)}'
++'.vf{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.vf button{font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--card);color:var(--mu);padding:6px 14px;border-radius:99px;cursor:pointer}.vf button.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}'
 +'.vt{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;white-space:nowrap}.vt th,.vt td{padding:8px 10px;border-bottom:1px solid var(--ln);text-align:left}.vt th{font-size:11px;color:var(--mu);font-weight:600}.vt td.r,.vt th.r{text-align:right}.vt tr.dim{opacity:.5}.vt tr.dim:hover{opacity:1}'
 +'.vrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 8px}.vrow>label{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mu)}.vrow input,.vrow select{min-width:0}'
 +'.vch{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--ln);margin:1px 3px 1px 0;cursor:pointer;background:var(--card);user-select:none}.vch.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}'
 +'.vbad{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--grs);color:var(--mu);white-space:nowrap}.vbad.r{background:var(--rs);color:var(--r)}.vbad.o{background:var(--os);color:var(--o)}.vbad.g{background:var(--gs);color:var(--g)}'
 +'.vdot{display:inline-block;min-width:54px;text-align:center;padding:2px 8px;border-radius:99px;font-weight:600;font-size:12px}.vdot.p0{background:var(--grs);color:var(--mu)}.vdot.p1{background:var(--rs);color:var(--r)}.vdot.p2{background:var(--os);color:var(--o)}.vdot.p3{background:var(--ys);color:var(--y)}.vdot.p4{background:var(--gs);color:var(--g)}'
++'#vp .vt th,#vp .vt td{text-align:left}#vp .vmx td.c,#vp .vmx th.c{text-align:center}#vnav .vchip[hidden]{display:none!important}'
 +'.vok{color:var(--g)}.vmsg{min-height:18px;font-size:12px;margin:4px 0}.vmsg.er{color:var(--r)}.vmsg.ok{color:var(--g)}'
 +'.vgrid{position:relative;display:grid;gap:0;border:1px solid var(--ln);border-radius:12px;overflow:hidden;background:var(--card)}.vgh{font-size:12px;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--ln);border-left:1px solid var(--ln);background:var(--card);text-align:center}.vgc{position:relative;border-left:1px solid var(--ln)}'
 +'.vgl{position:absolute;left:0;right:0;border-top:1px dashed var(--ln);font-size:10px;color:var(--mu);padding-left:3px}.vblk{position:absolute;left:3px;right:3px;border-radius:8px;padding:3px 6px;font-size:12px;line-height:1.25;overflow:hidden;border:1.5px solid;cursor:default;color:var(--tx)}.vblk.ed{cursor:pointer}.vblk.clash{outline:2px solid var(--r);outline-offset:1px}.vblk small{display:block;opacity:.8}'
 +'.vkabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}.vkab{border:1px solid var(--ln);border-radius:12px;padding:8px 10px;background:var(--card);min-height:90px}.vkab b{display:block;margin-bottom:4px}.vke{border-left:4px solid;border-radius:6px;padding:3px 7px;margin:4px 0;font-size:12px;background:var(--bg)}.vke.ed{cursor:pointer}'
-+'@media(max-width:700px){#vp .vph{padding:8px 12px}#vbody{padding:14px 12px 60px}}';
++'.vmx td.c,.vmx th.c{text-align:center}.vmx input[type=checkbox]{width:18px;height:18px}'
++'@media(max-width:760px){#vnav{padding:8px 12px}#vnav .vr{margin-left:0;width:100%}#vp{bottom:0}#vbody{padding:14px 12px 90px}}';
 function css(){if(q("#vcss"))return;const s=document.createElement("style");s.id="vcss";s.textContent=CSS;document.head.appendChild(s)}
 V.css=css;
-
-function mountBar(){
-  if(q("#vbar"))return;
-  const bar=document.createElement("div");bar.id="vbar";
-  const al=V.teams().filter((t)=>(W.__VALLOWED||[]).indexOf(t.id)>=0).sort((a,b)=>(b.aktiv!==false)-(a.aktiv!==false));
-  bar.innerHTML='<b class="vn">'+E((W.__VEREIN&&W.__VEREIN.name)||"Verein")+'</b><label class="note">Mannschaft <select id="vteam" aria-label="Mannschaft wechseln">'+al.map((t)=>'<option value="'+E(t.id)+'"'+(t.id===W.__TID?" selected":"")+'>'+E(t.name+(t.ak?" ("+t.ak+")":"")+(t.aktiv===false?" – inaktiv":""))+'</option>').join("")+'</select></label><button class="btn" id="vopen" type="button">Verein</button><button class="pill err" id="vhin" type="button" hidden style="border:0;cursor:pointer"></button><span class="note vr" id="vrole">'+E(ROLLEN[V.rolle()]||"")+(W.__VME?" · "+E(W.__VME.email):"")+'</span>';
-  const app=q(".app");app?app.parentNode.insertBefore(bar,app):document.body.insertBefore(bar,document.body.firstChild);
-  q("#vteam",bar).onchange=(e)=>{if(e.target.value!==W.__TID)V.setTeam(e.target.value)};
-  q("#vopen",bar).onclick=()=>V.open();
-  q("#vhin",bar).onclick=()=>V.open("uebersicht");
+const ini=(n)=>{n=String(n||"Verein").trim();const w=n.split(/\s+/);return w[0].length<=4?w[0]:w.slice(0,3).map((x)=>x[0]).join("").toUpperCase()};
+const MENU=[
+ {id:"uebersicht",label:"Übersicht",tabs:["uebersicht"]},
+ {id:"mannschaft",label:"Mannschaft",app:true},
+ {id:"fach",label:"Fachnotizen",tabs:["fach"]},
+ {id:"planung",label:"Planung",tabs:["platz","kabinen"]},
+ {id:"personen",label:"Personen & Rechte",tabs:["personen"]},
+ {id:"teams",label:"Mannschaften",tabs:["teams"]},
+ {id:"datenschutz",label:"Datenschutz",tabs:["datenschutz"]}];
+V.MENU=MENU;
+const tabsOf=(m)=>(m.tabs||[]).map((id)=>V.tabs.find((t)=>t.id===id)).filter((t)=>t&&(!t.show||t.show()));
+const menuOf=(tabId)=>MENU.find((m)=>(m.tabs||[]).indexOf(tabId)>=0);
+const menuVis=()=>MENU.filter((m)=>m.app||tabsOf(m).length);
+function teamLine(){const t=W.__TEAM||{};return (t.name||"")+(t.ak?" · "+t.ak:"")+((W.__VEREIN&&W.__VEREIN.saison)?" · "+W.__VEREIN.saison:"")}
+function switcherHtml(){
+  const all=V.teams(),cur=W.__TID,row=(t,sub)=>'<button type="button" data-sw="'+E(t.id)+'" class="'+(t.id===cur?"on":"")+'"><b>'+E(t.name)+'</b> <span class="note">'+E(t.ak||"")+'</span><span class="sub">'+E(sub||"")+'</span></button>';
+  const act=(t)=>t.aktiv!==false;
+  let h="";
+  if(V.isAll()){
+    h+='<h4>Alle Mannschaften</h4>'+all.filter(act).map((t)=>row(t,t.id===cur?"aktiv":"")).join("");
+    const ar=all.filter((t)=>!act(t));if(ar.length)h+='<h4>Archiviert</h4>'+ar.map((t)=>row(t,"")).join("");
+    return h;
+  }
+  const own=all.filter((t)=>V.has(t.id,"bearbeiten")),rd=all.filter((t)=>!V.has(t.id,"bearbeiten")&&V.has(t.id,"sehen")),kd=all.filter((t)=>!V.has(t.id,"bearbeiten")&&!V.has(t.id,"sehen")&&(V.has(t.id,"kader")||V.has(t.id,"kaderbearb"))),rest=all.filter((t)=>V.rights(t.id).length===0&&act(t));
+  if(own.length)h+='<h4>Meine Mannschaften</h4>'+own.map((t)=>row(t,V.artOf(t.id))).join("");
+  if(rd.length)h+='<h4>Mit Leserecht</h4>'+rd.map((t)=>row(t,V.artOf(t.id))).join("");
+  if(kd.length)h+='<h4>Kaderplanung freigegeben</h4>'+kd.map((t)=>row(t,"Kader & Scouting")).join("");
+  if(rest.length)h+='<h4>Weitere Mannschaften</h4><div class="dim">'+rest.map((t)=>E(t.name)).join(" · ")+' – keine Rechte</div>';
+  return h;
+}
+V.artOf=(tid)=>{const n=(V.me().zu||[]).filter((z)=>z.bereich?((V.bereiche().find((b)=>b.id===z.bereich)||{}).teams||[]).indexOf(tid)>=0:(z.teams||[]).indexOf(tid)>=0).map((z)=>V.artName(z.art));if(n.length)return Array.from(new Set(n)).join(" · ");return ((V.me().kader||{})[tid]||0)>Date.now()?"Kaderplanung":""};
+function mountNav(){
+  if(q("#vnav"))return;
+  document.documentElement.classList.add("vclub");
+  const nav=document.createElement("header");nav.id="vnav";
+  nav.innerHTML='<div class="vpill" role="tablist"><button type="button" class="vbrand" id="vhome" title="Zur Mannschaft"><span class="vlogo">'+E(ini(W.__VEREIN&&W.__VEREIN.name))+'</span><span>'+E((W.__VEREIN&&W.__VEREIN.name)||"Verein")+'</span></button><span id="vmenu" style="display:contents"></span></div>'
+   +'<div class="vr"><button class="vchip err" id="vhin" type="button" hidden></button><button class="vchip" id="vteamb" type="button" aria-haspopup="true" aria-label="Mannschaft wechseln"></button><span class="vchip" id="vrole"></span><div id="vdrop" hidden></div></div>';
+  const app=q(".app");app?app.parentNode.insertBefore(nav,app):document.body.insertBefore(nav,document.body.firstChild);
+  const fit=()=>document.documentElement.style.setProperty("--vnh",nav.offsetHeight+"px");
+  fit();try{new ResizeObserver(fit).observe(nav)}catch(e){W.addEventListener("resize",fit)}
+  q("#vhome",nav).onclick=()=>V.go("mannschaft");
+  q("#vmenu",nav).onclick=(e)=>{const b=e.target.closest("button[data-m]");if(b)V.go(b.dataset.m)};
+  q("#vhin",nav).onclick=()=>V.go("uebersicht");
+  const dr=q("#vdrop",nav);
+  q("#vteamb",nav).onclick=(e)=>{e.stopPropagation();dr.innerHTML=switcherHtml();dr.hidden=!dr.hidden};
+  dr.onclick=(e)=>{const b=e.target.closest("button[data-sw]");if(b&&b.dataset.sw!==W.__TID)V.setTeam(b.dataset.sw);else dr.hidden=true};
+  document.addEventListener("click",(e)=>{if(!dr.hidden&&!e.target.closest("#vdrop")&&!e.target.closest("#vteamb"))dr.hidden=true});
+  refreshNav();
+}
+function refreshNav(){
+  const nav=q("#vnav");if(!nav)return;
+  const cur=V.cur?(menuOf(V.cur)||{}).id:"mannschaft";
+  q("#vmenu",nav).innerHTML=menuVis().map((m)=>'<button type="button" role="tab" data-m="'+m.id+'" class="'+(m.id===cur?"on":"")+'">'+E(m.label)+'</button>').join("");
+  q("#vteamb",nav).innerHTML='<b>'+E((W.__TEAM||{}).name||"")+'</b><span class="note">'+E((W.__TEAM||{}).ak||"")+'</span> ▾';
+  q("#vrole",nav).innerHTML='<b>'+E((W.__VME&&(W.__VME.name||W.__VME.email.split("@")[0]))||"")+'</b> · '+E(V.roleLabel());
+  q("#vrole",nav).title=(W.__VME&&W.__VME.email)||"";
+}
+V.refreshNav=refreshNav;
+/* Überschriften der Mannschafts-App an die gewählte Mannschaft anpassen */
+function syncTitles(){
+  const t=W.__TEAM||{},club=(W.__VEREIN&&W.__VEREIN.name)||"Verein";
+  document.title=(t.name?t.name+" · ":"")+club;
+  const h=document.querySelector("nav h1");if(h&&h.firstChild&&h.firstChild.nodeType===3)h.firstChild.textContent=(t.name||"")+" · ";
 }
 /* Offene Hinweise der eigenen Mannschaft */
 V.hin=[];
@@ -5381,17 +5476,16 @@ V.savePlan=async(patch)=>{V.plan=Object.assign({},V.plan,patch);await V.fs().doc
 /* Teamnamen für den Platzwart-Link (er darf „verein“ nicht lesen) im Plan mitführen */
 V.syncTeamNames=async()=>{const t=V.teams().map((x)=>({id:x.id,name:x.name,ak:x.ak||"",aktiv:x.aktiv!==false}));await V.savePlan({teams:t})};
 
-/* ---------- Vereinsbereich (Vollbild) ---------- */
+/* ---------- Vereinsbereich (unter dem Menü) ---------- */
 let panel=null;
 V.cur=null;
-function tabsFor(){return V.tabs.filter((t)=>t.roles.indexOf(V.rolle())>=0)}
+const tabsFor=()=>V.tabs.filter((t)=>!t.show||t.show());
 function ensurePanel(){
   if(panel)return panel;
   panel=document.createElement("div");panel.id="vp";panel.hidden=true;
-  panel.innerHTML='<div class="vph"><b>'+E((W.__VEREIN&&W.__VEREIN.name)||"Verein")+'</b><div class="vtabs" role="tablist"></div><button class="btn" id="vclose" type="button">Schließen</button></div><div id="vbody"></div>';
+  panel.innerHTML='<div class="vsub" id="vsub" role="tablist"></div><div id="vbody"></div>';
   document.body.appendChild(panel);
-  q("#vclose",panel).onclick=()=>V.close();
-  q(".vtabs",panel).onclick=(e)=>{const b=e.target.closest("button[data-t]");if(b)V.open(b.dataset.t)};
+  q("#vsub",panel).onclick=(e)=>{const b=e.target.closest("button[data-t]");if(b)V.open(b.dataset.t)};
   document.addEventListener("keydown",(e)=>{if(e.key==="Escape"&&panel&&!panel.hidden)V.close()});
   return panel;
 }
@@ -5400,21 +5494,28 @@ V.open=(id)=>{
   const t=ts.find((x)=>x.id===id)||ts.find((x)=>x.id===V.cur)||ts[0];if(!t)return;
   if(V.cur&&V.cur!==t.id){const o=V.tabs.find((x)=>x.id===V.cur);o&&o.stop&&o.stop()}
   V.cur=t.id;panel.hidden=false;
-  q(".vtabs",panel).innerHTML=ts.map((x)=>'<button type="button" role="tab" id="vtab-'+x.id+'" data-t="'+x.id+'" class="'+(x.id===t.id?"on":"")+'">'+E(x.label)+'</button>').join("");
-  V.render();
+  const m=menuOf(t.id),sib=m?tabsOf(m):[];
+  q("#vsub",panel).innerHTML=sib.length>1?sib.map((x)=>'<button type="button" role="tab" data-t="'+x.id+'" class="'+(x.id===t.id?"on":"")+'">'+E(x.label)+'</button>').join(""):"";
+  q("#vsub",panel).style.display=sib.length>1?"flex":"none";
+  refreshNav();V.render();
+  try{q("#vp").scrollTop=0}catch(e){}
 };
-V.close=()=>{if(!panel)return;const o=V.tabs.find((x)=>x.id===V.cur);o&&o.stop&&o.stop();panel.hidden=true;V.cur=null};
+V.close=()=>{if(!panel)return;const o=V.tabs.find((x)=>x.id===V.cur);o&&o.stop&&o.stop();panel.hidden=true;V.cur=null;refreshNav()};
+/* Menüpunkt öffnen: „mannschaft“ zeigt die Mannschafts-App */
+V.go=(mid,tab)=>{const m=MENU.find((x)=>x.id===mid);if(!m)return;if(m.app){V.close();try{window.scrollTo(0,0)}catch(e){}return}const ts=tabsOf(m);const t=ts.find((x)=>x.id===tab)||ts[0];if(t)V.open(t.id)};
+/* Mannschafts-App auf einem bestimmten Reiter (Kader & Scouting …) */
+V.app=(sec)=>{V.close();const b=document.querySelector('nav button[data-s="'+sec+'"]');if(b)b.click()};
 V.render=()=>{if(!panel||panel.hidden)return;const t=V.tabs.find((x)=>x.id===V.cur);if(!t)return;
   try{t.render(q("#vbody",panel))}catch(e){q("#vbody",panel).innerHTML='<div class="card"><b>Diese Ansicht konnte nicht aufgebaut werden.</b><div class="note">'+E(e&&e.message)+'</div></div>'}};
 V.tab=(t)=>V.tabs.push(t);
 /* Kleinen Bereich neu zeichnen, ohne Eingaben zu verlieren: nur wenn nichts eingegeben wird */
 V.typing=()=>{const a=document.activeElement;return !!(a&&panel&&panel.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))};
 
-/* ---------- Kennzahlen aller Mannschaften ---------- */
+/* ---------- Kennzahlen aller sichtbaren Mannschaften ---------- */
 function subStats(){
   V.stop();
-  V.teams().filter((t)=>(W.__VALLOWED||[]).indexOf(t.id)>=0).forEach((t)=>{
-    V.subs.push(V.fs().doc(t.id+"__vstat/main").onSnapshot((s)=>{V.st[t.id]=s.exists?s.data():null;V.st["~got"+t.id]=1;if(V.cur&&/uebersicht|sl/.test(V.cur)&&!V.typing())V.render()},()=>{V.st["~got"+t.id]=1}));
+  V.visTeams().forEach((t)=>{
+    V.subs.push(V.fs().doc(t.id+"__vstat/main").onSnapshot((s)=>{V.st[t.id]=s.exists?s.data():null;V.st["~got"+t.id]=1;if(V.cur&&/uebersicht/.test(V.cur)&&!V.typing())V.render()},()=>{V.st["~got"+t.id]=1}));
   });
 }
 V.stop=()=>{V.subs.forEach((u)=>{try{u&&u()}catch(e){}});V.subs=[]};
@@ -5426,81 +5527,96 @@ V.pflege=(s)=>{const st=V.set(),tage=s&&s.at?V.days(s.at):null;if(tage==null)ret
 V.pflegeTxt=(p)=>p.tage==null?"noch nie":p.tage<=0?"heute":p.tage===1?"gestern":"vor "+p.tage+" Tagen";
 const nextGame=(s)=>{const g=s&&(s.naechste||[])[0];return g?V.fd(g.d)+(g.z?" "+g.z:"")+" · "+(g.h==="H"?"Heim gegen ":g.h==="A"?"Auswärts bei ":"")+(g.g||"?"):"–"};
 V.nextGame=nextGame;
+const BCOL=["var(--grs)","var(--r)","var(--o)","var(--y)","var(--g)"];
 
-V.tab({id:"uebersicht",label:"Übersicht",roles:["admin","jugendleiter","sportleiter","trainer","cotrainer","lesen","scout"],render(el){
-  const mine=(W.__VALLOWED||[]),teams=V.teams().filter((t)=>mine.indexOf(t.id)>=0),act=teams.filter((t)=>t.aktiv!==false),ina=teams.filter((t)=>t.aktiv===false);
+/* ---------- Übersicht (mit Filtern), Hinweise, Handlungsbedarf ---------- */
+let ufilt="";
+try{ufilt=localStorage.getItem("u13uf")||""}catch(e){}
+let hSub=[];
+V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasAnyT("kader"),stop(){hSub.forEach((u)=>{try{u()}catch(e){}});hSub=[]},render(el){
+  if(V.typing())return;
+  const vis=V.visTeams(),mineIds=vis.filter((t)=>V.has(t.id,"bearbeiten")).map((t)=>t.id);
+  const filters=[{id:"alle",n:"Alle",f:()=>true}];
+  if(!V.isAll()&&mineIds.length)filters.unshift({id:"meine",n:"Meine Mannschaften",f:(t)=>mineIds.indexOf(t.id)>=0});
+  V.bereiche().forEach((b)=>{if((b.teams||[]).some((id)=>vis.some((t)=>t.id===id)))filters.push({id:"b:"+b.id,n:b.name,f:(t)=>(b.teams||[]).indexOf(t.id)>=0})});
+  const fid=filters.find((x)=>x.id===ufilt)?ufilt:filters[0].id,flt=filters.find((x)=>x.id===fid);
+  const teams=vis.filter(flt.f),act=teams.filter((t)=>t.aktiv!==false),ina=teams.filter((t)=>t.aktiv===false);
   const got=teams.every((t)=>V.st["~got"+t.id]);
-  const open=V.hin.filter((x)=>!x.erledigt),own=V.st[W.__TID];
-  const ow=V.pflege(own);
-  let h='<h2>Übersicht</h2><p class="sub note">'+(V.isStaff()||V.rolle()==="lesen"?"Alle Mannschaften auf einen Blick.":"Deine Mannschaft"+(act.length>1?"en":"")+" auf einen Blick.")+'</p>';
-  if(open.length)h+='<div class="card vc" style="border-color:var(--y);background:var(--ys)"><b>Hinweise für '+E(V.tname(W.__TID))+'</b>'+open.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+E(x.text)+' <span class="note">· '+E(x.von||"")+' · '+E(String(x.at||"").slice(0,10).split("-").reverse().join("."))+'</span></span>'+(["lesen","scout","sportleiter"].indexOf(V.rolle())<0?'<button class="btn" data-ok="'+E(x.id)+'">Erledigt</button>':"")+'</div>').join("")+'</div>';
-  if(["admin","jugendleiter","trainer","cotrainer"].includes(V.rolle())&&ow.art&&own!==undefined)h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Erinnerung</b><div class="note" style="color:inherit">Die Daten von '+E(V.tname(W.__TID))+' wurden zuletzt '+E(V.pflegeTxt(ow))+' gepflegt. Bitte Anwesenheit und Spielzeit nachtragen.</div></div>';
-  h+='<div class="card vc"><div class="tw"><table class="vt" id="vuet"><thead><tr><th>Mannschaft</th><th class="r">Spieler</th><th>Training</th><th>Spielzeit</th><th>Zuletzt gepflegt</th><th>Nächstes Spiel</th><th></th></tr></thead><tbody>';
-  act.forEach((t)=>{
-    const s=V.st[t.id],p=V.pflege(s),c=V.col(t.id);
-    h+='<tr data-team="'+E(t.id)+'" class="'+(p.art==="grau"?"dim":"")+'"><td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+c.bd+';margin-right:6px"></span><b>'+E(t.name)+'</b> <span class="note">'+E(t.ak||"")+'</span></td>'
-     +'<td class="r">'+(s?s.n:"–")+'</td><td>'+(s?dot(s.fbet,s.bet):'<span class="vdot p0">–</span>')+'</td><td>'+(s?dot(s.fzeit,s.zeit):'<span class="vdot p0">–</span>')+'</td>'
-     +'<td>'+(s&&s.at?E(V.pflegeTxt(p)):(got?'<span class="note">noch keine Daten</span>':"…"))+' '+(p.art==="grau"&&s&&s.at?'<span class="vbad">ausgegraut</span>':p.art==="erinnerung"?'<span class="vbad o">Erinnerung</span>':"")+'</td>'
-     +'<td class="note">'+E(nextGame(s))+'</td><td>'+(t.id===W.__TID?'<span class="vbad g">geöffnet</span>':'<button class="btn" data-go="'+E(t.id)+'">Öffnen</button>')+'</td></tr>';
-  });
-  h+='</tbody></table></div>'+(act.length?"":'<div class="note" style="padding:10px">Keine Mannschaft.</div>')+'</div>';
+  const open=V.hin.filter((x)=>!x.erledigt),own=V.st[W.__TID],ow=V.pflege(own);
+  const have=act.map((t)=>V.st[t.id]).filter(Boolean);
+  const avg=(f)=>{const v=have.map(f).filter((x)=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+  const need=act.filter((t)=>{const s=V.st[t.id];return !s||V.pflege(s).art||(s.fzeit>0&&s.fzeit<=2)||(s.fbet>0&&s.fbet<=2)});
+  const hinT=(V.isAll()?V.teams().filter((t)=>t.aktiv!==false):V.teams().filter((t)=>t.aktiv!==false&&V.has(t.id,"hinweise")));
+  let h='<h2>Übersicht</h2><p class="sub note">'+((V.isAll()||fid==="alle"&&vis.length>1)?"Die Mannschaften auf einen Blick.":"Deine Mannschaft"+(act.length>1?"en":"")+" auf einen Blick.")+'</p>';
+  if(filters.length>1)h+='<div class="vf" role="tablist">'+filters.map((x)=>'<button type="button" data-f="'+E(x.id)+'" class="'+(x.id===fid?"on":"")+'">'+E(x.n)+'</button>').join("")+'</div>';
+  if(open.length&&V.has(W.__TID,"sehen"))h+='<div class="card vc" style="border-color:var(--y);background:var(--ys)"><b>Hinweise für '+E(V.tname(W.__TID))+'</b>'+open.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+E(x.text)+' <span class="note">· '+E(x.von||"")+' · '+E(String(x.at||"").slice(0,10).split("-").reverse().join("."))+'</span></span>'+(V.canWrite()?'<button class="btn" data-ok="'+E(x.id)+'">Erledigt</button>':"")+'</div>').join("")+'</div>';
+  if(V.canWrite()&&ow.art&&own!==undefined)h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Erinnerung</b><div class="note" style="color:inherit">Die Daten von '+E(V.tname(W.__TID))+' wurden zuletzt '+E(V.pflegeTxt(ow))+' gepflegt. Bitte Anwesenheit und Spielzeit nachtragen.</div></div>';
+  if(act.length>1||have.length)h+='<div class="kpis"><div class="card kpi"><b>'+act.length+'</b><span>aktive Mannschaften</span></div><div class="card kpi"><b>'+have.reduce((a,s)=>a+(s.n||0),0)+'</b><span>Spieler insgesamt</span></div><div class="card kpi"><b>'+pcx(avg((s)=>s.bet))+'</b><span>Ø Training</span></div><div class="card kpi"><b>'+pcx(avg((s)=>s.zeit))+'</b><span>Ø Spielzeit</span></div><div class="card kpi c'+(need.length?2:4)+'"><b>'+need.length+'</b><span>brauchen Aufmerksamkeit</span></div></div>';
+  h+='<div class="vtg">'+act.map((t)=>{
+    const s=V.st[t.id],p=V.pflege(s),f=s?Math.min(s.fbet||0,s.fzeit||0)||s.fbet||0:0;
+    return '<div class="vtc'+(p.art==="grau"?" dim":"")+(t.id===W.__TID?" cur":"")+'" data-go="'+E(t.id)+'" role="button" tabindex="0"><div class="vth"><b>'+E(t.name)+'</b><span class="note">'+E(t.ak||"")+'</span><span class="vn">'+(s?s.n+" Spieler":(got?"–":"…"))+'</span></div>'
+      +'<div class="vbar" title="Training"><i style="width:'+(s&&s.bet!=null?Math.round(s.bet*100):0)+'%;background:'+BCOL[s?(s.fbet||0):0]+'"></i></div>'
+      +'<div class="vm">Training '+(s?pcx(s.bet):"–")+' · Spielzeit '+(s?pcx(s.zeit):"–")+'</div>'
+      +'<div class="vm">'+(s&&s.at?"gepflegt "+E(V.pflegeTxt(p)):(got?"noch keine Daten":"…"))+' '+(p.art==="grau"&&s&&s.at?'<span class="vbad">ausgegraut</span>':p.art==="erinnerung"?'<span class="vbad o">Erinnerung</span>':"")+'</div>'
+      +'<div class="vm">'+E(nextGame(s))+'</div></div>'}).join("")+'</div>';
+  if(!act.length)h+='<div class="note" style="padding:10px">Keine Mannschaft in dieser Auswahl.</div>';
   if(ina.length)h+='<div class="note">Nicht besetzt: '+ina.map((t)=>E(t.name+" ("+t.ak+")")).join(", ")+'</div>';
+  if(hinT.length){
+    h+='<div class="card vc" style="margin-top:14px"><h3>Hinweis an eine Mannschaft</h3>';
+    if(need.length)h+=need.filter((t)=>hinT.some((x)=>x.id===t.id)).map((t)=>{const s=V.st[t.id],p=V.pflege(s),why=[];
+      if(!s)why.push("noch keine Daten");else{if(p.art)why.push("zuletzt gepflegt "+V.pflegeTxt(p));if(s.fzeit>0&&s.fzeit<=2)why.push("Spielzeit niedrig ("+pcx(s.zeit)+")");if(s.fbet>0&&s.fbet<=2)why.push("Training niedrig ("+pcx(s.bet)+")");if(s.low)why.push(s.low+" Spieler mit zu wenig Spielzeit")}
+      return '<div class="vrow"><b style="min-width:110px">'+E(V.tname(t.id))+'</b><span class="note" style="flex:1;min-width:200px">'+E(why.join(" · "))+'</span><button class="btn" data-rem="'+E(t.id)+'">Erinnern</button></div>'}).join("");
+    h+='<div class="vrow" style="margin-top:8px"><label>Mannschaft<select id="slt">'+hinT.map((t)=>'<option value="'+E(t.id)+'">'+E(V.tname(t.id))+'</option>').join("")+'</select></label><label style="flex:1;min-width:220px">Hinweis<input id="slx" maxlength="300" placeholder="z. B. Bitte die Spielzeit vom letzten Wochenende nachtragen"></label><button class="btn" id="slsend" type="button" style="align-self:flex-end">Senden</button></div><div class="note">Der Hinweis erscheint bei den Trainern der Mannschaft oben im Menü und in der Übersicht, bis er als erledigt markiert wird.</div><div class="vmsg" id="slm"></div>';
+    const all=[];hinT.forEach((t)=>(V.st["~h"+t.id]||[]).forEach((x)=>all.push({...x,tid:t.id})));all.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+    if(all.length)h+='<div class="tw" style="margin-top:6px"><table class="vt"><thead><tr><th>Datum</th><th>Mannschaft</th><th>Hinweis</th><th>Von</th><th>Stand</th></tr></thead><tbody>'+all.slice(0,30).map((x)=>'<tr><td>'+E(V.fdl(String(x.at||"").slice(0,10)))+'</td><td>'+E(V.tshort(x.tid))+'</td><td style="white-space:normal">'+E(x.text)+'</td><td class="note">'+E(x.von||"")+'</td><td>'+(x.erledigt?'<span class="vbad g">erledigt</span>':'<span class="vbad o">offen</span>')+'</td></tr>').join("")+'</tbody></table></div>';
+    h+='</div>';
+    if(!hSub.length)hinT.forEach((t)=>{hSub.push(V.fs().collection(t.id+"__vhinweise").onSnapshot((s)=>{V.st["~h"+t.id]=s.docs.map((d)=>({id:d.id,...d.data()}));if(V.cur==="uebersicht"&&!V.typing())V.render()},()=>{}))});
+  }
   const L=U13.grTexte("t"),L2=U13.grTexte("s");
   h+='<p class="note" style="margin-top:10px">Training = Beteiligung im Durchschnitt, Spielzeit = gewichteter Anteil. Farben: rot '+E(L[0])+' · orange '+E(L[1])+' · gelb '+E(L[2])+' · grün '+E(L[3])+' (Training); Spielzeit rot '+E(L2[0])+' … grün '+E(L2[3])+'. Mannschaften, die lange nicht gepflegt wurden, erscheinen ausgegraut (Einstellung unter „Mannschaften“).</p>';
   el.innerHTML=h;
-  el.onclick=async(e)=>{
-    const g=e.target.closest("[data-go]");if(g){V.setTeam(g.dataset.go);return}
-    const o=e.target.closest("[data-ok]");if(o){try{await V.fs().doc(W.__TID+"__vhinweise/"+o.dataset.ok).update({erledigt:true,erledigtAm:new Date().toISOString()})}catch(x){}}
-  };
-}});
-
-/* ---------- Bereich Sportlicher Leiter ---------- */
-let slSub=[];
-V.tab({id:"sl",label:"Sportlicher Leiter",roles:["admin","jugendleiter","sportleiter"],stop(){slSub.forEach((u)=>{try{u()}catch(e){}});slSub=[]},render(el){
-  const teams=V.teams().filter((t)=>t.aktiv!==false);
-  if(!slSub.length){teams.forEach((t)=>{slSub.push(V.fs().collection(t.id+"__vhinweise").onSnapshot((s)=>{V.st["~h"+t.id]=s.docs.map((d)=>({id:d.id,...d.data()}));if(V.cur==="sl"&&!V.typing())V.render()},()=>{}))})}
-  const rows=teams.map((t)=>({t,s:V.st[t.id]}));
-  const have=rows.filter((r)=>r.s);
-  const avg=(f)=>{const v=have.map(f).filter((x)=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
-  const red=have.filter((r)=>r.s.fzeit>0&&r.s.fzeit<=2).length,pb=have.filter((r)=>V.pflege(r.s).art).length+rows.filter((r)=>!r.s).length;
-  let h='<h2>Sportlicher Leiter</h2><p class="sub note">Vergleich aller aktiven Mannschaften und Hinweise an die Trainer. Du siehst die Daten, ändern kannst du sie nur über die Trainer.</p>';
-  h+='<div class="kpis"><div class="card kpi"><b>'+teams.length+'</b><span>aktive Mannschaften</span></div><div class="card kpi"><b>'+have.reduce((a,r)=>a+(r.s.n||0),0)+'</b><span>Spieler insgesamt</span></div><div class="card kpi"><b>'+pcx(avg((r)=>r.s.bet))+'</b><span>Ø Training</span></div><div class="card kpi"><b>'+pcx(avg((r)=>r.s.zeit))+'</b><span>Ø Spielzeit</span></div><div class="card kpi c'+(red?1:4)+'"><b>'+red+'</b><span>mit niedriger Spielzeit</span></div><div class="card kpi c'+(pb?2:4)+'"><b>'+pb+'</b><span>lange nicht gepflegt</span></div></div>';
-  h+='<div class="card vc"><h3>Handlungsbedarf</h3>';
-  const need=rows.filter((r)=>!r.s||V.pflege(r.s).art||(r.s.fzeit>0&&r.s.fzeit<=2)||(r.s.fbet>0&&r.s.fbet<=2));
-  if(!need.length)h+='<div class="note">Bei keiner Mannschaft gibt es gerade Handlungsbedarf.</div>';
-  need.forEach((r)=>{
-    const s=r.s,p=V.pflege(s),why=[];
-    if(!s)why.push("noch keine Daten");else{if(p.art)why.push("zuletzt gepflegt "+V.pflegeTxt(p));if(s.fzeit>0&&s.fzeit<=2)why.push("Spielzeit niedrig ("+pcx(s.zeit)+")");if(s.fbet>0&&s.fbet<=2)why.push("Training niedrig ("+pcx(s.bet)+")");if(s.low)why.push(s.low+(s.low===1?" Spieler":" Spieler")+" mit zu wenig Spielzeit")}
-    h+='<div class="vrow"><b style="min-width:110px">'+E(V.tname(r.t.id))+'</b><span class="note" style="flex:1;min-width:200px">'+E(why.join(" · "))+'</span><button class="btn" data-rem="'+E(r.t.id)+'">Erinnern</button></div>';
-  });
-  h+='<div class="vmsg" id="slm"></div></div>';
-  h+='<div class="card vc"><h3>Hinweis an eine Mannschaft</h3><div class="vrow"><label>Mannschaft<select id="slt">'+teams.map((t)=>'<option value="'+E(t.id)+'">'+E(V.tname(t.id))+'</option>').join("")+'</select></label><label style="flex:1;min-width:220px">Hinweis<input id="slx" maxlength="300" placeholder="z. B. Bitte die Spielzeit vom letzten Wochenende nachtragen"></label><button class="btn" id="slsend" type="button" style="align-self:flex-end">Senden</button></div><div class="note">Der Hinweis erscheint bei den Trainern der Mannschaft oben in der Leiste und in der Übersicht, bis er als erledigt markiert wird.</div></div>';
-  const all=[];teams.forEach((t)=>(V.st["~h"+t.id]||[]).forEach((x)=>all.push({...x,tid:t.id})));all.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
-  h+='<div class="card vc"><h3>Verlauf der Hinweise</h3>'+(all.length?'<div class="tw"><table class="vt"><thead><tr><th>Datum</th><th>Mannschaft</th><th>Hinweis</th><th>Von</th><th>Stand</th></tr></thead><tbody>'+all.slice(0,40).map((x)=>'<tr><td>'+E(V.fdl(String(x.at||"").slice(0,10)))+'</td><td>'+E(V.tshort(x.tid))+'</td><td style="white-space:normal">'+E(x.text)+'</td><td class="note">'+E(x.von||"")+'</td><td>'+(x.erledigt?'<span class="vbad g">erledigt</span>':'<span class="vbad o">offen</span>')+'</td></tr>').join("")+'</tbody></table></div>':'<div class="note">Noch keine Hinweise.</div>')+'</div>';
-  el.innerHTML=h;
   const send=async(tid,text,art)=>{const m=q("#slm",el);try{await V.fs().doc(tid+"__vhinweise/"+V.id("h")).set({text,von:(W.__VME&&(W.__VME.name||W.__VME.email))||"",at:new Date().toISOString(),erledigt:false,art:art||"hinweis"});V.log("Hinweis an "+V.tshort(tid),tid);if(m){m.className="vmsg ok";m.textContent="Gesendet an "+V.tshort(tid)+"."}return true}catch(e){if(m){m.className="vmsg er";m.textContent="Das hat nicht geklappt."}return false}};
   el.onclick=async(e)=>{
+    const fb=e.target.closest("[data-f]");if(fb){ufilt=fb.dataset.f;try{localStorage.setItem("u13uf",ufilt)}catch(x){}V.render();return}
+    const g=e.target.closest("[data-go]");if(g){if(g.dataset.go===W.__TID)V.go("mannschaft");else V.setTeam(g.dataset.go);return}
+    const o=e.target.closest("[data-ok]");if(o){try{await V.fs().doc(W.__TID+"__vhinweise/"+o.dataset.ok).update({erledigt:true,erledigtAm:new Date().toISOString()})}catch(x){}return}
     const r=e.target.closest("[data-rem]");if(r){await send(r.dataset.rem,"Bitte die Daten der Mannschaft aktualisieren (Anwesenheit und Spielzeit nachtragen).","erinnerung");return}
     if(e.target.id==="slsend"){const t=q("#slt",el).value,x=q("#slx",el).value.trim();if(!x){const m=q("#slm",el);m.className="vmsg er";m.textContent="Bitte einen Text eintragen.";return}if(await send(t,x))q("#slx",el).value=""}
   };
+  el.onkeydown=(e)=>{if((e.key==="Enter"||e.key===" ")&&e.target.dataset&&e.target.dataset.go){e.preventDefault();e.target.click()}};
 }});
 
+/* verein/main ändern (Mannschaften, Bereiche, Trainerarten, Einstellungen) und Zwischenspeicher aktualisieren */
+V.saveVerein=async(patch)=>{const v={...W.__VEREIN,...patch};await V.fs().doc("verein/main").set(v);W.__VEREIN=v;
+  try{const c=JSON.parse(localStorage.getItem("u13v:"+W.__VME.email)||"null");if(c){c.V=v;localStorage.setItem("u13v:"+W.__VME.email,JSON.stringify(c))}}catch(x){}return v};
 /* ---------- Mannschaften verwalten ---------- */
-V.tab({id:"teams",label:"Mannschaften",roles:["admin","jugendleiter"],render(el){
+V.tab({id:"teams",label:"Mannschaften",show:()=>V.isAll(),render(el){
   if(V.typing())return;
   const ts=V.teams(),st=V.set();
   let h='<h2>Mannschaften</h2><p class="sub note">Mannschaften lassen sich beliebig ergänzen (z. B. E3 oder U10-3). Nicht besetzte Mannschaften werden archiviert, ihre Daten bleiben erhalten.</p>';
   h+='<div class="card vc"><div class="tw"><table class="vt"><thead><tr><th>Name</th><th>Altersklasse</th><th>Status</th><th></th></tr></thead><tbody>'+ts.map((t)=>'<tr><td><input data-n="'+E(t.id)+'" value="'+E(t.name)+'" maxlength="20" style="width:120px"></td><td><input data-a="'+E(t.id)+'" value="'+E(t.ak||"")+'" maxlength="12" style="width:90px"></td><td>'+(t.aktiv===false?'<span class="vbad">archiviert</span>':'<span class="vbad g">aktiv</span>')+'</td><td><button class="btn" data-t="'+E(t.id)+'">'+(t.aktiv===false?"Wieder aktivieren":"Archivieren")+'</button></td></tr>').join("")+'</tbody></table></div>'
    +'<div class="vrow" style="margin-top:12px"><label>Neue Mannschaft<input id="tnn" maxlength="20" placeholder="z. B. E3"></label><label>Altersklasse<input id="tna" maxlength="12" placeholder="z. B. U10"></label><button class="btn" id="tadd" type="button" style="align-self:flex-end">Hinzufügen</button></div><div class="vmsg" id="tm"></div></div>';
   h+='<div class="card vc"><h3>Pflege-Erinnerung</h3><div class="vrow"><label>Erinnern nach (Tage)<input id="tse" type="number" min="7" max="365" value="'+st.erinnerungTage+'" style="width:100px"></label><label>Ausgrauen nach (Tage)<input id="tsa" type="number" min="14" max="400" value="'+st.ausgrauenTage+'" style="width:100px"></label><button class="btn" id="tss" type="button" style="align-self:flex-end">Speichern</button></div><div class="note">Wurde in einer Mannschaft so lange nichts gespeichert, erscheint die Erinnerung bzw. die Mannschaft wird in der Übersicht ausgegraut.</div><div class="vmsg" id="ts"></div></div>';
+  const bs=V.bereiche();
+  h+='<div class="card vc"><h3>Bereiche</h3><p class="note" style="margin-top:0">Ein Bereich fasst Mannschaften zusammen, zum Beispiel „Minis bis U13“. Personen (z. B. ein sportlicher Leiter) lassen sich einem ganzen Bereich zuordnen, und in der Übersicht kann man nach Bereich filtern. Ändert sich ein Bereich, passen sich die Rechte der Personen automatisch an.</p>'
+   +bs.map((b)=>'<div class="vrow" style="align-items:flex-start;border-top:1px solid var(--ln);padding-top:8px"><input data-bn="'+E(b.id)+'" value="'+E(b.name)+'" maxlength="40" style="width:170px"><span style="flex:1;min-width:200px">'+ts.filter((t)=>t.aktiv!==false).map((t)=>'<span class="vch'+((b.teams||[]).indexOf(t.id)>=0?" on":"")+'" data-bt="'+E(b.id)+'|'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join("")+'</span><button class="btn" data-bd="'+E(b.id)+'">Löschen</button></div>').join("")
+   +'<div class="vrow" style="margin-top:10px"><label>Neuer Bereich<input id="bnn" maxlength="40" placeholder="z. B. Minis bis U13"></label><button class="btn" id="badd" type="button" style="align-self:flex-end">Hinzufügen</button></div><div class="vmsg" id="bm"></div></div>';
   el.innerHTML=h;
   const msg=(id,t,k)=>{const m=q("#"+id,el);m.className="vmsg "+(k||"ok");m.textContent=t};
+  const saveB=async(arr,txt)=>{try{await V.saveVerein({bereiche:arr});V.log(txt);if(V.resync)await V.resync();return true}catch(x){msg("bm","Das hat nicht geklappt.","er");return false}};
   const save=async(teams,txt)=>{const v={...W.__VEREIN,teams};try{await V.fs().doc("verein/main").set(v);W.__VEREIN=v;try{const c=JSON.parse(localStorage.getItem("u13v:"+W.__VME.email)||"null");if(c){c.V=v;localStorage.setItem("u13v:"+W.__VME.email,JSON.stringify(c))}}catch(x){}V.log(txt);try{await V.syncTeamNames()}catch(x){}return true}catch(e){msg("tm","Das hat nicht geklappt.","er");return false}};
   el.onchange=async(e)=>{
+    const bn=e.target.dataset&&e.target.dataset.bn;
+    if(bn){if(await saveB(V.bereiche().map((b)=>b.id===bn?{...b,name:e.target.value.trim()||b.name}:b),"Bereich umbenannt")){msg("bm","Gespeichert.");V.render()}return}
     const n=e.target.dataset&&e.target.dataset.n,a=e.target.dataset&&e.target.dataset.a;
     if(n||a){const id=n||a,teams=V.teams().map((t)=>t.id===id?{...t,[n?"name":"ak"]:e.target.value.trim()||t[n?"name":"ak"]}:t);if(await save(teams,"Mannschaft geändert: "+id)){msg("tm","Gespeichert.");V.render()}}
   };
   el.onclick=async(e)=>{
+    const bt=e.target.closest("[data-bt]");
+    if(bt){const [bid,tid]=bt.dataset.bt.split("|");if(await saveB(V.bereiche().map((b)=>{if(b.id!==bid)return b;const t=(b.teams||[]).slice(),i=t.indexOf(tid);if(i>=0)t.splice(i,1);else t.push(tid);return{...b,teams:t}}),"Bereich geändert")){msg("bm","Gespeichert.");V.render()}return}
+    const bd=e.target.closest("[data-bd]");
+    if(bd){if(!bd.dataset.arm){bd.dataset.arm="1";bd.textContent="Wirklich löschen?";return}if(await saveB(V.bereiche().filter((b)=>b.id!==bd.dataset.bd),"Bereich gelöscht")){V.render()}return}
+    if(e.target.id==="badd"){const name=q("#bnn",el).value.trim();if(!name){msg("bm","Bitte einen Namen eintragen.","er");return}if(await saveB(V.bereiche().concat([{id:V.id("b"),name,teams:[]}]),"Bereich angelegt: "+name)){V.render()}return}
     const b=e.target.closest("[data-t]");
     if(b){const teams=V.teams().map((t)=>t.id===b.dataset.t?{...t,aktiv:t.aktiv===false}:t);if(await save(teams,"Mannschaft "+(teams.find((t)=>t.id===b.dataset.t).aktiv===false?"archiviert: ":"aktiviert: ")+b.dataset.t))V.render();return}
     if(e.target.id==="tadd"){
@@ -5521,12 +5637,12 @@ V.tab({id:"teams",label:"Mannschaften",roles:["admin","jugendleiter"],render(el)
 
 /* ---------- Start ---------- */
 function init(){
-  css();mountBar();hookSave();subPlan();subHinweise();subStats();
+  css();mountNav();syncTitles();hookSave();subPlan();subHinweise();subStats();
   setInterval(()=>pubStat(false),15000);setTimeout(()=>pubStat(false),4000);
-  if(V.isAll()&&!V.plan){/* Plan wird beim Öffnen angelegt */}
 }
 if(!W.__WEB)return;
 if(W.__KAB){css();return}
+W.__Vui={refresh:()=>refreshNav()};
 if(W.__CLUB)init();else document.addEventListener("u13club",init,{once:true});
 })();
 
@@ -5553,7 +5669,7 @@ function slotsOn(date){
 }
 const platzOn=(p,date)=>(!p.von||date>=p.von)&&(!p.bis||date<=p.bis);
 function newForm(day){return{id:"",tid:(V.teams().find((t)=>t.aktiv!==false)||{}).id||"",art:"Training",platz:((V.plan.plaetze||[])[0]||{}).id||"",mode:"w",tage:[V.dow(day)],datum:day,von:"17:00",bis:"18:30",gv:"",gb:"",txt:""}}
-V.tab({id:"platz",label:"Platzbelegung",roles:ALLR,render(el){
+V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(el){
   if(V.typing())return;
   const plan=V.plan;if(!plan){el.innerHTML='<div class="note">Lädt …</div>';return}
   const ed=V.canPlan(),day=pDay||(pDay=V.today()),wk=V.monday(day),dow=V.dow(day);
@@ -5749,8 +5865,8 @@ function linkCard(){
   }
   return h+'</div>';
 }
-V.tab({id:"kabinen",label:"Kabinenbelegung",roles:ALLR,render(el){
-  const ed=["admin","jugendleiter","sportleiter"].indexOf(V.rolle())>=0;
+V.tab({id:"kabinen",label:"Kabinenbelegung",show:()=>V.rolle()!=="platzwart",render(el){
+  const ed=V.canPlan();
   if(V.isStaff()&&!kLUnsub){kLUnsub=V.fs().collection("kablinks").onSnapshot((s)=>{kLinks=s.docs.map((d)=>({id:d.id,...d.data()}));if(V.cur==="kabinen"&&!V.typing())V.render()},()=>{kLinks=[]})}
   renderKab(el,{db:V.fs(),edit:ed,kab:false,redraw:()=>V.render()});
 },stop(){if(kUnsub){try{kUnsub()}catch(e){}kUnsub=null;kUnsubDay=""}if(kLUnsub){try{kLUnsub()}catch(e){}kLUnsub=null}}});
@@ -5780,68 +5896,106 @@ const W=window;
 if(!W.__WEB||!W.__V)return;
 const V=W.__V,E=V.E,q=V.q;
 const R=V.ROLLEN;
-const ORDER=["admin","jugendleiter","sportleiter","trainer","cotrainer","lesen","scout","platzwart"];
-const TEAMROLES=["trainer","cotrainer","scout"]; // diese Rollen gelten nur für zugeordnete Mannschaften
-const LOW=["sportleiter","trainer","cotrainer","lesen","scout","platzwart"];
-const mailOk=(m)=>/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(m);
-
 /* ---------- Personen & Rechte ---------- */
-let mem=null,mUnsub=null,addTeams=[],mMsg="",mMsgK="ok";
-const mayEdit=(row)=>V.rolle()==="admin"||LOW.indexOf(row.rolle)>=0;
-const roleOpts=(sel)=>ORDER.filter((r)=>V.rolle()==="admin"||LOW.indexOf(r)>=0||r===sel).map((r)=>'<option value="'+r+'"'+(r===sel?" selected":"")+'>'+E(R[r])+'</option>').join("");
-const MATRIX=[
- ["Eigene Mannschaft ansehen","✓","✓","✓ (alle)","✓","✓","✓ (alle)","Kader","–"],
- ["Eigene Mannschaft bearbeiten","✓","✓","–","✓","✓","–","Kader","–"],
- ["Einstellungen und Sicherung der Mannschaft","✓","✓","–","✓","–","–","–","–"],
- ["Alle Mannschaften ansehen","✓","✓","✓","–","–","✓","–","–"],
- ["Übersicht der Mannschaften","✓","✓","✓","eigene","eigene","✓","eigene","–"],
- ["Bereich Sportlicher Leiter","✓","✓","✓","–","–","–","–","–"],
- ["Platzbelegung ansehen","✓","✓","✓","✓","✓","✓","✓","–"],
- ["Platzbelegung pflegen","✓","✓","✓","–","–","–","–","–"],
- ["Kabinenbelegung ansehen","✓","✓","✓","✓","✓","✓","✓","✓"],
- ["Kabinenbelegung eintragen","✓","✓","✓","–","–","–","–","✓"],
- ["Mannschaften verwalten","✓","✓","–","–","–","–","–","–"],
- ["Personen und Rechte","✓","teilw.","–","–","–","–","–","–"],
- ["Datenschutz-Center","✓","✓","–","–","–","–","–","–"]];
-V.tab({id:"personen",label:"Personen & Rechte",roles:["admin","jugendleiter"],stop(){if(mUnsub){try{mUnsub()}catch(e){}mUnsub=null;mem=null}},render(el){
+let mem=null,mUnsub=null,mMsg="",mMsgK="ok",pe=null;
+const GR={admin:"Administrator",jugendleiter:"Jugendleitung",platzwart:"Platzwart",team:"Mitglied"};
+const mailOk=(m)=>/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(m);
+const slug=(x)=>String(x).toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9]/g,"").slice(0,20);
+const seasonEnd=()=>{const m=/(\d{4})\s*\/\s*(\d{2,4})/.exec((W.__VEREIN&&W.__VEREIN.saison)||"");let y=m?+m[1]+1:new Date().getFullYear()+1;return y+"-06-30"};
+const endMs=(iso)=>new Date(iso+"T23:59:59").getTime();
+const msIso=(ms)=>V.iso(new Date(ms));
+/* Wer darf wen ändern? Administrator alle, Jugendleitung nur Mitglieder und Platzwarte */
+const mayEdit=(row)=>V.isAdmin()||(row.rolle==="team"||row.rolle==="platzwart");
+const summary=(m)=>{
+  if(m.rolle!=="team")return GR[m.rolle]||m.rolle;
+  const parts=(m.zu||[]).map((z)=>V.artName(z.art)+": "+(z.bereich?"Bereich "+(((V.bereiche().find((b)=>b.id===z.bereich)||{}).name)||"?"):(z.teams||[]).map((t)=>V.tshort(t)).join(", ")||"–"));
+  const k=Object.keys(m.kader||{}).map((t)=>"Kader "+V.tshort(t)+" bis "+V.fdl(msIso(m.kader[t])));
+  return parts.concat(k).join(" · ")||"noch keine Zuordnung";
+};
+V.memSummary=summary;
+/* Rechte aller Personen neu aus den Trainerarten berechnen (nach Änderung der Arten oder Bereiche) */
+V.resync=async()=>{
+  try{const s=await V.fs().collection("mitglieder").get();
+    for(const d of s.docs){const m=d.data();if(m.rolle!=="team"||!mayEdit(m))continue;
+      const ex=V.expandZu(m.zu||[]);if(JSON.stringify(ex.tr)===JSON.stringify(m.tr||{})&&JSON.stringify(ex.g)===JSON.stringify(m.g||[]))continue;
+      await V.fs().doc("mitglieder/"+d.id).set({...m,tr:ex.tr,g:ex.g,am:new Date().toISOString()})}}catch(e){}
+};
+const emptyZu=()=>({art:(V.arten()[0]||{}).id||"",teams:[],bereich:""});
+V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUnsub){try{mUnsub()}catch(e){}mUnsub=null;mem=null}},render(el){
   if(!mUnsub){mUnsub=V.fs().collection("mitglieder").onSnapshot((s)=>{mem=s.docs.map((d)=>({id:d.id,...d.data()})).sort((a,b)=>a.id<b.id?-1:1);if(V.cur==="personen"&&!V.typing())V.render()},()=>{mem=[]})}
   if(V.typing())return;
-  const teams=V.teams();
-  let h='<h2>Personen &amp; Rechte</h2><p class="sub note">Wer darf die App öffnen, in welcher Rolle und für welche Mannschaften. Die Person muss sich mit genau dieser E-Mail-Adresse anmelden (Google oder E-Mail). Änderungen gelten beim nächsten Öffnen der App.</p>';
-  h+='<div class="card vc"><div class="tw"><table class="vt" id="vpt"><thead><tr><th>E-Mail</th><th>Name</th><th>Rolle</th><th>Mannschaften</th><th></th></tr></thead><tbody>';
-  h+='<tr><td colspan="5" class="note">Fest eingetragene Besitzer (Administratoren) stehen in den Zugriffsregeln und sind hier nicht aufgeführt. Sie können nicht entfernt werden.</td></tr>';
-  (mem||[]).forEach((m)=>{
-    const ed=mayEdit(m),tr=TEAMROLES.indexOf(m.rolle)>=0;
-    h+='<tr data-m="'+E(m.id)+'"><td>'+E(m.id)+'</td><td><input data-mn="'+E(m.id)+'" value="'+E(m.name||"")+'" maxlength="60" style="width:150px"'+(ed?"":" disabled")+'></td><td><select data-mr="'+E(m.id)+'"'+(ed?"":" disabled")+'>'+roleOpts(m.rolle)+'</select></td><td style="white-space:normal">'+(tr?teams.filter((t)=>t.aktiv!==false).map((t)=>'<span class="vch'+((m.teams||[]).indexOf(t.id)>=0?" on":"")+'" data-mt="'+E(m.id)+'|'+E(t.id)+'"'+(ed?' role="button" tabindex="0"':' style="pointer-events:none;opacity:.6"')+'>'+E(t.name)+'</span>').join(""):'<span class="note">'+(m.rolle==="platzwart"?"nur Kabinen":"alle Mannschaften")+'</span>')+'</td><td>'+(ed?'<button class="btn" data-md="'+E(m.id)+'">Entfernen</button>':"")+'</td></tr>';
-  });
-  if(mem&&!mem.length)h+='<tr><td colspan="5" class="note">Noch keine weiteren Personen.</td></tr>';
-  if(!mem)h+='<tr><td colspan="5" class="note">Lädt …</td></tr>';
-  h+='</tbody></table></div><div class="vmsg '+mMsgK+'" id="vmm">'+E(mMsg)+'</div></div>';
-  h+='<div class="card vc"><h3>Person hinzufügen</h3><div class="vrow"><label>E-Mail-Adresse<input id="ae" type="email" autocomplete="off" style="min-width:230px"></label><label>Name<input id="an" maxlength="60" style="width:160px"></label><label>Rolle<select id="ar">'+ORDER.filter((r)=>V.rolle()==="admin"||LOW.indexOf(r)>=0).map((r)=>'<option value="'+r+'"'+(r==="trainer"?" selected":"")+'>'+E(R[r])+'</option>').join("")+'</select></label></div><div class="note">Mannschaften (für Trainer, Co-Trainer und Scouts):</div><div id="at" style="margin:4px 0 8px">'+teams.filter((t)=>t.aktiv!==false).map((t)=>'<span class="vch'+(addTeams.indexOf(t.id)>=0?" on":"")+'" data-at="'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join("")+'</div><button class="btn" id="aadd" style="background:var(--ac);color:#fff;border-color:var(--ac)">Hinzufügen</button></div>';
-  h+='<div class="card vc"><h3>Wer darf was?</h3><div class="tw"><table class="vt"><thead><tr><th></th>'+ORDER.map((r)=>'<th style="text-align:center">'+E(R[r])+'</th>').join("")+'</tr></thead><tbody>'+MATRIX.map((r)=>'<tr><td>'+E(r[0])+'</td>'+r.slice(1).map((c)=>'<td style="text-align:center" class="'+(c==="–"?"note":"")+'">'+E(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div><div class="note" style="margin-top:6px">Die Jugendleitung kann alle Rollen unterhalb der Jugendleitung vergeben. Administrator und Jugendleiter anlegen kann nur der Administrator. Scouts sehen und bearbeiten nur den Kader ihrer Mannschaft.</div></div>';
+  const teams=V.teams().filter((t)=>t.aktiv!==false),arten=V.arten(),bs=V.bereiche(),adm=V.isAdmin();
+  let h='<h2>Personen &amp; Rechte</h2><p class="sub note">Wer darf die App öffnen und was darf er in welcher Mannschaft? Die Person meldet sich mit genau dieser E-Mail-Adresse an (Google oder E-Mail). Änderungen gelten beim nächsten Öffnen der App.</p>';
+  h+='<div class="card vc"><div class="tw"><table class="vt" id="vpt"><thead><tr><th>Person</th><th>Rolle und Zuordnung</th><th></th></tr></thead><tbody>';
+  h+='<tr><td colspan="3" class="note">Fest eingetragene Besitzer (Administratoren) stehen in den Zugriffsregeln und sind hier nicht aufgeführt. Sie können nicht entfernt werden.</td></tr>';
+  (mem||[]).forEach((m)=>{const ed=mayEdit(m);
+    h+='<tr data-m="'+E(m.id)+'"><td><b>'+E(m.name||"–")+'</b><div class="note">'+E(m.id)+'</div></td><td style="white-space:normal">'+E(summary(m))+'</td><td>'+(ed?'<button class="btn" data-ed="'+E(m.id)+'">Bearbeiten</button> <button class="btn" data-md="'+E(m.id)+'">Entfernen</button>':'<span class="note">nur Administrator</span>')+'</td></tr>'});
+  if(mem&&!mem.length)h+='<tr><td colspan="3" class="note">Noch keine weiteren Personen.</td></tr>';
+  if(!mem)h+='<tr><td colspan="3" class="note">Lädt …</td></tr>';
+  h+='</tbody></table></div><div class="vmsg '+mMsgK+'" id="vmm">'+E(mMsg)+'</div>'+(pe?'':'<button class="btn" id="pnew" type="button" style="margin-top:6px">Person hinzufügen</button>')+'</div>';
+  if(pe){
+    h+='<div class="card vc" id="pcard"><h3>'+(pe.neu?"Person hinzufügen":"Person bearbeiten")+'</h3><div class="vrow"><label>E-Mail-Adresse<input id="pe_e" type="email" autocomplete="off" style="min-width:230px" value="'+E(pe.email)+'"'+(pe.neu?"":" disabled")+'></label><label>Name<input id="pe_n" maxlength="60" style="width:180px" value="'+E(pe.name)+'"></label><label>Rolle<select id="pe_r">'+["team","platzwart"].concat(adm?["jugendleiter","admin"]:[]).map((r)=>'<option value="'+r+'"'+(r===pe.rolle?" selected":"")+'>'+E(r==="team"?"Mitglied (Trainerart je Mannschaft)":GR[r])+'</option>').join("")+'</select></label></div>';
+    if(pe.rolle==="team"){
+      h+='<h4 style="margin:12px 0 6px">Trainerarten und Mannschaften</h4>'+pe.zu.map((z,i)=>'<div class="vrow" style="align-items:flex-start;border-top:1px solid var(--ln);padding-top:8px"><label>Trainerart<select data-za="'+i+'">'+arten.map((a)=>'<option value="'+E(a.id)+'"'+(a.id===z.art?" selected":"")+'>'+E(a.name)+'</option>').join("")+'</select></label>'
+        +'<label>Für<select data-zb="'+i+'"><option value="">einzelne Mannschaften</option>'+bs.map((b)=>'<option value="'+E(b.id)+'"'+(b.id===z.bereich?" selected":"")+'>Bereich '+E(b.name)+'</option>').join("")+'</select></label>'
+        +'<span style="flex:1;min-width:200px;align-self:center">'+(z.bereich?'<span class="note">'+(((bs.find((b)=>b.id===z.bereich)||{}).teams||[]).map((t)=>V.tshort(t)).join(", ")||"Der Bereich enthält noch keine Mannschaften.")+'</span>':teams.map((t)=>'<span class="vch'+((z.teams||[]).indexOf(t.id)>=0?" on":"")+'" data-zt="'+i+'|'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join(""))+'</span><button class="btn" data-zx="'+i+'" aria-label="Zuordnung entfernen">✕</button></div>').join("")
+        +'<button class="btn" id="pzadd" type="button" style="margin-top:6px">＋ Trainerart hinzufügen</button>';
+      h+='<h4 style="margin:14px 0 6px">Kaderplanung freigeben (zeitlich begrenzt)</h4><div class="note" style="margin:0 0 6px">Zum Beispiel für einen Trainer, der die Kaderplanung einer anderen Mannschaft für die nächste Saison braucht. Die Person kann dort Kader &amp; Scouting ansehen und bearbeiten, sonst nichts.</div>'
+        +Object.keys(pe.kader).map((t)=>'<div class="vrow"><b style="min-width:90px">'+E(V.tshort(t))+'</b><label>gültig bis<input type="date" data-kd="'+E(t)+'" value="'+E(msIso(pe.kader[t]))+'"></label>'+(pe.kader[t]<Date.now()?'<span class="vbad r">abgelaufen</span>':'')+'<button class="btn" data-kx="'+E(t)+'">Entfernen</button></div>').join("")
+        +'<div class="vrow"><label>Mannschaft<select id="pkt">'+V.teams().filter((t)=>pe.kader[t.id]==null).map((t)=>'<option value="'+E(t.id)+'">'+E(V.tname(t.id))+'</option>').join("")+'</select></label><button class="btn" id="pkadd" type="button" style="align-self:flex-end">Freigabe hinzufügen</button></div>';
+    }
+    h+='<div class="vrow" style="margin-top:12px"><button class="btn" id="psave" type="button" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button><button class="btn" id="pcancel" type="button">Abbrechen</button></div><div class="vmsg" id="pem"></div></div>';
+  }
+  /* Wer darf was – einstellbar */
+  const rows=V.RECHTE.map((r)=>[r,false]).concat(V.GN.map((r)=>[r,true]));
+  h+='<div class="card vc"><h3>Wer darf was?</h3><div class="note" style="margin:0 0 8px">Jede Spalte ist eine Trainerart. Setze Haken, was sie darf. '+(adm?"":"Ändern kann das nur der Administrator. ")+'Administrator und Jugendleitung dürfen immer alles.</div><div class="tw"><table class="vt vmx"><thead><tr><th></th>'+arten.map((a)=>'<th class="c" style="white-space:normal;min-width:88px">'+E(a.name)+(adm?'<br><button class="btn" data-adel="'+E(a.id)+'" style="padding:1px 8px;font-size:11px;margin-top:3px">Löschen</button>':"")+'</th>').join("")+'</tr></thead><tbody>';
+  rows.forEach(([r,g],i)=>{
+    if(i===0)h+='<tr><td colspan="'+(arten.length+1)+'" class="note"><b>In der Mannschaft</b></td></tr>';
+    if(g&&i===V.RECHTE.length)h+='<tr><td colspan="'+(arten.length+1)+'" class="note"><b>Für den ganzen Verein</b></td></tr>';
+    h+='<tr><td style="white-space:normal">'+E(V.RN[r])+'</td>'+arten.map((a)=>{const on=((g?a.gl:a.rechte)||[]).indexOf(r)>=0;return '<td class="c"><input type="checkbox" data-ar="'+E(a.id)+'|'+r+'|'+(g?"g":"t")+'"'+(on?" checked":"")+(adm?"":" disabled")+' aria-label="'+E(a.name+": "+V.RN[r])+'"></td>'}).join("")+'</tr>'});
+  h+='</tbody></table></div>';
+  if(adm)h+='<div class="vrow" style="margin-top:10px"><label>Neue Trainerart<input id="anew" maxlength="30" placeholder="z. B. Videoanalyst"></label><button class="btn" id="aadd" type="button" style="align-self:flex-end">Hinzufügen</button></div>';
+  h+='<div class="note" style="margin-top:8px">„Einstellungen, Links und Sicherung“ steuert, was in der Mannschafts-App angezeigt wird. Alle anderen Rechte werden zusätzlich von den Sicherheitsregeln der Datenbank durchgesetzt. Änderungen an Trainerarten gelten für alle Personen mit dieser Trainerart, sobald sie die App neu öffnen.</div><div class="vmsg" id="amsg"></div></div>';
   el.innerHTML=h;
   const msg=(t,k)=>{mMsg=t;mMsgK=k||"ok";const m=q("#vmm",el);if(m){m.textContent=t;m.className="vmsg "+mMsgK}};
+  const pm=(t,k)=>{const m=q("#pem",el);if(m){m.textContent=t;m.className="vmsg "+(k||"ok")}};
+  const am=(t,k)=>{const m=q("#amsg",el);if(m){m.textContent=t;m.className="vmsg "+(k||"ok")}};
   const get=(id)=>(mem||[]).find((x)=>x.id===id);
-  const put=async(row,txt)=>{try{await V.fs().doc("mitglieder/"+row.id).set({email:row.id,rolle:row.rolle,teams:row.teams||[],name:row.name||"",am:new Date().toISOString()});V.log(txt);msg("Gespeichert. Gilt beim nächsten Öffnen der App durch die Person.");return true}catch(e){msg("Das konnte nicht gespeichert werden (fehlende Berechtigung?).","er");return false}};
+  const readEd=()=>{if(!pe)return;const e=q("#pe_e",el),n=q("#pe_n",el);if(e&&pe.neu)pe.email=e.value.trim().toLowerCase();if(n)pe.name=n.value.trim()};
+  const saveArten=async(arr,txt)=>{try{await V.saveVerein({arten:arr});V.log(txt);await V.resync();am("Gespeichert.");return true}catch(x){am("Das konnte nicht gespeichert werden.","er");return false}};
   el.onchange=async(e)=>{
     const t=e.target,d=t.dataset||{};
-    if(d.mr){const r=get(d.mr);if(r)await put({...r,rolle:t.value,teams:TEAMROLES.indexOf(t.value)>=0?(r.teams||[]):[]},"Rolle geändert: "+r.id+" → "+R[t.value]);return}
-    if(d.mn){const r=get(d.mn);if(r)await put({...r,name:t.value.trim()},"Name geändert: "+r.id);return}
+    if(t.id==="pe_r"){readEd();pe.rolle=t.value;if(pe.rolle==="team"&&!pe.zu.length)pe.zu=[emptyZu()];V.render();return}
+    if(d.za!=null){readEd();pe.zu[+d.za].art=t.value;return}
+    if(d.zb!=null){readEd();pe.zu[+d.zb].bereich=t.value;V.render();return}
+    if(d.kd){const ms=endMs(t.value);if(ms)pe.kader[d.kd]=ms;V.render();return}
+    if(d.ar){const [aid,r,k]=d.ar.split("|");await saveArten(arten.map((a)=>{if(a.id!==aid)return a;const key=k==="g"?"gl":"rechte",L=(a[key]||[]).slice(),i=L.indexOf(r);if(t.checked&&i<0)L.push(r);if(!t.checked&&i>=0)L.splice(i,1);return{...a,[key]:L}}),"Rechte der Trainerart geändert: "+aid);return}
   };
   el.onclick=async(e)=>{
     const t=e.target;
-    const mt=t.closest("[data-mt]");if(mt){const [id,tid]=mt.dataset.mt.split("|"),r=get(id);if(!r)return;const s=(r.teams||[]).slice(),i=s.indexOf(tid);if(i>=0)s.splice(i,1);else s.push(tid);await put({...r,teams:s},"Mannschaften geändert: "+id);return}
-    const at=t.closest("[data-at]");if(at){const i=addTeams.indexOf(at.dataset.at);if(i>=0)addTeams.splice(i,1);else addTeams.push(at.dataset.at);at.classList.toggle("on");return}
+    if(t.id==="pnew"){pe={neu:true,email:"",name:"",rolle:"team",zu:[emptyZu()],kader:{}};V.render();return}
+    if(t.id==="pcancel"){pe=null;V.render();return}
+    const ed=t.closest("[data-ed]");if(ed){const r=get(ed.dataset.ed);if(r){pe={neu:false,email:r.id,name:r.name||"",rolle:r.rolle,zu:JSON.parse(JSON.stringify(r.zu||[])),kader:{...(r.kader||{})}};V.render();try{q("#pcard",el).scrollIntoView({block:"nearest"})}catch(x){}}return}
+    if(t.id==="pzadd"){readEd();pe.zu.push(emptyZu());V.render();return}
+    const zx=t.closest("[data-zx]");if(zx){readEd();pe.zu.splice(+zx.dataset.zx,1);V.render();return}
+    const zt=t.closest("[data-zt]");if(zt){readEd();const [i,tid]=zt.dataset.zt.split("|"),z=pe.zu[+i],a=(z.teams||[]).slice(),k=a.indexOf(tid);if(k>=0)a.splice(k,1);else a.push(tid);z.teams=a;zt.classList.toggle("on");return}
+    const kx=t.closest("[data-kx]");if(kx){readEd();delete pe.kader[kx.dataset.kx];V.render();return}
+    if(t.id==="pkadd"){readEd();const sel=q("#pkt",el);if(sel&&sel.value){pe.kader[sel.value]=endMs(seasonEnd())}V.render();return}
+    if(t.id==="psave"){
+      readEd();
+      if(!mailOk(pe.email)){pm("Bitte eine gültige E-Mail-Adresse eintragen.","er");return}
+      if(pe.neu&&get(pe.email)){pm("Diese Person gibt es schon. Bitte in der Liste bearbeiten.","er");return}
+      if(pe.rolle==="team"&&pe.zu.some((z)=>!z.bereich&&!(z.teams||[]).length)){pm("Bitte bei jeder Trainerart mindestens eine Mannschaft oder einen Bereich wählen.","er");return}
+      const ex=pe.rolle==="team"?V.expandZu(pe.zu):{tr:{},g:[]};
+      const doc={email:pe.email,name:pe.name,rolle:pe.rolle,zu:pe.rolle==="team"?pe.zu:[],tr:ex.tr,g:ex.g,kader:pe.rolle==="team"?pe.kader:{},am:new Date().toISOString()};
+      try{await V.fs().doc("mitglieder/"+pe.email).set(doc);V.log((pe.neu?"Person hinzugefügt: ":"Person geändert: ")+pe.email);pe=null;msg("Gespeichert. Gilt beim nächsten Öffnen der App durch die Person.");V.render()}catch(x){pm("Das konnte nicht gespeichert werden (fehlende Berechtigung?).","er")}
+      return}
     const md=t.closest("[data-md]");if(md){if(!md.dataset.arm){md.dataset.arm="1";md.textContent="Wirklich entfernen?";return}try{await V.fs().doc("mitglieder/"+md.dataset.md).delete();V.log("Person entfernt: "+md.dataset.md);msg("Entfernt. Die Person kommt ab sofort nicht mehr hinein.")}catch(x){msg("Das konnte nicht gespeichert werden.","er")}return}
-    if(t.id==="aadd"){
-      const mail=q("#ae",el).value.trim().toLowerCase(),rolle=q("#ar",el).value;
-      if(!mailOk(mail)){msg("Bitte eine gültige E-Mail-Adresse eintragen.","er");return}
-      if(get(mail)){msg("Diese Person ist schon eingetragen.","er");return}
-      if(TEAMROLES.indexOf(rolle)>=0&&!addTeams.length){msg("Bitte mindestens eine Mannschaft wählen.","er");return}
-      if(await put({id:mail,rolle,name:q("#an",el).value.trim(),teams:TEAMROLES.indexOf(rolle)>=0?addTeams.slice():[]},"Person hinzugefügt: "+mail+" ("+R[rolle]+")")){addTeams=[];q("#ae",el).value="";q("#an",el).value="";V.render()}
-    }
+    if(t.id==="aadd"){const n=q("#anew",el).value.trim(),id=slug(n);if(!id){am("Bitte einen Namen eintragen.","er");return}if(arten.some((a)=>a.id===id||a.name.toLowerCase()===n.toLowerCase())){am("Diese Trainerart gibt es schon.","er");return}
+      if(await saveArten(arten.concat([{id,name:n,rechte:["sehen"],gl:[]}]),"Trainerart angelegt: "+n))V.render();return}
+    const ad=t.closest("[data-adel]");if(ad){const used=(mem||[]).some((m)=>(m.zu||[]).some((z)=>z.art===ad.dataset.adel));if(used){am("Diese Trainerart ist noch Personen zugeordnet. Bitte zuerst dort ändern.","er");return}
+      if(!ad.dataset.arm){ad.dataset.arm="1";ad.textContent="Sicher?";return}if(await saveArten(arten.filter((a)=>a.id!==ad.dataset.adel),"Trainerart gelöscht: "+ad.dataset.adel))V.render();return}
   };
-  el.onkeydown=(e)=>{if((e.key==="Enter"||e.key===" ")&&e.target.classList&&e.target.classList.contains("vch")){e.preventDefault();e.target.click()}};
 }});
 
 /* ---------- Datenschutz-Center ---------- */
@@ -5855,7 +6009,7 @@ const DATEN=[
  ["Platz- und Kabinenpläne","Verein","alle Mitglieder; Kabinen zusätzlich der Platzwart-Link","laufend"],
  ["Personen und Rollen (E-Mail, Name, Rolle)","Verein","Administrator und Jugendleitung","bis zur Entfernung der Person"],
  ["Zugriffsprotokoll (wer hat was geändert)","Verein","Administrator und Jugendleitung","bis auf Weiteres (nur Anlegen möglich)"]];
-V.tab({id:"datenschutz",label:"Datenschutz",roles:["admin","jugendleiter"],render(el){
+V.tab({id:"datenschutz",label:"Datenschutz",show:()=>V.isAll(),render(el){
   if(V.typing())return;
   const st=V.set();
   let h='<h2>Datenschutz-Center</h2><p class="sub note">Überblick, wer welche Daten sieht, wie lange sie aufbewahrt werden und wer etwas geändert hat. Die App löscht von sich aus nichts: Fristen sind eine Erinnerung für die Leitung.</p>';
@@ -5877,11 +6031,111 @@ V.tab({id:"datenschutz",label:"Datenschutz",roles:["admin","jugendleiter"],rende
     if(t.id==="dpl"){try{const s=await V.fs().collection("protokoll").get();prot=s.docs.map((d)=>d.data()).sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,80)}catch(x){prot=[]}V.render();return}
     if(t.id==="dcsv"){
       try{const s=await V.fs().collection("mitglieder").get();const rows=s.docs.map((d)=>d.data()).sort((a,b)=>String(a.email).localeCompare(String(b.email)));
-        const csv="E-Mail;Name;Rolle;Mannschaften\r\n"+rows.map((r)=>[r.email,r.name||"",R[r.rolle]||r.rolle,(r.teams||[]).map((x)=>V.tshort(x)).join(", ")].map((c)=>'"'+String(c).replace(/"/g,'""')+'"').join(";")).join("\r\n");
+        const csv="E-Mail;Name;Rolle;Zuordnung\r\n"+rows.map((r)=>[r.email,r.name||"",R[r.rolle]||r.rolle,V.memSummary(r)].map((c)=>'"'+String(c).replace(/"/g,'""')+'"').join(";")).join("\r\n");
         const dl=await W.claude.use("downloads");await dl.save({filename:"Personenliste.csv",data:new Blob(["﻿"+csv],{type:"text/csv"})});V.log("Personenliste exportiert");dMsg="Die Personenliste wurde gespeichert.";dMsgK="ok"}catch(x){dMsg="Das hat nicht geklappt.";dMsgK="er"}
       V.render()}
   };
 }});
+})();
+
+/* ===== Verein: Fachnotizen (Torwart- und Athletiktrainer) =====
+   Torwart-Notizen: Sammlung <Mannschaft>__tnotes, ein Dokument je Person (Name = E-Mail ohne Sonderzeichen).
+   Athletik-Notizen: <Mannschaft>__anotes, ebenso. Der Athletiktrainer sieht nur seine eigenen Notizen.
+   Notizen der Trainer zu Torhütern spiegelt die App (bei Trainern) nach <Mannschaft>__vtw/main, damit der Torwarttrainer sie lesen kann. */
+(function(){
+"use strict";
+const W=window;
+function boot(){
+const V=W.__V;if(!V)return;
+const E=V.E;
+const mkey=()=>String((W.__VME||{}).email||"").toLowerCase().replace(/[.]/g,"_").replace(/@/g,"_at_");
+const me=()=>String((W.__VME||{}).email||"").toLowerCase();
+let st={tid:null,players:null,tn:null,an:null,vtw:null,subs:[],msg:"",mk:"",form:{}};
+const stopSubs=()=>{st.subs.forEach((u)=>{try{u()}catch(e){}});st.subs=[];st.players=st.tn=st.an=st.vtw=null};
+const tid=()=>W.__TID;
+const spielerName=(p)=>((p.vorname||"")+" "+(p.name||"")).trim()||p.id;
+/* Spiegel der Trainer-Notizen zu Torhütern */
+let mirSub=null,mirTid=null,mirPl=null,mirNo=null,mirLast="";
+function mirrorStart(){
+  const t=tid();if(!t||!V.has(t,"bearbeiten")||!V.has(t,"notizen"))return;
+  if(mirSub&&mirTid===t)return;mirTid=t;
+  const run=()=>{if(!mirPl||!mirNo)return;
+    const tw=new Set(mirPl.filter((p)=>p.torwart).map((p)=>p.id));
+    const items=mirNo.filter((n)=>n.pid&&tw.has(n.pid)&&n.art!=="ziel").map((n)=>({id:n.id,pid:n.pid,datum:n.datum||"",text:String(n.text||""),autor:n.autor||"",art:n.art||""})).sort((a,b)=>a.id<b.id?-1:1);
+    const j=JSON.stringify(items);if(j===mirLast)return;mirLast=j;
+    V.fs().doc(t+"__vtw/main").set({items,am:new Date().toISOString()}).catch(()=>{})};
+  const u1=V.fs().collection(t+"__players").onSnapshot((s)=>{mirPl=s.docs.map((d)=>({id:d.id,...d.data()}));run()},()=>{});
+  const u2=V.fs().collection(t+"__notes").onSnapshot((s)=>{mirNo=s.docs.map((d)=>({id:d.id,...d.data()}));run()},()=>{});
+  mirSub=()=>{u1();u2()};
+}
+V.mirrorStart=mirrorStart;
+const show=()=>V.hasAnyT("tw")||V.hasAnyT("ath")||V.hasAnyT("fachlesen");
+V.tab({id:"fach",label:"Fachnotizen",show,stop(){stopSubs()},render(el){
+  const t=tid();
+  if(st.tid!==t){stopSubs();st.tid=t}
+  const can={tw:V.has(t,"tw"),ath:V.has(t,"ath"),lesen:V.has(t,"fachlesen")};
+  if(!can.tw&&!can.ath&&!can.lesen){el.innerHTML='<h2>Fachnotizen</h2><p class="note">Für diese Mannschaft hast du keinen Zugriff auf Fachnotizen. Oben links die Mannschaft wechseln.</p>';return}
+  if(!st.subs.length){
+    const fs=V.fs(),rr=()=>{if(V.cur==="fach"&&!V.typing())V.render()};
+    st.subs.push(fs.collection(t+"__players").onSnapshot((s)=>{st.players=s.docs.map((d)=>({id:d.id,...d.data()}));rr()},()=>{st.players=[]}));
+    if(can.tw||can.lesen){
+      st.subs.push(fs.collection(t+"__tnotes").onSnapshot((s)=>{st.tn=s.docs.map((d)=>({id:d.id,...d.data()}));rr()},()=>{st.tn=[]}));
+      st.subs.push(fs.doc(t+"__vtw/main").onSnapshot((s)=>{st.vtw=s.exists?(s.data().items||[]):[];rr()},()=>{st.vtw=[]}));
+    }
+    if(can.ath||can.lesen)st.subs.push(fs.collection(t+"__anotes").onSnapshot((s)=>{st.an=s.docs.map((d)=>({id:d.id,...d.data()}));rr()},()=>{st.an=[]}));
+  }
+  if(V.typing())return;
+  const pl=(st.players||[]).filter((p)=>p.aktiv!==false).sort((a,b)=>spielerName(a).localeCompare(spielerName(b),"de"));
+  const byId={};(st.players||[]).forEach((p)=>{byId[p.id]=p});
+  const pn=(id)=>byId[id]?spielerName(byId[id]):"–";
+  const dd=(s)=>{const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s||"");return m?m[3]+"."+m[2]+".":(s||"")};
+  const row=(n,own,kind)=>'<div class="row" style="align-items:flex-start;gap:8px"><span style="min-width:0;overflow-wrap:anywhere;white-space:pre-wrap"><b>'+E(dd(n.datum))+'</b> · '+E(pn(n.pid))+' – '+E(n.text)+(n.autor&&!own?' <span class="note">('+E(n.autor)+')</span>':'')+'</span>'+(own?'<button class="rm" data-fdel="'+kind+'|'+E(n.id)+'" title="Notiz löschen">✕</button>':'')+'</div>';
+  const mine=(arr)=>{const d=(arr||[]).find((x)=>x.id===mkey());return d?(d.items||[]):[]};
+  const formHtml=(kind,list)=>'<div class="vrow"><label>Spieler<select id="fp_'+kind+'">'+list.map((p)=>'<option value="'+E(p.id)+'"'+((st.form[kind]||{}).pid===p.id?" selected":"")+'>'+E(spielerName(p))+'</option>').join("")+'</select></label><label>Datum<input type="date" id="fd_'+kind+'" value="'+E((st.form[kind]||{}).datum||V.today())+'"></label></div><textarea id="ft_'+kind+'" rows="3" style="width:100%;box-sizing:border-box" placeholder="Notiz">'+E((st.form[kind]||{}).text||"")+'</textarea><div style="margin-top:6px"><button class="btn" data-fadd="'+kind+'" type="button">Notiz speichern</button></div>';
+  let h='<h2>Fachnotizen</h2><p class="sub note">'+E(V.tname(t))+'. Torwart- und Athletiknotizen sind getrennt von den normalen Trainernotizen.</p>';
+  if(can.tw){
+    const gk=pl.filter((p)=>p.torwart);
+    h+='<div class="card vc"><h3>Torwart-Notizen</h3>'+(gk.length?formHtml("tw",gk):'<p class="note">Noch keine Torhüter. Als Torhüter gilt, wer in der Mannschaft die Primärposition Torwart hat.</p>')+'</div>';
+    const own=mine(st.tn).slice().sort((a,b)=>(b.datum||"").localeCompare(a.datum||""));
+    h+='<div class="card vc"><h3>Meine Torwart-Notizen</h3>'+(own.length?own.map((n)=>row(n,true,"tw")).join(""):'<p class="note">Noch keine.</p>')+'</div>';
+    const oth=[];(st.tn||[]).forEach((d)=>{if(d.id!==mkey())(d.items||[]).forEach((n)=>oth.push({...n,autor:d.name||d.autor}))});
+    const tr=(st.vtw||[]).map((n)=>({...n}));
+    const all=oth.concat(tr).sort((a,b)=>(b.datum||"").localeCompare(a.datum||""));
+    h+='<div class="card vc"><h3>Weitere Notizen zu Torhütern</h3><p class="note">Von Trainern und anderen Torwarttrainern.</p>'+(all.length?all.map((n)=>row(n,false,"")).join(""):'<p class="note">Keine.</p>')+'</div>';
+  }
+  if(can.ath){
+    h+='<div class="card vc"><h3>Athletik-Notizen</h3>'+(pl.length?formHtml("ath",pl):'<p class="note">Noch keine Spieler.</p>')+'</div>';
+    const own=mine(st.an).slice().sort((a,b)=>(b.datum||"").localeCompare(a.datum||""));
+    h+='<div class="card vc"><h3>Meine Athletik-Notizen</h3><p class="note">Diese Notizen sieht nur du und wer Fachnotizen lesen darf.</p>'+(own.length?own.map((n)=>row(n,true,"ath")).join(""):'<p class="note">Noch keine.</p>')+'</div>';
+  }
+  if(can.lesen&&!can.tw){
+    const a=[];(st.tn||[]).forEach((d)=>(d.items||[]).forEach((n)=>a.push({...n,autor:d.name||d.autor})));
+    (st.vtw||[]).forEach((n)=>a.push(n));a.sort((x,y)=>(y.datum||"").localeCompare(x.datum||""));
+    h+='<div class="card vc"><h3>Torwart-Notizen (lesen)</h3>'+(a.length?a.map((n)=>row(n,false,"")).join(""):'<p class="note">Keine.</p>')+'</div>';
+  }
+  if(can.lesen&&!can.ath){
+    const a=[];(st.an||[]).forEach((d)=>(d.items||[]).forEach((n)=>a.push({...n,autor:d.name||d.autor})));a.sort((x,y)=>(y.datum||"").localeCompare(x.datum||""));
+    h+='<div class="card vc"><h3>Athletik-Notizen (lesen)</h3>'+(a.length?a.map((n)=>row(n,false,"")).join(""):'<p class="note">Keine.</p>')+'</div>';
+  }
+  h+='<div class="vmsg '+st.mk+'" id="vfm">'+E(st.msg)+'</div>';
+  el.innerHTML=h;
+  el.onchange=(e)=>{const m=/^f([pd])_(tw|ath)$/.exec(e.target.id||"");if(m){st.form[m[2]]=st.form[m[2]]||{};st.form[m[2]][m[1]==="p"?"pid":"datum"]=e.target.value}};
+  el.oninput=(e)=>{const m=/^ft_(tw|ath)$/.exec(e.target.id||"");if(m){st.form[m[1]]=st.form[m[1]]||{};st.form[m[1]].text=e.target.value}};
+  el.onclick=async(e)=>{
+    const add=e.target.closest("[data-fadd]"),del=e.target.closest("[data-fdel]");
+    const coll=(k)=>t+(k==="tw"?"__tnotes":"__anotes"),arr=(k)=>mine(k==="tw"?st.tn:st.an);
+    const wr=async(k,items)=>{try{await V.fs().doc(coll(k)+"/"+mkey()).set({autor:me(),name:(W.__VME||{}).name||me(),items,am:new Date().toISOString()});st.msg="Gespeichert.";st.mk="ok";return true}catch(x){st.msg="Das hat nicht geklappt.";st.mk="er";return false}};
+    if(add){const k=add.dataset.fadd,s=el.querySelector("#fp_"+k),d=el.querySelector("#fd_"+k),x=el.querySelector("#ft_"+k);
+      const text=(x.value||"").trim();if(!s||!s.value||!text){st.msg="Bitte Spieler und Text angeben.";st.mk="er";V.render();return}
+      const items=arr(k).concat([{id:"f"+Date.now().toString(36)+Math.random().toString(36).slice(2,4),pid:s.value,datum:d.value||V.today(),text}]);
+      if(await wr(k,items)){st.form[k]={pid:s.value,datum:d.value,text:""}}
+      V.render();return}
+    if(del){const [k,id]=del.dataset.fdel.split("|");if(await wr(k,arr(k).filter((n)=>n.id!==id)))V.log("Fachnotiz gelöscht",t);V.render()}
+  };
+}});
+if(W.__CLUB)mirrorStart();else document.addEventListener("u13club",()=>setTimeout(mirrorStart,1500),{once:true});
+}
+if(W.__V)boot();else{let n=0;const iv=setInterval(()=>{if(W.__V){clearInterval(iv);boot()}else if(++n>100)clearInterval(iv)},100)}
 })();
 
 </script>
