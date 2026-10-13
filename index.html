@@ -5291,7 +5291,7 @@ V.hasG=(r)=>V.isAll()||(V.me().g||[]).indexOf(r)>=0;
 V.canPlan=()=>V.hasG("plan");
 V.isStaff=()=>V.canPlan();
 V.canWrite=(tid)=>V.has(tid||W.__TID,"bearbeiten");
-V.arten=()=>((W.__VEREIN&&W.__VEREIN.arten)||W.__ARTEN_STD||[]);
+V.arten=()=>{const a=W.__VEREIN&&W.__VEREIN.arten;return (a&&a.length)?a:(W.__ARTEN_STD||[])};
 V.bereiche=()=>((W.__VEREIN&&W.__VEREIN.bereiche)||[]);
 V.artName=(id)=>{const a=V.arten().find((x)=>x.id===id);return a?a.name:id};
 /* Aus Zuordnungen (Trainerart + Mannschaften oder Bereich) die Rechte je Mannschaft und für den ganzen Verein berechnen */
@@ -5371,10 +5371,10 @@ const CSS='#vnav{position:sticky;top:0;z-index:340;display:flex;flex-wrap:wrap;a
 +'#vdrop h4{margin:10px 8px 4px;font-size:11px;font-weight:600;color:var(--mu)}#vdrop h4:first-child{margin-top:2px}#vdrop button{display:flex;width:100%;align-items:center;gap:8px;border:0;background:none;color:var(--tx);font:inherit;padding:8px 10px;border-radius:10px;cursor:pointer;text-align:left}#vdrop button:hover{background:var(--soft,var(--grs))}#vdrop button.on{background:var(--acs);color:var(--ac);font-weight:600}#vdrop .sub{margin-left:auto;font-size:12px;color:var(--mu);font-weight:400}#vdrop .dim{padding:6px 10px;font-size:12px;color:var(--mu)}'
 +'html.vclub .app{display:block}@media(min-width:761px){html.vclub nav{top:var(--vnh,56px)!important}html.vclub:not([data-design="ruhig"]):not([data-design="glas"]) nav{height:calc(100vh - var(--vnh,56px))}html.vclub:not([data-design="ruhig"]):not([data-design="glas"]) .app{display:grid}}'
 +'html.kabmode .app,html.kabmode #vnav{display:none!important}'
-+'#vp{position:fixed;left:0;right:0;bottom:0;top:var(--vnh,56px);z-index:400;background:var(--bg);color:var(--tx);overflow:auto}#vp[hidden]{display:none}'
-+'html[data-design="glas"] #vp{background:transparent}'
-+'#vp .vsub{display:flex;gap:4px;flex-wrap:wrap;max-width:1180px;margin:0 auto;padding:12px clamp(12px,3vw,40px) 0}#vp .vsub button{font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--card);color:var(--mu);padding:5px 14px;border-radius:99px;cursor:pointer}#vp .vsub button.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}'
-+'#vbody{max-width:1180px;margin:0 auto;padding:18px clamp(12px,3vw,40px) 70px}#vbody h2{font-size:26px;margin:0 0 4px}#vbody .sub{margin:0 0 14px}'
++'#vp{position:relative;min-height:calc(100vh - var(--vnh,56px));color:var(--tx)}#vp[hidden]{display:none}html.vopen .app{display:none!important}html.vopen body{background:var(--bg)}'
++'html.vclub[data-design="ruhig"] nav,html.vclub[data-design="glas"] nav{margin-left:clamp(20px,3vw,48px)!important;margin-right:auto!important}#vnav{padding-left:clamp(20px,3vw,48px);padding-right:clamp(20px,3vw,48px)}'
++'#vp .vsub{display:flex;gap:4px;flex-wrap:wrap;max-width:1840px;margin:0 auto;padding:12px clamp(20px,3vw,48px) 0}#vp .vsub button{font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--card);color:var(--mu);padding:5px 14px;border-radius:99px;cursor:pointer}#vp .vsub button.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}'
++'#vbody{max-width:1840px;margin:0 auto;padding:18px clamp(20px,3vw,48px) 70px}#vbody h2{font-size:26px;margin:0 0 4px}#vbody .sub{margin:0 0 14px}'
 +'.vg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px;margin-bottom:12px}.vc{margin:0 0 12px}'
 +'.vtg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px;margin:0 0 14px}.vtc{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:var(--rad,16px);background:var(--card);border:1px solid var(--ln);cursor:pointer;text-align:left;color:var(--tx);font:inherit}.vtc:hover{border-color:var(--ac)}.vtc.dim{opacity:.55}.vtc.cur{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}'
 +'.vtc .vth{display:flex;align-items:baseline;gap:8px}.vtc .vth b{font-size:20px}.vtc .vth .vn{margin-left:auto;font-size:12px;color:var(--mu)}.vtc .vbar{height:7px;border-radius:99px;background:var(--grs);overflow:hidden}.vtc .vbar i{display:block;height:100%;border-radius:99px}.vtc .vm{font-size:12px;color:var(--mu)}'
@@ -5397,7 +5397,7 @@ const ini=(n)=>{n=String(n||"Verein").trim();const w=n.split(/\s+/);return w[0].
 const MENU=[
  {id:"uebersicht",label:"Übersicht",tabs:["uebersicht"]},
  {id:"mannschaft",label:"Mannschaft",app:true},
- {id:"fach",label:"Fachnotizen",tabs:["fach"]},
+ {id:"fach",label:()=>V.fachLabel?V.fachLabel():"Fachnotizen",tabs:["fach"]},
  {id:"planung",label:"Planung",tabs:["platz","kabinen"]},
  {id:"personen",label:"Personen & Rechte",tabs:["personen"]},
  {id:"teams",label:"Mannschaften",tabs:["teams"]},
@@ -5445,7 +5445,7 @@ function mountNav(){
 function refreshNav(){
   const nav=q("#vnav");if(!nav)return;
   const cur=V.cur?(menuOf(V.cur)||{}).id:"mannschaft";
-  q("#vmenu",nav).innerHTML=menuVis().map((m)=>'<button type="button" role="tab" data-m="'+m.id+'" class="'+(m.id===cur?"on":"")+'">'+E(m.label)+'</button>').join("");
+  q("#vmenu",nav).innerHTML=menuVis().map((m)=>'<button type="button" role="tab" data-m="'+m.id+'" class="'+(m.id===cur?"on":"")+'">'+E(typeof m.label==="function"?m.label():m.label)+'</button>').join("");
   q("#vteamb",nav).innerHTML='<b>'+E((W.__TEAM||{}).name||"")+'</b><span class="note">'+E((W.__TEAM||{}).ak||"")+'</span> ▾';
   q("#vrole",nav).innerHTML='<b>'+E((W.__VME&&(W.__VME.name||W.__VME.email.split("@")[0]))||"")+'</b> · '+E(V.roleLabel());
   q("#vrole",nav).title=(W.__VME&&W.__VME.email)||"";
@@ -5493,14 +5493,14 @@ V.open=(id)=>{
   ensurePanel();const ts=tabsFor();
   const t=ts.find((x)=>x.id===id)||ts.find((x)=>x.id===V.cur)||ts[0];if(!t)return;
   if(V.cur&&V.cur!==t.id){const o=V.tabs.find((x)=>x.id===V.cur);o&&o.stop&&o.stop()}
-  V.cur=t.id;panel.hidden=false;
+  V.cur=t.id;panel.hidden=false;document.documentElement.classList.add('vopen');try{window.scrollTo(0,0)}catch(e){}
   const m=menuOf(t.id),sib=m?tabsOf(m):[];
   q("#vsub",panel).innerHTML=sib.length>1?sib.map((x)=>'<button type="button" role="tab" data-t="'+x.id+'" class="'+(x.id===t.id?"on":"")+'">'+E(x.label)+'</button>').join(""):"";
   q("#vsub",panel).style.display=sib.length>1?"flex":"none";
   refreshNav();V.render();
   try{q("#vp").scrollTop=0}catch(e){}
 };
-V.close=()=>{if(!panel)return;const o=V.tabs.find((x)=>x.id===V.cur);o&&o.stop&&o.stop();panel.hidden=true;V.cur=null;refreshNav()};
+V.close=()=>{if(!panel)return;const o=V.tabs.find((x)=>x.id===V.cur);o&&o.stop&&o.stop();panel.hidden=true;document.documentElement.classList.remove('vopen');V.cur=null;refreshNav()};
 /* Menüpunkt öffnen: „mannschaft“ zeigt die Mannschafts-App */
 V.go=(mid,tab)=>{const m=MENU.find((x)=>x.id===mid);if(!m)return;if(m.app){V.close();try{window.scrollTo(0,0)}catch(e){}return}const ts=tabsOf(m);const t=ts.find((x)=>x.id===tab)||ts[0];if(t)V.open(t.id)};
 /* Mannschafts-App auf einem bestimmten Reiter (Kader & Scouting …) */
@@ -5948,11 +5948,11 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   }
   /* Wer darf was – einstellbar */
   const rows=V.RECHTE.map((r)=>[r,false]).concat(V.GN.map((r)=>[r,true]));
-  h+='<div class="card vc"><h3>Wer darf was?</h3><div class="note" style="margin:0 0 8px">Jede Spalte ist eine Trainerart. Setze Haken, was sie darf. '+(adm?"":"Ändern kann das nur der Administrator. ")+'Administrator und Jugendleitung dürfen immer alles.</div><div class="tw"><table class="vt vmx"><thead><tr><th></th>'+arten.map((a)=>'<th class="c" style="white-space:normal;min-width:88px">'+E(a.name)+(adm?'<br><button class="btn" data-adel="'+E(a.id)+'" style="padding:1px 8px;font-size:11px;margin-top:3px">Löschen</button>':"")+'</th>').join("")+'</tr></thead><tbody>';
+  h+='<div class="card vc"><h3>Wer darf was?</h3><div class="note" style="margin:0 0 8px">Jede Spalte ist eine Trainerart. Setze Haken, was sie darf. '+(adm?"":"Ändern kann das nur der Administrator. ")+'Administrator und Jugendleitung dürfen immer alles.</div><div class="tw"><table class="vt vmx"><thead><tr><th></th><th class="c" style="white-space:normal;min-width:88px">Administrator</th><th class="c" style="white-space:normal;min-width:88px">Jugendleitung</th>'+arten.map((a)=>'<th class="c" style="white-space:normal;min-width:88px">'+E(a.name)+(adm?'<br><button class="btn" data-adel="'+E(a.id)+'" style="padding:1px 8px;font-size:11px;margin-top:3px">Löschen</button>':"")+'</th>').join("")+'</tr></thead><tbody>';
   rows.forEach(([r,g],i)=>{
-    if(i===0)h+='<tr><td colspan="'+(arten.length+1)+'" class="note"><b>In der Mannschaft</b></td></tr>';
-    if(g&&i===V.RECHTE.length)h+='<tr><td colspan="'+(arten.length+1)+'" class="note"><b>Für den ganzen Verein</b></td></tr>';
-    h+='<tr><td style="white-space:normal">'+E(V.RN[r])+'</td>'+arten.map((a)=>{const on=((g?a.gl:a.rechte)||[]).indexOf(r)>=0;return '<td class="c"><input type="checkbox" data-ar="'+E(a.id)+'|'+r+'|'+(g?"g":"t")+'"'+(on?" checked":"")+(adm?"":" disabled")+' aria-label="'+E(a.name+": "+V.RN[r])+'"></td>'}).join("")+'</tr>'});
+    if(i===0)h+='<tr><td colspan="'+(arten.length+3)+'" class="note"><b>In der Mannschaft</b></td></tr>';
+    if(g&&i===V.RECHTE.length)h+='<tr><td colspan="'+(arten.length+3)+'" class="note"><b>Für den ganzen Verein</b></td></tr>';
+    h+='<tr><td style="white-space:normal">'+E(V.RN[r])+'</td><td class="c"><input type="checkbox" checked disabled aria-label="Administrator"></td><td class="c"><input type="checkbox" checked disabled aria-label="Jugendleitung"></td>'+arten.map((a)=>{const on=((g?a.gl:a.rechte)||[]).indexOf(r)>=0;return '<td class="c"><input type="checkbox" data-ar="'+E(a.id)+'|'+r+'|'+(g?"g":"t")+'"'+(on?" checked":"")+(adm?"":" disabled")+' aria-label="'+E(a.name+": "+V.RN[r])+'"></td>'}).join("")+'</tr>'});
   h+='</tbody></table></div>';
   if(adm)h+='<div class="vrow" style="margin-top:10px"><label>Neue Trainerart<input id="anew" maxlength="30" placeholder="z. B. Videoanalyst"></label><button class="btn" id="aadd" type="button" style="align-self:flex-end">Hinzufügen</button></div>';
   h+='<div class="note" style="margin-top:8px">„Einstellungen, Links und Sicherung“ steuert, was in der Mannschafts-App angezeigt wird. Alle anderen Rechte werden zusätzlich von den Sicherheitsregeln der Datenbank durchgesetzt. Änderungen an Trainerarten gelten für alle Personen mit dieser Trainerart, sobald sie die App neu öffnen.</div><div class="vmsg" id="amsg"></div></div>';
@@ -6069,9 +6069,15 @@ function mirrorStart(){
   mirSub=()=>{u1();u2()};
 }
 V.mirrorStart=mirrorStart;
+const fachTeams=()=>V.teams().filter((t)=>t.aktiv!==false&&(V.has(t.id,"tw")||V.has(t.id,"ath")));
+const isFach=()=>!V.isAll()&&fachTeams().length>0&&!V.teams().some((t)=>V.has(t.id,"bearbeiten"));
+V.fachLabel=()=>{if(!isFach())return "Fachnotizen";const tw=V.hasAnyT("tw"),at=V.hasAnyT("ath");return tw&&at?"Fach-Dashboard":tw?"Torwart-Dashboard":"Athletik-Dashboard"};
 const show=()=>V.hasAnyT("tw")||V.hasAnyT("ath")||V.hasAnyT("fachlesen");
+const dd=(s)=>{const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s||"");return m?m[3]+"."+m[2]+".":(s||"")};
+let openK=null;
 V.tab({id:"fach",label:"Fachnotizen",show,stop(){stopSubs()},render(el){
-  const t=tid();
+  const ft=fachTeams();
+  let t=st.tid&&(ft.some((x)=>x.id===st.tid)||!ft.length)?st.tid:(ft.some((x)=>x.id===tid())?tid():(ft[0]?ft[0].id:tid()));
   if(st.tid!==t){stopSubs();st.tid=t}
   const can={tw:V.has(t,"tw"),ath:V.has(t,"ath"),lesen:V.has(t,"fachlesen")};
   if(!can.tw&&!can.ath&&!can.lesen){el.innerHTML='<h2>Fachnotizen</h2><p class="note">Für diese Mannschaft hast du keinen Zugriff auf Fachnotizen. Oben links die Mannschaft wechseln.</p>';return}
@@ -6086,54 +6092,50 @@ V.tab({id:"fach",label:"Fachnotizen",show,stop(){stopSubs()},render(el){
   }
   if(V.typing())return;
   const pl=(st.players||[]).filter((p)=>p.aktiv!==false).sort((a,b)=>spielerName(a).localeCompare(spielerName(b),"de"));
-  const byId={};(st.players||[]).forEach((p)=>{byId[p.id]=p});
-  const pn=(id)=>byId[id]?spielerName(byId[id]):"–";
-  const dd=(s)=>{const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s||"");return m?m[3]+"."+m[2]+".":(s||"")};
-  const row=(n,own,kind)=>'<div class="row" style="align-items:flex-start;gap:8px"><span style="min-width:0;overflow-wrap:anywhere;white-space:pre-wrap"><b>'+E(dd(n.datum))+'</b> · '+E(pn(n.pid))+' – '+E(n.text)+(n.autor&&!own?' <span class="note">('+E(n.autor)+')</span>':'')+'</span>'+(own?'<button class="rm" data-fdel="'+kind+'|'+E(n.id)+'" title="Notiz löschen">✕</button>':'')+'</div>';
   const mine=(arr)=>{const d=(arr||[]).find((x)=>x.id===mkey());return d?(d.items||[]):[]};
-  const formHtml=(kind,list)=>'<div class="vrow"><label>Spieler<select id="fp_'+kind+'">'+list.map((p)=>'<option value="'+E(p.id)+'"'+((st.form[kind]||{}).pid===p.id?" selected":"")+'>'+E(spielerName(p))+'</option>').join("")+'</select></label><label>Datum<input type="date" id="fd_'+kind+'" value="'+E((st.form[kind]||{}).datum||V.today())+'"></label></div><textarea id="ft_'+kind+'" rows="3" style="width:100%;box-sizing:border-box" placeholder="Notiz">'+E((st.form[kind]||{}).text||"")+'</textarea><div style="margin-top:6px"><button class="btn" data-fadd="'+kind+'" type="button">Notiz speichern</button></div>';
-  let h='<h2>Fachnotizen</h2><p class="sub note">'+E(V.tname(t))+'. Torwart- und Athletiknotizen sind getrennt von den normalen Trainernotizen.</p>';
-  if(can.tw){
-    const gk=pl.filter((p)=>p.torwart);
-    h+='<div class="card vc"><h3>Torwart-Notizen</h3>'+(gk.length?formHtml("tw",gk):'<p class="note">Noch keine Torhüter. Als Torhüter gilt, wer in der Mannschaft die Primärposition Torwart hat.</p>')+'</div>';
-    const own=mine(st.tn).slice().sort((a,b)=>(b.datum||"").localeCompare(a.datum||""));
-    h+='<div class="card vc"><h3>Meine Torwart-Notizen</h3>'+(own.length?own.map((n)=>row(n,true,"tw")).join(""):'<p class="note">Noch keine.</p>')+'</div>';
-    const oth=[];(st.tn||[]).forEach((d)=>{if(d.id!==mkey())(d.items||[]).forEach((n)=>oth.push({...n,autor:d.name||d.autor}))});
-    const tr=(st.vtw||[]).map((n)=>({...n}));
-    const all=oth.concat(tr).sort((a,b)=>(b.datum||"").localeCompare(a.datum||""));
-    h+='<div class="card vc"><h3>Weitere Notizen zu Torhütern</h3><p class="note">Von Trainern und anderen Torwarttrainern.</p>'+(all.length?all.map((n)=>row(n,false,"")).join(""):'<p class="note">Keine.</p>')+'</div>';
-  }
-  if(can.ath){
-    h+='<div class="card vc"><h3>Athletik-Notizen</h3>'+(pl.length?formHtml("ath",pl):'<p class="note">Noch keine Spieler.</p>')+'</div>';
-    const own=mine(st.an).slice().sort((a,b)=>(b.datum||"").localeCompare(a.datum||""));
-    h+='<div class="card vc"><h3>Meine Athletik-Notizen</h3><p class="note">Diese Notizen sieht nur du und wer Fachnotizen lesen darf.</p>'+(own.length?own.map((n)=>row(n,true,"ath")).join(""):'<p class="note">Noch keine.</p>')+'</div>';
-  }
-  if(can.lesen&&!can.tw){
-    const a=[];(st.tn||[]).forEach((d)=>(d.items||[]).forEach((n)=>a.push({...n,autor:d.name||d.autor})));
-    (st.vtw||[]).forEach((n)=>a.push(n));a.sort((x,y)=>(y.datum||"").localeCompare(x.datum||""));
-    h+='<div class="card vc"><h3>Torwart-Notizen (lesen)</h3>'+(a.length?a.map((n)=>row(n,false,"")).join(""):'<p class="note">Keine.</p>')+'</div>';
-  }
-  if(can.lesen&&!can.ath){
-    const a=[];(st.an||[]).forEach((d)=>(d.items||[]).forEach((n)=>a.push({...n,autor:d.name||d.autor})));a.sort((x,y)=>(y.datum||"").localeCompare(x.datum||""));
-    h+='<div class="card vc"><h3>Athletik-Notizen (lesen)</h3>'+(a.length?a.map((n)=>row(n,false,"")).join(""):'<p class="note">Keine.</p>')+'</div>';
-  }
+  /* alle Notizen einer Art als flache Liste mit Autor */
+  const flat=(arr)=>{const o=[];(arr||[]).forEach((d)=>(d.items||[]).forEach((n)=>o.push({...n,autor:d.name||d.autor,own:d.id===mkey()})));return o};
+  const twAll=flat(st.tn).concat((st.vtw||[]).map((n)=>({...n,trainer:true,own:false})));
+  const anAll=flat(st.an);
+  const noteRow=(n,kind)=>'<div class="fn"><span class="fd">'+E(dd(n.datum))+'</span><span class="ft">'+E(n.text)+(n.trainer?' <i class="note">Trainer</i>':(!n.own&&n.autor?' <i class="note">'+E(n.autor)+'</i>':''))+'</span>'+(n.own?'<button class="rm" data-fdel="'+kind+'|'+E(n.id)+'" title="Notiz löschen" aria-label="Notiz löschen">✕</button>':'')+'</div>';
+  const card=(p,kind,all,editable)=>{
+    const L=all.filter((n)=>n.pid===p.id).sort((a,b)=>(b.datum||"").localeCompare(a.datum||"")),k=kind+"|"+p.id,opn=openK===k;
+    return '<div class="card fcard"><div class="fh"><b>'+E(spielerName(p))+'</b><span class="note">'+(p.nr?"#"+E(p.nr)+" · ":"")+E((p.positionen||[]).join(", "))+'</span><span class="vn">'+L.length+'</span></div>'
+      +(L.length?L.slice(0,opn?50:2).map((n)=>noteRow(n,kind)).join("")+(!opn&&L.length>2?'<button class="btn fmore" data-fopen="'+k+'" type="button">alle '+L.length+' anzeigen</button>':""):'<div class="note">Noch keine Notiz.</div>')
+      +(editable?(opn?'<div class="fform"><label>Datum<input type="date" id="fd_'+kind+'" value="'+E((st.form[k]||{}).datum||V.today())+'"></label><textarea id="ft_'+kind+'" rows="3" placeholder="Notiz">'+E((st.form[k]||{}).text||"")+'</textarea><div class="vrow"><button class="btn" data-fadd="'+kind+'|'+E(p.id)+'" type="button">Notiz speichern</button><button class="btn" data-fclose="1" type="button">Schließen</button></div></div>':'<button class="btn" data-fopen="'+k+'" type="button">＋ Notiz</button>'):"")+'</div>'};
+  const kpi=(arr,n)=>{const m=arr.filter((x)=>x.own);const last=m.map((x)=>x.datum||"").sort().pop();return '<div class="kpis"><div class="card kpi"><b>'+n+'</b><span>Spieler</span></div><div class="card kpi"><b>'+m.length+'</b><span>meine Notizen</span></div><div class="card kpi"><b>'+(last?E(dd(last)):"–")+'</b><span>zuletzt notiert</span></div></div>'};
+  const title=isFach()?V.fachLabel():"Fachnotizen";
+  let h='<h2>'+E(title)+'</h2><p class="sub note">'+(isFach()?"Deine Spieler und Notizen auf einen Blick.":"Torwart- und Athletiknotizen sind getrennt von den normalen Trainernotizen.")+'</p>';
+  if(ft.length>1)h+='<div class="vf" role="tablist">'+ft.map((x)=>'<button type="button" data-ft="'+E(x.id)+'" class="'+(x.id===t?"on":"")+'">'+E(x.name)+' <span class="note">'+E(x.ak||"")+'</span></button>').join("")+'</div>';
+  else h+='<p class="note" style="margin:0 0 10px"><b>'+E(V.tname(t))+'</b></p>';
+  if(can.tw){const gk=pl.filter((p)=>p.torwart);
+    h+='<h3 class="fsec">Torhüter</h3>'+kpi(twAll,gk.length)+(gk.length?'<div class="fgrid">'+gk.map((p)=>card(p,"tw",twAll,true)).join("")+'</div>':'<p class="note">Noch keine Torhüter. Als Torhüter gilt, wer in der Mannschaft die Primärposition Torwart hat.</p>')}
+  if(can.ath){h+='<h3 class="fsec">Athletik</h3>'+kpi(anAll,pl.length)+(pl.length?'<div class="fgrid">'+pl.map((p)=>card(p,"ath",anAll.filter((n)=>n.own),true)).join("")+'</div>':'<p class="note">Noch keine Spieler.</p>')+'<p class="note">Athletik-Notizen sehen nur du und wer Fachnotizen lesen darf.</p>'}
+  if(can.lesen&&!can.tw){const gk=pl.filter((p)=>p.torwart);h+='<h3 class="fsec">Torwart-Notizen</h3>'+(gk.length?'<div class="fgrid">'+gk.map((p)=>card(p,"tw",twAll,false)).join("")+'</div>':'<p class="note">Keine Torhüter.</p>')}
+  if(can.lesen&&!can.ath){h+='<h3 class="fsec">Athletik-Notizen</h3>'+'<div class="fgrid">'+pl.filter((p)=>anAll.some((n)=>n.pid===p.id)).map((p)=>card(p,"ath",anAll,false)).join("")+'</div>'+(anAll.length?"":'<p class="note">Keine.</p>')}
   h+='<div class="vmsg '+st.mk+'" id="vfm">'+E(st.msg)+'</div>';
   el.innerHTML=h;
-  el.onchange=(e)=>{const m=/^f([pd])_(tw|ath)$/.exec(e.target.id||"");if(m){st.form[m[2]]=st.form[m[2]]||{};st.form[m[2]][m[1]==="p"?"pid":"datum"]=e.target.value}};
-  el.oninput=(e)=>{const m=/^ft_(tw|ath)$/.exec(e.target.id||"");if(m){st.form[m[1]]=st.form[m[1]]||{};st.form[m[1]].text=e.target.value}};
+  el.oninput=(e)=>{const m=/^ft_(tw|ath)$/.exec(e.target.id||"");if(m&&openK){st.form[openK]=st.form[openK]||{};st.form[openK].text=e.target.value}};
+  el.onchange=(e)=>{const m=/^fd_(tw|ath)$/.exec(e.target.id||"");if(m&&openK){st.form[openK]=st.form[openK]||{};st.form[openK].datum=e.target.value}};
   el.onclick=async(e)=>{
+    const ftb=e.target.closest("[data-ft]");if(ftb){stopSubs();st.tid=ftb.dataset.ft;openK=null;V.render();return}
+    const op=e.target.closest("[data-fopen]");if(op){openK=op.dataset.fopen;V.render();return}
+    if(e.target.closest("[data-fclose]")){openK=null;V.render();return}
     const add=e.target.closest("[data-fadd]"),del=e.target.closest("[data-fdel]");
     const coll=(k)=>t+(k==="tw"?"__tnotes":"__anotes"),arr=(k)=>mine(k==="tw"?st.tn:st.an);
     const wr=async(k,items)=>{try{await V.fs().doc(coll(k)+"/"+mkey()).set({autor:me(),name:(W.__VME||{}).name||me(),items,am:new Date().toISOString()});st.msg="Gespeichert.";st.mk="ok";return true}catch(x){st.msg="Das hat nicht geklappt.";st.mk="er";return false}};
-    if(add){const k=add.dataset.fadd,s=el.querySelector("#fp_"+k),d=el.querySelector("#fd_"+k),x=el.querySelector("#ft_"+k);
-      const text=(x.value||"").trim();if(!s||!s.value||!text){st.msg="Bitte Spieler und Text angeben.";st.mk="er";V.render();return}
-      const items=arr(k).concat([{id:"f"+Date.now().toString(36)+Math.random().toString(36).slice(2,4),pid:s.value,datum:d.value||V.today(),text}]);
-      if(await wr(k,items)){st.form[k]={pid:s.value,datum:d.value,text:""}}
+    if(add){const [k,pid]=add.dataset.fadd.split("|"),d=el.querySelector("#fd_"+k),x=el.querySelector("#ft_"+k);
+      const text=(x.value||"").trim();if(!text){st.msg="Bitte einen Text eintragen.";st.mk="er";V.render();return}
+      const items=arr(k).concat([{id:"f"+Date.now().toString(36)+Math.random().toString(36).slice(2,4),pid,datum:d.value||V.today(),text}]);
+      if(await wr(k,items)){delete st.form[k+"|"+pid];openK=null}
       V.render();return}
     if(del){const [k,id]=del.dataset.fdel.split("|");if(await wr(k,arr(k).filter((n)=>n.id!==id)))V.log("Fachnotiz gelöscht",t);V.render()}
   };
 }});
-if(W.__CLUB)mirrorStart();else document.addEventListener("u13club",()=>setTimeout(mirrorStart,1500),{once:true});
+const css=document.createElement("style");css.textContent='.vf{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}.vf button{font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:99px;padding:5px 14px;cursor:pointer}.vf button.on{background:var(--segon,var(--ac));color:var(--segtx,#fff);border-color:transparent}.fsec{margin:18px 0 8px!important;font-size:16px!important}.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}.fcard{display:flex;flex-direction:column;gap:6px}.fh{display:flex;align-items:baseline;gap:8px}.fh .vn{margin-left:auto;font-size:12px;color:var(--mu)}.fn{display:flex;gap:8px;align-items:flex-start;font-size:13px;border-top:1px solid var(--ln);padding-top:5px}.fd{font-weight:600;white-space:nowrap}.ft{flex:1;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}.fform{display:flex;flex-direction:column;gap:6px}.fform textarea{width:100%;box-sizing:border-box}.fmore{align-self:flex-start;font-size:12px}';
+document.head.appendChild(css);
+if(W.__CLUB)init2();else document.addEventListener("u13club",init2,{once:true});
+function init2(){setTimeout(()=>{mirrorStart();try{if(isFach()&&!sessionStorage.getItem("u13fachopen")){sessionStorage.setItem("u13fachopen","1");V.open("fach")}}catch(e){}},1500)}
 }
 if(W.__V)boot();else{let n=0;const iv=setInterval(()=>{if(W.__V){clearInterval(iv);boot()}else if(++n>100)clearInterval(iv)},100)}
 })();
