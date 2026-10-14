@@ -5428,7 +5428,8 @@ const CSS='html.vclub,html.vclub body{height:auto;min-height:100%}#vnav{position
 +'.vgl{position:absolute;left:0;right:0;border-top:1px dashed var(--ln);font-size:10px;color:var(--mu);padding-left:3px}.vblk{position:absolute;left:3px;right:3px;border-radius:8px;padding:3px 6px;font-size:12px;line-height:1.25;overflow:hidden;border:1.5px solid;cursor:default;color:var(--tx)}.vblk.ed{cursor:pointer}.vblk.clash{outline:2px solid var(--r);outline-offset:1px}.vwb.clash{outline:2px solid var(--r);outline-offset:1px}.vblk small{display:block;opacity:.8}'
 +'.vkabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}.vkab{border:1px solid var(--ln);border-radius:12px;padding:8px 10px;background:var(--card);min-height:90px}.vkab b{display:block;margin-bottom:4px}.vke{border-left:4px solid;border-radius:6px;padding:3px 7px;margin:4px 0;font-size:12px;background:var(--bg)}.vke.ed{cursor:pointer}'
 +'.vmx td.c,.vmx th.c{text-align:center}.vmx input[type=checkbox]{width:18px;height:18px}'
-+'@media(max-width:760px){#vnav .vpill button.mobx,nav button.mobx{display:none!important}#vnav .vbrand>span:last-child{display:none}#vnav .vbrand{padding:5px 8px 5px 6px}#vnav .vpill{overflow:visible!important}#vnav .vpill button{padding:7px 10px!important}html.mobnav nav button[data-s="h"]{position:static!important;box-shadow:none!important}html.mobnav nav button[data-s="h"]:not(.on){background:none!important}html.mobnav nav{width:auto!important;max-width:none!important;left:8px!important;right:8px!important;bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;border-radius:26px!important;padding:6px 4px!important}html.mobnav nav button{font-size:10.5px!important;flex:1 1 0!important;min-width:0!important;padding-left:2px!important;padding-right:2px!important}.mobsheet{position:fixed;z-index:400;left:12px;right:12px;background:var(--card);border:1px solid var(--ln);border-radius:20px;padding:10px;display:grid;gap:6px;box-shadow:0 12px 40px rgba(0,0,0,.35);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);max-height:70vh;overflow-y:auto}.mobsheet[hidden]{display:none}.mobsheet button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid var(--ln);background:var(--card);color:var(--tx);font:inherit;font-size:15px;border-radius:14px;padding:8px 10px;cursor:pointer;text-align:center}.mobsheet button.on{background:var(--acs);color:var(--ac);font-weight:600;border-color:var(--ac)}#mobsheetB{bottom:calc(84px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(3,1fr)}#mobsheetT{top:calc(var(--vnh,56px) + 6px);grid-template-columns:1fr}}'
++'body:not(.scoutonly) nav button[data-s="k"]{display:none!important}'
++'@media(max-width:760px){#vnav .vpill button.mobx,nav button.mobx{display:none!important}#vnav .vbrand>span:last-child{display:none}#vnav .vbrand{padding:5px 8px 5px 6px}#vnav .vpill{overflow:visible!important}#vnav .vpill button{padding:7px 8px!important;font-size:13px!important}#vnav .vpill button.on{max-width:120px;overflow:hidden;text-overflow:ellipsis}#vnav .vpill #vmore{padding:5px 10px!important;font-size:18px!important}#vnav .vpill{max-width:100%;box-sizing:border-box}#vnav{grid-template-columns:minmax(0,1fr)!important}#vnav .vpill,#vnav .vr{grid-column:1!important;justify-self:stretch!important}#vnav .vpill{justify-content:space-between}@media(max-width:380px){#vnav .vpill button.on{max-width:92px!important}#vnav .vpill button{padding:7px 5px!important}#vnav .vbrand{padding:5px 4px 5px 4px!important}}html.mobnav nav button[data-s="h"]{position:static!important;box-shadow:none!important}html.mobnav nav button[data-s="h"]:not(.on){background:none!important}html.mobnav nav{width:auto!important;max-width:none!important;left:8px!important;right:8px!important;bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;border-radius:26px!important;padding:6px 4px!important}html.mobnav nav button{font-size:10.5px!important;flex:1 1 0!important;min-width:0!important;padding-left:2px!important;padding-right:2px!important}.mobsheet{position:fixed;z-index:400;left:12px;right:12px;background:var(--card);border:1px solid var(--ln);border-radius:20px;padding:10px;display:grid;gap:6px;box-shadow:0 12px 40px rgba(0,0,0,.35);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);max-height:70vh;overflow-y:auto}.mobsheet[hidden]{display:none}.mobsheet button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid var(--ln);background:var(--card);color:var(--tx);font:inherit;font-size:15px;border-radius:14px;padding:8px 10px;cursor:pointer;text-align:center}.mobsheet button.on{background:var(--acs);color:var(--ac);font-weight:600;border-color:var(--ac)}#mobsheetB{bottom:calc(84px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(3,1fr)}#mobsheetT{top:calc(var(--vnh,56px) + 6px);grid-template-columns:1fr}}'
 +'@media(max-width:760px){#vnav{padding:8px 12px}#vnav .vr{margin-left:0;width:100%}#vp{bottom:0}#vbody{padding:14px 12px 90px}#vbody .card.vc,#vbody .vc{padding:12px 10px}#vbody .vrow .vseg{width:100%;display:flex}#vbody .vrow .vseg .btn{flex:1}}';
 function css(){if(q("#vcss"))return;const s=document.createElement("style");s.id="vcss";s.textContent=CSS;document.head.appendChild(s)}
 V.css=css;
@@ -5436,6 +5437,7 @@ const ini=(n)=>{n=String(n||"Verein").trim();const w=n.split(/\s+/);return w[0].
 const MENU=[
  {id:"uebersicht",label:"Übersicht",tabs:["uebersicht"]},
  {id:"mannschaft",label:"Mannschaft",app:true},
+ {id:"kader",label:"Kaderplanung",tabs:["kader"]},
  {id:"fach",label:()=>V.fachLabel?V.fachLabel():"Fachnotizen",tabs:["fach"]},
  {id:"planung",label:"Planung",tabs:["platz","kabinen"]},
  {id:"personen",label:"Personen & Rechte",tabs:["personen"]},
@@ -5490,7 +5492,7 @@ function mountNav(){
   dr.onclick=(e)=>{const b=e.target.closest("button[data-sw]");if(b&&b.dataset.sw!==W.__TID)V.setTeam(b.dataset.sw);else dr.hidden=true};
   document.addEventListener("click",(e)=>{if(!dr.hidden&&!e.target.closest("#vdrop")&&!e.target.closest("#vteamb"))dr.hidden=true});
   refreshNav();
-  try{const g=sessionStorage.getItem("u13go");if(g){sessionStorage.removeItem("u13go");setTimeout(()=>{if(V.tabs.some((x)=>x.id===g))V.open(g)},500)}}catch(e){}
+  try{const g=sessionStorage.getItem("u13go");if(g){sessionStorage.removeItem("u13go");if(g==="app:k")setTimeout(()=>V.openKader(),600);else setTimeout(()=>{if(V.tabs.some((x)=>x.id===g))V.open(g)},500)}}catch(e){}
 }
 
 /* Handy: Menüs mit „Mehr“ statt verstecktem Wischen */
@@ -5520,7 +5522,7 @@ function mountNav(){
     const more0=nav.querySelector("#vmore");if(more0)more0.remove();
     const sh=mk("mobsheetT");
     if(!ph()||bs.length<=4){sh.hidden=true;return}
-    const act=bs.find((b)=>b.classList.contains("on"));let keep=bs.slice(0,3);if(act&&keep.indexOf(act)<0)keep[2]=act;
+    const act=bs.find((b)=>b.classList.contains("on"));let keep=bs.slice(0,2);keep.push(act&&keep.indexOf(act)<0?act:bs[2]);
     const rest=bs.filter((b)=>keep.indexOf(b)<0);rest.forEach((b)=>b.classList.add("mobx"));
     const m=document.createElement("button");m.type="button";m.id="vmore";m.textContent="⋯";m.setAttribute("aria-label","Weitere Menüpunkte");m.style.cssText="flex:none;border:0;background:none;color:var(--mu);font:inherit;font-size:18px;padding:5px 14px;border-radius:99px;cursor:pointer";
     q(".vpill",nav).appendChild(m);
@@ -5528,7 +5530,7 @@ function mountNav(){
     m.onclick=(e)=>{e.stopPropagation();sh.hidden=!sh.hidden};
     sh.onclick=(e)=>{const x=e.target.closest("[data-mt]");if(x){sh.hidden=true;V.go(x.dataset.mt)}};
   }
-  const tick=()=>{try{
+  let lastK=null;const tick=()=>{try{const kEl=document.getElementById('k'),ko=!V.cur&&!!kEl&&!kEl.hidden;if(ko!==lastK){lastK=ko;refreshNav()}
     const nav=document.querySelector("body > .app > nav")||document.querySelector("nav");
     const sb=ph()+"|"+(nav?[...nav.querySelectorAll("button[data-s]:not(.mobx)")].map((b)=>b.dataset.s+(b.classList.contains("on")?"*":"")).join(","):"")+"|"+(nav?nav.querySelectorAll("button.mobx").length:0);
     const vm=q("#vmenu");const st=ph()+"|"+(vm?[...vm.querySelectorAll("button[data-m]")].map((b)=>b.dataset.m+(b.classList.contains("on")?"*":"")).join(","):"");
@@ -5541,7 +5543,7 @@ function mountNav(){
 })();
 function refreshNav(){
   const nav=q("#vnav");if(!nav)return;
-  const cur=V.cur?(menuOf(V.cur)||{}).id:"mannschaft";
+  const kEl=document.getElementById("k"),kOn=!V.cur&&kEl&&!kEl.hidden&&!document.body.classList.contains("scoutonly"),cur=V.cur?(menuOf(V.cur)||{}).id:(kOn?"kader":"mannschaft");
   q("#vmenu",nav).innerHTML=menuVis().map((m)=>'<button type="button" role="tab" data-m="'+m.id+'" class="'+(m.id===cur?"on":"")+'">'+E(typeof m.label==="function"?m.label():m.label)+'</button>').join("");
   q("#vteamb",nav).hidden=!!V.cur&&V.cur!=="fach";
   q("#vteamb",nav).innerHTML='<b>'+E((W.__TEAM||{}).name||"")+'</b><span class="note">'+E((W.__TEAM||{}).ak||"")+'</span> ▾';
@@ -5668,6 +5670,19 @@ const BCOL=["var(--grs)","var(--r)","var(--o)","var(--y)","var(--g)"];
 let ufilt="";
 try{ufilt=localStorage.getItem("u13uf")||""}catch(e){}
 let hSub=[];
+
+V.openKader=()=>{V.close();const b=document.querySelector('nav button[data-s="k"]');if(b){b.click();try{window.scrollTo(0,0)}catch(e){}}refreshNav()};
+const kadTeams=()=>V.teams().filter((t)=>t.aktiv!==false&&(V.has(t.id,"kader")||V.has(t.id,"kaderbearb")));
+V.tab({id:"kader",label:"Kaderplanung",show:()=>kadTeams().length>0,render(el){
+  const ts=kadTeams();
+  if(ts.length===1&&ts[0].id===W.__TID&&!el.dataset.back){setTimeout(V.openKader,0);return}
+  let h='<h2>Kaderplanung</h2><p class="sub note">Hier siehst du alle Mannschaften, für die du die Kaderplanung ansehen oder bearbeiten darfst. Jede Mannschaft hat ihre eigene Planung.</p><div class="vg">';
+  h+=ts.map((t)=>{const s=V.st[t.id],ed=V.has(t.id,"kaderbearb"),c=V.col?V.col(t.id):{bg:"",bd:""};
+    return '<div class="card vc" style="border-left:4px solid '+(c.bd||"var(--ac)")+'"><div class="vrow" style="justify-content:space-between;margin:0"><div><b style="font-size:17px">'+E(t.name)+'</b> <span class="note">'+E(t.ak||"")+'</span></div><span class="vbad">'+(ed?"bearbeiten":"nur ansehen")+'</span></div><div class="note" style="margin:6px 0 10px">'+(s&&s.n!=null?s.n+" Spieler im Kader":"")+(t.id===W.__TID?" · aktuell gewählt":"")+'</div><button class="btn" data-ok="'+E(t.id)+'" style="width:100%;min-height:44px;background:var(--ac);color:#fff;border-color:var(--ac)">Kaderplanung öffnen</button></div>'}).join("");
+  h+='</div>';
+  el.innerHTML=h;
+  el.onclick=(e)=>{const b=e.target.closest("[data-ok]");if(!b)return;if(b.dataset.ok===W.__TID)V.openKader();else V.setTeam(b.dataset.ok,"app:k")};
+}});
 V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasAnyT("kader"),stop(){hSub.forEach((u)=>{try{u()}catch(e){}});hSub=[]},render(el){
   if(V.typing())return;hEdit=null;
   const vis=V.visTeams(),mineIds=vis.filter((t)=>V.has(t.id,"bearbeiten")).map((t)=>t.id);
@@ -6138,7 +6153,7 @@ function renderKab(el,o){
   const msg=(t,k)=>{kMsg=t;kMsgK=k||"ok";const m=q("#kmsg",el);if(m){m.textContent=t;m.className="vmsg "+kMsgK}};
   const rd=(id)=>{const x=q("#"+id,el);return x?x.value:""};
   const readF=()=>{const f=kF;f.typ=rd("kty")||f.typ;f.kabine=rd("kk");if(q("#kt",el))f.tid=rd("kt");if(q("#kfr",el))f.fremd=rd("kfr").trim();f.datum=rd("kdt")||f.datum;if(q("#kv",el)){f.von=rd("kv");f.bis=rd("kb")}f.txt=rd("kx").trim()};
-  const putDay=async(arr,d0)=>{d0=d0||day;await o.db.doc("kabinen/"+d0).set({datum:d0,eintraege:arr,von:o.kab?"Platzwart-Link":((W.__VME&&W.__VME.email)||""),am:new Date().toISOString()})};
+  const putDay=async(arr,d0)=>{d0=d0||day;await o.db.doc("kabinen/"+d0).set({datum:d0,eintraege:arr,von:o.kab?"Platzwart-Link":((W.__VME&&W.__VME.email)||""),am:new Date().toISOString()});if(d0===day)kDoc={...(kDoc||{}),datum:d0,eintraege:arr};try{const a=document.activeElement;if(a&&a.tagName==='SELECT')a.blur()}catch(e){}};
   el.onclick=async(e)=>{
     const t=e.target;
     const kd=t.closest("[data-kd]");if(kd){const n=+kd.dataset.kd;kDay=n===0?V.today():V.add(kDay||V.today(),n);o.redraw();return}
@@ -6181,14 +6196,15 @@ function renderKab(el,o){
   el.onchange=async(e)=>{
     const t=e.target;
     if(t.dataset&&t.dataset.qk!=null&&ed){const id=t.dataset.qk,v=t.value;if(v===""&&!id.startsWith("v~"))return;
-      let arr=stored.slice();const vi=virt.find((y)=>y.id===id);
-      try{if(vi){const x={...vi};delete x.virt;delete x.id;arr.push({id:V.id("k"),...x,kabine:v==="~weg"?"":v,...(v==="~weg"?{removed:true}:{})})}
+      let arr=((kDoc&&kDoc.eintraege)||[]).slice();const vi=virt.find((y)=>y.id===id);const was=vi&&arr.find((y)=>y.src===vi.src);
+      try{if(vi&&!was){const x={...vi};delete x.virt;delete x.id;arr.push({id:V.id("k"),...x,kabine:v==="~weg"?"":v,...(v==="~weg"?{removed:true}:{})})}
+        else if(vi){arr=arr.map((y)=>y===was?{...y,kabine:v==="~weg"?"":v,...(v==="~weg"?{removed:true}:{})}:y)}
         else arr=arr.map((y)=>y.id===id?{...y,kabine:v==="~weg"?"":v,...(v==="~weg"?{removed:true}:{})}:y);
         await putDay(arr);V.log("Kabine geändert ("+day+")");kMsg=v==="~weg"?"Für diesen Tag entfernt.":"Kabine gespeichert (nur für "+V.fd(day)+").";kMsgK="ok";o.redraw()}catch(x){msg("Das hat nicht geklappt.","er")}return}
     if(t.id==="kdate"){if(dateOk(t.value)){kDay=t.value;o.redraw()}return}
     if(t.id==="kty"&&kF){readF();o.redraw();return}
-    if(t.dataset&&t.dataset.skd!=null&&ed){try{const [tid,d]=t.dataset.skd.split("|"),m={...(plan.stdKabineTag||{})};m[tid]={...(m[tid]||{})};if(t.value)m[tid][d]=t.value;else delete m[tid][d];await V.savePlan({stdKabineTag:m});kMsg="Standard-Kabine gespeichert.";kMsgK="ok";o.redraw()}catch(x){kMsg="Das hat nicht geklappt (kein Zugriff oder keine Verbindung).";kMsgK="er";o.redraw()}return}
-    if(t.dataset&&t.dataset.sk!=null&&ed){try{const sk={...(plan.stdKabine||{})};if(t.value)sk[t.dataset.sk]=t.value;else delete sk[t.dataset.sk];await V.savePlan({stdKabine:sk});kMsg="Standard-Kabine gespeichert.";kMsgK="ok";o.redraw()}catch(x){kMsg="Das hat nicht geklappt (kein Zugriff oder keine Verbindung).";kMsgK="er";o.redraw()}}
+    if(t.dataset&&t.dataset.skd!=null&&ed){try{const [tid,d]=t.dataset.skd.split("|"),m={...(plan.stdKabineTag||{})};m[tid]={...(m[tid]||{})};if(t.value)m[tid][d]=t.value;else delete m[tid][d];await V.savePlan({stdKabineTag:m});try{t.blur()}catch(e){}kMsg="Standard-Kabine gespeichert.";kMsgK="ok";o.redraw()}catch(x){kMsg="Das hat nicht geklappt (kein Zugriff oder keine Verbindung).";kMsgK="er";o.redraw()}return}
+    if(t.dataset&&t.dataset.sk!=null&&ed){try{const sk={...(plan.stdKabine||{})};if(t.value)sk[t.dataset.sk]=t.value;else delete sk[t.dataset.sk];await V.savePlan({stdKabine:sk});try{t.blur()}catch(e){}kMsg="Standard-Kabine gespeichert.";kMsgK="ok";o.redraw()}catch(x){kMsg="Das hat nicht geklappt (kein Zugriff oder keine Verbindung).";kMsgK="er";o.redraw()}}
   };
 }
 async function exportKab(day,kabs,L){
@@ -6369,6 +6385,30 @@ let sMsg="",sMsgK="ok",sLogo=null,kcD=null,lkxHome=null,vaSel=new Set(),vaRole="
 let lkpHome=null;
 const lkxPark=()=>{[["lkx",lkxHome],["lkp",lkpHome]].forEach(([id,hm])=>{const n=document.getElementById(id);if(n&&hm&&hm.parentNode&&!n.parentNode.contains(hm))hm.parentNode.insertBefore(n,hm);if(id==="lkp"){n.style.marginTop="12px";n.style.marginBottom=""}})};
 const shrinkLogo=(file)=>new Promise((res)=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const sc=Math.min(1,400/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/png"))};im.onerror=()=>res(null);im.src=u});
+
+/* ---------- Alle Links nacheinander aktualisieren (wechselt automatisch durch die Mannschaften) ---------- */
+const PQ="u13pubq";
+const pqGet=()=>{try{return JSON.parse(sessionStorage.getItem(PQ)||"null")}catch(e){return null}};
+const pqSet=(o)=>{try{o?sessionStorage.setItem(PQ,JSON.stringify(o)):sessionStorage.removeItem(PQ)}catch(e){}};
+function pubBar(txt,cancel){let b=document.getElementById("pubbar");if(!b){b=document.createElement("div");b.id="pubbar";b.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(90px + env(safe-area-inset-bottom,0px));z-index:500;background:var(--card);color:var(--tx);border:1px solid var(--ac);border-radius:16px;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.3);display:flex;gap:10px;align-items:center;flex-wrap:wrap";document.body.appendChild(b)}
+  b.innerHTML='<b style="flex:1;min-width:180px;font-weight:600">'+E(txt)+'</b><button class="btn" type="button">'+(cancel?"Abbrechen":"OK")+'</button>';b.querySelector("button").onclick=()=>{pqSet(null);b.remove()}}
+const tName=(id)=>{const t=V.teams().find((x)=>x.id===id);return t?t.name:id};
+async function pubRun(){
+  const Q=pqGet();if(!Q)return;
+  if(!Q.todo.length){pqSet(null);const bad=Q.done.filter((x)=>!x.ok);pubBar(bad.length?(Q.done.length-bad.length)+" von "+Q.done.length+" Mannschaften aktualisiert. Nicht geklappt: "+bad.map((x)=>tName(x.tid)).join(", ")+".":"Fertig: Die Links aller "+Q.done.length+" Mannschaften sind aktuell.",false);return}
+  const tid=Q.todo[0];if(tid!==W.__TID){V.setTeam(tid);return}
+  pubBar("Links werden aktualisiert: "+tName(tid)+" ("+(Q.done.length+1)+" von "+Q.n+") – bitte die Seite offen lassen …",true);
+  const wait=(f,ms)=>new Promise((res)=>{const t0=Date.now(),i=setInterval(()=>{if(f()||Date.now()-t0>ms){clearInterval(i);res(!!f())}},500)});
+  const st=()=>((document.getElementById("st")||{}).textContent||"");
+  await wait(()=>{const b=document.getElementById("lku");return b&&!b.disabled&&/Synchron|Gespeichert|aktualisiert/.test(st())},45000);
+  await new Promise((r)=>setTimeout(r,2500));
+  if(!pqGet())return;
+  const b=document.getElementById("lku");let ok=false,txt="Knopf nicht gefunden";
+  if(b){b.click();await wait(()=>{const m=document.getElementById("lkm");return m&&/Veröffentlicht|Automatisch aktualisiert|fehlgeschlagen|nicht freigegeben|Nur der Eigent/.test(m.textContent)},60000);const m=document.getElementById("lkm"),t=m?m.textContent:"";ok=/Veröffentlicht|Automatisch aktualisiert/.test(t)&&!/fehlgeschlagen/.test(t);txt=t.slice(0,90)||"keine Rückmeldung"}
+  const Q2=pqGet();if(!Q2)return;Q2.done.push({tid,ok,txt});Q2.todo.shift();pqSet(Q2);
+  if(Q2.todo.length)V.setTeam(Q2.todo[0]);else if(Q2.orig&&Q2.orig!==W.__TID)V.setTeam(Q2.orig,"vsettings");else pubRun();
+}
+setTimeout(pubRun,3000);
 V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
   if(V.typing())return;
   const v=W.__VEREIN||{},logo=sLogo||W.__CLUBLOGO||"";
@@ -6380,7 +6420,7 @@ V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
   {const dz=W.__dz,cur=dz?dz.get():"ruhig",ACCN=(()=>{const e=document.getElementById("dzacc");return e?Array.from(e.options).map((o)=>[o.value,o.textContent]):[["","Standard"]]})(),GLN=(()=>{const e=document.getElementById("dzgl");return e?Array.from(e.options).map((o)=>[o.value,o.textContent]):[["std","Standard"]]})(),ac=(document.getElementById("dzacc")||{}).value||"",gl=(document.getElementById("dzgl")||{}).value||"std",th=(document.getElementById("th")||{}).value||"";
     const op=(L,v)=>L.map((x)=>'<option value="'+E(x[0])+'"'+(x[0]===v?" selected":"")+'>'+E(x[1])+'</option>').join("");
     h+='<div class="card vc"><h3>Design und Darstellung</h3><div class="note" style="margin-bottom:8px">Gilt für dein Konto auf allen Seiten – du musst dafür in keine Mannschaft wechseln.</div><div class="vrow"><label>Design<select id="vdz_app">'+op([["ruhig","Klar & ruhig"],["glas","Liquid Glass"]],cur)+'</select></label><label>Farbe<select id="vdz_acc">'+op(ACCN,ac)+'</select></label><label>Glas-Transparenz<select id="vdz_gl"'+(cur==="glas"?"":" disabled")+'>'+op(GLN,gl)+'</select></label><label>Darstellung<select id="vdz_th">'+op([["","Automatisch"],["light","Hell"],["dark","Dunkel"]],th)+'</select></label></div></div>'}
-  if(V.isAdmin())h+='<div class="card vc"><h3>Links veröffentlichen</h3><div class="note" style="margin-bottom:8px">Für die Spielerlinks und die Links einer einzelnen Mannschaft. Wähle die Mannschaft, deren Links du jetzt sofort aktualisieren willst.</div><div class="vrow"><label>Links für Mannschaft<select id="vlk_t">'+V.teams().filter((t)=>t.aktiv!==false).map((t)=>'<option value="'+E(t.id)+'"'+(t.id===W.__TID?" selected":"")+'>'+E(t.name+(t.ak?" ("+t.ak+")":""))+'</option>').join("")+'</select></label></div><div id="vlkx"></div></div>';
+  if(V.isAdmin())h+='<div class="card vc"><h3>Links veröffentlichen</h3><div class="note" style="margin-bottom:8px">Für die Spielerlinks und die Links einer einzelnen Mannschaft. Wähle die Mannschaft, deren Links du jetzt sofort aktualisieren willst.</div><div class="vrow"><label>Links für Mannschaft<select id="vlk_t">'+V.teams().filter((t)=>t.aktiv!==false).map((t)=>'<option value="'+E(t.id)+'"'+(t.id===W.__TID?" selected":"")+'>'+E(t.name+(t.ak?" ("+t.ak+")":""))+'</option>').join("")+'</select></label></div><div id="vlkx"></div><div class="vrow" style="margin-top:10px;border-top:1px solid var(--ln);padding-top:10px"><button class="btn" id="vlk_all" type="button" style="min-height:44px">Alle Mannschaften nacheinander aktualisieren</button><span class="note" style="flex:1;min-width:200px">Die App wechselt dazu automatisch von Mannschaft zu Mannschaft und veröffentlicht deren Links. Das dauert etwa eine halbe Minute pro Mannschaft – die Seite bitte offen lassen.</span></div><div class="vmsg" id="vlk_am"></div></div>';
   if(V.isAdmin()){const arts=V.arten().filter((x)=>x.id!=="platzwart"),tms=V.teams().filter((t)=>t.aktiv!==false);
     h+='<div class="card vc"><h3>Ansicht als Rolle (Vorschau)</h3><div class="note" style="margin-bottom:8px">Zeigt dir die App so, wie sie die gewählte Rolle sieht – zum Testen, für Vorführungen oder einen Pitch. Du bleibst dabei Administrator; oben im Menü beendest du die Vorschau mit einem Klick. Verschickbare Links für einzelne Rollen kommen in einer späteren Stufe (der bestehende „Demo“-Link je Mannschaft zeigt schon Zufallsdaten ohne Anmeldung).</div>'
      +'<div class="vrow"><label>Rolle<select id="va_r"><option value="admin">Administrator</option><option value="jugendleiter"'+(vaRole==="jugendleiter"?" selected":"")+'>Jugendleitung</option>'+arts.map((x)=>'<option value="a:'+E(x.id)+'"'+(vaRole==="a:"+x.id?" selected":"")+'>'+E(x.name)+'</option>').join("")+'</select></label></div><div class="vrow"><span class="note">Für welche Mannschaften (mehrere möglich):</span><span class="vch'+(!vaSel.size?" on":"")+'" data-vaa="1" role="button" tabindex="0">Alle Mannschaften</span>'+tms.map((t)=>'<span class="vch'+(vaSel.has(t.id)?" on":"")+'" data-vat="'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join("")+'</div><div class="vrow"><button class="btn" id="va_go">Vorschau starten</button></div></div>'}
@@ -6401,6 +6441,7 @@ V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
   const saveLogo=async(logoVal,txt)=>{try{const nv=await V.saveVerein({logo:logoVal});V.log(txt);sLogo=null;msg("Logo gespeichert. Es gilt sofort überall.");V.render();try{const i=document.querySelector("#vnav .vlogo img");if(i)i.src=W.__CLUBLOGO}catch(x){}try{if(typeof renderLogo==="function")renderLogo()}catch(x){}}catch(x){msg("Das konnte nicht gespeichert werden.","er")}};
   el.onclick=async(e)=>{
     const t=e.target;
+    if(t.id==="vlk_all"){const m=q("#vlk_am",el),ids=V.teams().filter((x)=>x.aktiv!==false).map((x)=>x.id);if(W.__DEMO){m.className="vmsg er";m.textContent="In der Demo wird nichts veröffentlicht.";return}if(!ids.length)return;pqSet({todo:ids,done:[],n:ids.length,orig:W.__TID});pubRun();return}
     {const dm=(x,k)=>{const o=q("#dl_m",el);if(o){o.textContent=x;o.className="vmsg "+(k||"ok")}},dl=(v.demoLinks||[]).slice(),urlOf=(r)=>(W.__WEB_BASE0||location.href.split("#")[0])+"#demo:"+r;
       if(t.id==="dl_add"){const r=q("#dl_r",el).value,n=q("#dl_n",el).value.trim()||((W.__DEMO_ROLLEN||{})[r]||{}).n||"Demo";dl.push({id:V.id("dl"),name:n,rolle:r});try{await V.saveVerein({demoLinks:dl});V.log("Demo-Link angelegt: "+n);V.render()}catch(x){dm("Das hat nicht geklappt.","er")}return}
       const dd=t.closest("[data-dld]");if(dd){if(!dd.dataset.arm){dd.dataset.arm="1";dd.textContent="Sicher?";return}dl.splice(+dd.dataset.dld,1);try{await V.saveVerein({demoLinks:dl});V.render()}catch(x){dm("Das hat nicht geklappt.","er")}return}
