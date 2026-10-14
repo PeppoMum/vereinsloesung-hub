@@ -55,9 +55,12 @@ TEAMS.forEach(([tid,name],ti)=>{
   pl.forEach((p)=>put(tid+"__players/"+p.id,p));
   const ids=pl.map((p)=>p.id);
   [-35,-28,-21,-14,-7].forEach((off,i)=>{const d=addD(TODAY,off),sp={};ids.forEach((id)=>{const r=R();sp[id]=r<.75?"x":r<.85?"e":r<.92?"u":"v"});put(tid+"__trainings/t"+i,{id:"t"+i,datum:d,spieler:sp})});
+  const gl=[];
   [-40,-26,-12,-5,4,11,25].forEach((off,i)=>{let d=addD(TODAY,off);while(dow(d)<6)d=addD(d,1);const past=d<TODAY,sp={};
     ids.forEach((id,j)=>{const r=R();sp[id]=past&&r<.7?{status:"k",minuten:Math.round(30*(1+R()))}:{status:past?"t":"n",minuten:0}});
-    put(tid+"__games/g"+(i+1),{id:"g"+(i+1),nr:i+1,datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:i%2?"A":"H",tore:past?pick([0,1,2,3,4]):null,gt:past?pick([0,1,2,3]):null,wertung:true,spieler:past?sp:{}})});
+    const to=past?pick([0,1,2,3,4]):null,gg=past?pick([0,1,2,3]):null;if(past)gl.push([d,to,gg]);
+    put(tid+"__games/g"+(i+1),{id:"g"+(i+1),nr:i+1,datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:i%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:past?sp:{}})});
+  {const bet=.7+R()*.25,zt=.55+R()*.35;put(tid+"__vstat/main",{tid,ak:TEAMS[ti][2],n:cnt,tr:5,sp:gl.length,bet,betl:bet,zeit:zt,min:40,low:ri(0,2),lt:addD(TODAY,-7),ls:gl.length?gl.sort().slice(-1)[0][0]:null,naechste:[],fbet:bet>.9?4:bet>.8?3:2,fzeit:zt>.7?4:zt>.6?3:2,form:gl.slice().sort((x,y)=>y[0].localeCompare(x[0])).slice(0,5).map((g)=>g[1]>g[2]?"S":g[1]<g[2]?"N":"U").join(""),at:new Date().toISOString(),upd:new Date().toISOString()})}
   put(tid+"__events/e1",{id:"e1",datum:addD(TODAY,6),typ:"Termin",titel:"Elternabend",zeit:"19:00",ort:"Vereinsheim Musterstadt",eltern:true});
   put(tid+"__events/e2",{id:"e2",datum:addD(TODAY,9),typ:"Termin",titel:"Trainersitzung",zeit:"20:00",eltern:false});
   put(tid+"__dienste/d1",{id:"d1",art:"Materialdienst",datum:MON,bis:addD(MON,6),label:"Gruppe 1",spieler:ids.slice(0,2)});

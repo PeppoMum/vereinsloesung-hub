@@ -638,7 +638,9 @@ function renderTrain(){
   h+=P.map((p,i)=>{const st=ts.map((t)=>(t.spieler||{})[p.id]||""),st2=cols.map((c)=>(c.t.spieler||{})[p.id]||""),q=QS[i];return"<tr><td>"+esc(p.nr||"")+"</td><td>"+esc(nm(p))+"</td>"+st2.map((c,j)=>'<td'+bl(j)+'><button class="s '+(c||"o")+'" data-t="'+cols[j].t.id+'" data-p="'+p.id+'" aria-label="'+nm(p)+", "+cols[j].t.datum+'">'+(c==="K"?"k":c||"·")+"</button></td>").join("")+"<td>"+st.filter((c)=>c==="x"||c==="K").length+"/"+ts.length+"</td><td>"+pl(q.gewichtet,U13.farbeTraining(q.gewichtet))+"</td><td>"+pl(q.abs,0)+"</td></tr>"}).join("");
   const av=(f)=>{const v=QS.map(f).filter((x)=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null},cnt=cols.map((cc)=>{const t=cc.t,a=anw(P,t);return[a.c,a.tot,a.f+"+"+a.g,a.k]});
   h+='<tr style="font-weight:600"><td></td><td>Anwesend</td>'+cnt.map((c,i)=>'<td style="text-align:center;white-space:nowrap'+(i===sepI?';border-left:3px solid var(--mu)':'')+'">'+'<span style="display:block;text-align:center">'+c[2]+"/"+c[1]+'</span><span style="display:block;height:1px;width:60%;margin:3px auto;background:var(--mu);opacity:.45"></span><span style="display:block;text-align:center">'+c[0]+"/"+c[1]+"</span></td>").join("")+'<td></td><td>Ø '+pc(av((q)=>q.gewichtet))+"</td><td>Ø "+pc(av((q)=>q.abs))+'</td></tr><tr><td></td><td class="note" style="font-weight:400">Quote</td>'+cnt.map((c,i)=>'<td style="text-align:center'+(i===sepI?';border-left:3px solid var(--mu)':'')+'" class="note">'+(c[1]?Math.round(c[0]/c[1]*100)+" %":"–")+"</td>").join("")+"<td></td><td></td><td></td></tr>";
+  const scW=$("#tg").closest(".tw"),scX=scW?scW.scrollLeft:0,scY=window.scrollY;
   $("#tg").innerHTML=ts.length?h:'<tr><td class="empty" style="text-align:center">Noch keine Trainings in '+mname(cm)+'. Oben ein Datum wählen und „Training hinzufügen“.</td></tr>';
+  if(scW&&scW.scrollLeft!==scX)scW.scrollLeft=scX;if(Math.abs(window.scrollY-scY)>1)window.scrollTo(window.scrollX,scY);
   $("#tn").textContent=ts.length?ts.length+" Trainingseinheiten in "+mname(cm)+". Neue Trainings sind zunächst für alle Spieler auf x gesetzt.":"";
 }
 $("#ms").onchange=(e)=>{cm=e.target.value;armed=null;renderTrain()};
@@ -657,6 +659,8 @@ $("#tg").addEventListener("click",(e)=>{
   const t=D.trainings.find((x)=>x.id===b.dataset.t);if(!t)return;
   const cur=(t.spieler||{})[b.dataset.p]||"",nxt=ORDER[(ORDER.indexOf(cur)+1)%ORDER.length],sp={...(t.spieler||{})};
   if(nxt)sp[b.dataset.p]=nxt;else delete sp[b.dataset.p];
+  /* sofort lokal übernehmen und nur diese Tabelle neu zeichnen (Scrollstand bleibt); das Speichern läuft im Hintergrund */
+  qApply("trainings",t.id,{id:t.id,datum:t.datum,spieler:sp},true);renderTrain();
   save("trainings",t.id,{id:t.id,datum:t.datum,spieler:sp});
 });
 let VIEW="all";
@@ -904,7 +908,7 @@ function renderAll(){window.__renderErr=null;const g=(n,f)=>{try{f()}catch(e){wi
 const got={};
 function sub(coll,key,map){
   if(window.__ROLE==="scout"){got[key]=true;if(got.spieler&&got.spiele&&got.trainings)D.ready=true;return}
-  db.collection(coll).onSnapshot((s)=>{try{ccSnap(coll,s.docs)}catch(e){}D[key]=s.docs.map((d)=>({id:d.id,...d.data()})).sort(map||(()=>0));qReapply(key);got[key]=true;if(key==="spiele"){try{window.__fixA&&window.__fixA()}catch(e){}try{window.__liveSync&&window.__liveSync()}catch(e){}}if(got.spieler&&got.spiele&&got.trainings){D.ready=true}renderAll();if(D.ready&&$("#st").className.indexOf("busy")<0&&!window.__renderErr)setSt("Synchron","ok")},(er)=>setSt("Lesefehler: "+(er&&er.code||""),"err"));
+  db.collection(coll).onSnapshot((s)=>{try{ccSnap(coll,s.docs)}catch(e){}const was=got[key]?JSON.stringify(D[key]):null;D[key]=s.docs.map((d)=>({id:d.id,...d.data()})).sort(map||(()=>0));qReapply(key);const same=was!==null&&was===JSON.stringify(D[key]);got[key]=true;if(key==="spiele"){try{window.__fixA&&window.__fixA()}catch(e){}try{window.__liveSync&&window.__liveSync()}catch(e){}}if(got.spieler&&got.spiele&&got.trainings){D.ready=true}if(!same)renderAll();if(D.ready&&$("#st").className.indexOf("busy")<0&&!window.__renderErr)setSt("Synchron","ok")},(er)=>setSt("Lesefehler: "+(er&&er.code||""),"err"));
 }
 (async()=>{
   if(window.__VIEWER)return;
@@ -2399,7 +2403,7 @@ function renderStart(){
   /* Training heute: 30 Min. nach Trainingsende ausblenden (ohne Ende: Beginn + 2 Std.); Spiel heute: 2:30 Std. nach Anstoß */
   const trEnd=trT?(hmM(trT.ende)!=null?hmM(trT.ende)+30:hmM(trT.beginn)!=null?hmM(trT.beginn)+120:null):null,
     gEnd=(g)=>{const ev=(D.events||[]).find((e)=>e.spielId===g.id)||(D.events||[]).find((e)=>e.datum===g.datum&&isGameTyp(e.typ)&&hmM(e.beginn)!=null),k=ev?hmM(ev.beginn):null;return k==null?null:k+150};
-  {const h=$("#htd");if(h){const tile=(l,v,n,x,w)=>'<div class="card kpi'+(x?" hasx":"")+'"'+(w&&!window.__RO?' data-wa="'+w+'" title="Antippen: Bild für WhatsApp"':"")+' style="border-color:var(--ac);margin-bottom:8px'+(w&&!window.__RO?';cursor:pointer':"")+'"><span style="display:block">'+esc(l)+"</span><b>"+esc(v)+'</b><span class="note" style="display:block">'+esc(n)+"</span>"+(x||"")+"</div>",T=[],trX=(e)=>{const r=(k,v,b)=>v?'<div style="text-align:left;margin-top:8px;font-size:14px;line-height:1.4;white-space:pre-line">'+(k?'<span class="note" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em">'+k+"</span>":"")+(b?'<b style="font-size:17px;line-height:1.3;display:block;padding:2px 0">':"")+esc(v)+(b?"</b>":"")+"</div>":"",c=e.ctask?'<div style="text-align:left;margin-top:8px;font-size:14px;line-height:1.4;white-space:pre-line;color:var(--ac)">'+esc(e.ctask)+"</div>":"";return'<div class="trx" style="margin-top:10px;padding-top:2px;border-top:1px solid var(--bd,rgba(128,128,128,.25))"><div class="trl">Schwerpunkt</div>'+r("",e.schwerpunkt,1)+r("",e.detail)+c+"</div>"};
+  {const h=$("#htd");if(h){const tile=(l,v,n,x,w)=>'<div class="card kpi'+(x?" hasx":"")+'"'+' style="border-color:var(--ac);margin-bottom:8px"><span style="display:block">'+esc(l)+"</span><b>"+esc(v)+'</b><span class="note" style="display:block">'+esc(n)+"</span>"+(x||"")+"</div>",T=[],trX=(e)=>{const r=(k,v,b)=>v?'<div style="text-align:left;margin-top:8px;font-size:14px;line-height:1.4;white-space:pre-line">'+(k?'<span class="note" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em">'+k+"</span>":"")+(b?'<b style="font-size:17px;line-height:1.3;display:block;padding:2px 0">':"")+esc(v)+(b?"</b>":"")+"</div>":"",c=e.ctask?'<div style="text-align:left;margin-top:8px;font-size:14px;line-height:1.4;white-space:pre-line;color:var(--ac)">'+esc(e.ctask)+"</div>":"";return'<div class="trx" style="margin-top:10px;padding-top:2px;border-top:1px solid var(--bd,rgba(128,128,128,.25))"><div class="trl">Schwerpunkt</div>'+r("",e.schwerpunkt,1)+r("",e.detail)+c+"</div>"};
     if(trT&&alive(trEnd))T.push(tile("Training heute"+(trT.beginn?" · "+trT.beginn+" Uhr":""),aT?aT.f+" + "+aT.g:"–",aT?"Feldspieler + Torhüter · "+(aT.k?aT.k+" Kreisauswahl":"keine Kreisauswahl")+" · "+(aT.tot-aT.c)+" nicht dabei"+(aT.tot<act.length?" · "+(act.length-aT.tot)+" ohne Eintrag":""):"Anwesenheit noch nicht eingetragen",trT.schwerpunkt||trT.detail||trT.ctask?trX(trT):"",t));
     D.spiele.filter((g)=>g.datum===t&&alive(gEnd(g))).sort((x,y)=>x.nr-y.nr).forEach((g)=>{const E=act.filter((p)=>g.spieler&&g.spieler[p.id]),ka=E.filter((p)=>g.spieler[p.id].status==="k"),tw=ka.filter((p)=>twOf(p)).length,nd=E.length-ka.length;
       T.push(tile("Spiel heute · "+(g.art||"Spiel")+(g.gegner?" gegen "+g.gegner:""),E.length?(ka.length-tw)+" + "+tw:"–",E.length?"Feldspieler + Torhüter im Kader · "+nd+" nicht dabei"+(E.length<act.length?" · "+(act.length-E.length)+" ohne Eintrag":""):"Kader noch nicht eingetragen"))});
@@ -2408,7 +2412,7 @@ function renderStart(){
       const run=g.live&&g.live.clk&&g.live.clk.run;T.push(tile("Spieltag · Spiel "+g.nr+(g.gegner?" gegen "+g.gegner:""),"Anstoß "+ev.beginn+" Uhr",run?"Die Uhr läuft – hier geht es zurück zur Erfassung":(n<k?"Anstoß in "+(Math.ceil(k-n)>=60?Math.floor(Math.ceil(k-n)/60)+" Std. "+Math.ceil(k-n)%60+" Min.":Math.ceil(k-n)+" Min.")+" · Aufstellung, Ansprache und Skizzen vorbereiten":"Aufstellung, Wechsel und Minuten live erfassen"),'<button class="btn" data-lv="'+g.id+'" style="margin-top:8px;background:var(--ac);color:#fff;border-color:var(--ac)">🏟 '+(run?"Zurück zum Spieltag":"Zum Spieltag")+"</button>"+' <button class="btn" data-lv="'+g.id+'" data-lvt="l" style="margin-top:8px">⏱ Live-Spielzeit</button>'))});
     h.innerHTML=T.join("")}}
   clearTimeout(window.__htdT);if(nextHide!=null)window.__htdT=setTimeout(()=>{typeof renderStart==="function"&&renderStart()},Math.max(1000,Math.ceil(nextHide*60000)+1000));
-  $("#hk").innerHTML=K.map((k)=>'<div class="card kpi"'+(k[1]==="Nächstes Spiel"&&nxt&&!window.__RO?' data-sp="'+nxt.id+'" style="cursor:pointer" title="Antippen: Spielvorbereitung (A4)"':k[1]==="Nächstes Training"&&ntr&&!window.__RO?' data-wa="'+ntr.datum+'" style="cursor:pointer" title="Antippen: Bild für WhatsApp"':(k[3]?' style="border-color:var(--ac)"':""))+'><span style="display:block">'+esc(k[1])+"</span><b"+(String(k[0]).length>10?' style="font-size:16px;line-height:1.3;padding:3px 0"':"")+">"+esc(k[0])+'</b><span class="note" style="display:block">'+esc(k[2])+"</span>"+(k[1]==="Nächstes Training"&&ntr&&!window.__RO?'<span class="note" style="display:block;font-size:11px">📲 Antippen: Bild für WhatsApp</span>':k[1]==="Nächstes Spiel"&&nxt&&!window.__RO?'<span class="note" style="display:block;font-size:11px">📄 Antippen: Spielvorbereitung (A4)</span>':"")+"</div>").join("");
+  $("#hk").innerHTML=K.map((k)=>'<div class="card kpi"'+(k[1]==="Nächstes Spiel"&&nxt&&!window.__RO?' data-sp="'+nxt.id+'" style="cursor:pointer" title="Antippen: Spielvorbereitung (A4)"':(k[3]?' style="border-color:var(--ac)"':""))+'><span style="display:block">'+esc(k[1])+"</span><b"+(String(k[0]).length>10?' style="font-size:16px;line-height:1.3;padding:3px 0"':"")+">"+esc(k[0])+'</b><span class="note" style="display:block">'+esc(k[2])+"</span>"+(k[1]==="Nächstes Spiel"&&nxt&&!window.__RO?'<span class="note" style="display:block;font-size:11px">📄 Antippen: Spielvorbereitung (A4)</span>':"")+"</div>").join("");
   const todo=[];
   D.spiele.filter((g)=>g.wertung&&(g.tore==null||g.gt==null)&&g.datum&&g.datum<=t).forEach((g)=>todo.push('<div class="row"><span>Spiel '+g.nr+" · "+esc(g.gegner)+' – Ergebnis fehlt</span><button class="rm" data-go="g">öffnen</button></div>'));
   all.filter((e)=>e.typ==="Training"&&e.datum<t&&e.datum>=addD(t,-14)&&!D.trainings.some((x)=>x.datum===e.datum)).forEach((e)=>todo.push('<div class="row"><span>Training '+esc(ddm(e.datum))+' – Anwesenheit fehlt</span><button class="rm" data-go="t">öffnen</button></div>'));
@@ -5361,6 +5365,9 @@ V.id=(p)=>(p||"x")+Date.now().toString(36)+Math.random().toString(36).slice(2,5)
 
 /* ---------- Kennzahlen dieser Mannschaft veröffentlichen (damit Übersicht und sportlicher Leiter sie lesen können) ---------- */
 let lastEdit=null,lastHash="",lastPub=0,prevAt=null;
+/* Formkurve: Ergebnisse der letzten 5 gespielten Spiele, das neueste zuerst (S = Sieg, U = Unentschieden, N = Niederlage) */
+function formOf(sp){const td=V.today();return (sp||[]).filter((g)=>g.datum&&g.datum<=td&&typeof g.tore==="number"&&typeof g.gt==="number").sort((a,b)=>b.datum.localeCompare(a.datum)).slice(0,5).map((g)=>g.tore>g.gt?"S":g.tore<g.gt?"N":"U").join("")}
+V.formHtml=(f)=>{f=String(f||"");if(!f)return"";const nm={S:"Sieg",U:"Unentschieden",N:"Niederlage"};return'<div class="vfm" title="Letzte Spiele, links das neueste"><span class="note">Form</span>'+f.split("").map((c,i)=>'<i class="'+c+(i===0?" neu":"")+'" title="'+nm[c]+(i===0?" (neuestes Spiel)":"")+'">'+c+'</i>').join("")+'</div>'};
 function statDoc(){
   const P=D.spieler.filter((p)=>p.aktiv!==false&&p.name);
   const S=U13.saison({spieler:P,spiele:D.spiele,trainings:D.trainings,einstellungen:D.config||{zaehlendeAbwesenheiten:{e:true,u:true,v:false,t:false}}}),T=S.team,td=V.today();
@@ -5368,7 +5375,7 @@ function statDoc(){
   const lt=D.trainings.filter(U13.erreicht).map((t)=>t.datum).sort().pop()||null,ls=D.spiele.filter(U13.erreicht).map((g)=>g.datum).sort().pop()||null;
   const low=S.rows.filter((r)=>r.warnSpielzeit).length;
   return{tid:W.__TID,ak:(W.__TEAM&&W.__TEAM.ak)||"",n:P.length,tr:T.trainings,sp:T.spiele,bet:T.avgBeteiligung,betl:T.avgL2mBeteiligung,zeit:T.avgGewichtet,min:T.avgMinuten,low,lt,ls,naechste:ev,
-    fbet:U13.farbeTraining(T.avgBeteiligung),fzeit:U13.farbeSpielzeit(T.avgGewichtet)};
+    fbet:U13.farbeTraining(T.avgBeteiligung),fzeit:U13.farbeSpielzeit(T.avgGewichtet),form:formOf(D.spiele)};
 }
 function pubStat(force){
   if(!V.canWrite()||typeof D==="undefined"||!D.ready)return;
@@ -5387,7 +5394,7 @@ function hookSave(){
 }
 
 /* ---------- Gestaltung: ein Menü oben (gleiche Gestaltung wie die Mannschafts-App), Vereinsbereich darunter ---------- */
-const CSS='#vnav{position:sticky;top:0;z-index:340;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px clamp(12px,3vw,40px);background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--ln);font-size:14px}'
+const CSS='html.vclub,html.vclub body{height:auto;min-height:100%}#vnav{position:sticky;top:0;z-index:340;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px clamp(12px,3vw,40px);background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--ln);font-size:14px}'
 +'#vnav .vpill{display:flex;align-items:center;gap:2px;padding:4px;border-radius:99px;background:var(--card);border:1px solid var(--ln);overflow-x:auto;scrollbar-width:none;min-width:0;max-width:100%}#vnav .vpill::-webkit-scrollbar{display:none}'
 +'html[data-design="glas"] #vnav .vpill{border-color:var(--edge);box-shadow:var(--gsh),inset 0 1px 0 rgba(255,255,255,.45);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6)}'
 +'#vnav .vpill button{flex:none;border:0;background:none;color:var(--mu);font:inherit;font-size:14px;padding:7px 14px;border-radius:99px;cursor:pointer;white-space:nowrap}#vnav .vpill button:hover{color:var(--tx)}'
@@ -5405,7 +5412,7 @@ const CSS='#vnav{position:sticky;top:0;z-index:340;display:flex;flex-wrap:wrap;a
 +'#vbody{max-width:1840px;margin:0 auto;padding:18px clamp(20px,3vw,48px) 70px}#vbody h2{font-size:26px;margin:0 0 4px}#vbody .sub{margin:0 0 14px}'
 +'.vg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px;margin-bottom:12px}.vc{margin:0 0 12px}'
 +'.vtg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px;margin:0 0 14px}.vtc{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:var(--rad,16px);background:var(--card);border:1px solid var(--ln);cursor:pointer;text-align:left;color:var(--tx);font:inherit}.vtc:hover{border-color:var(--ac)}.vtc.dim{opacity:.55}.vtc.cur{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}'
-+'.vtc .vth{display:flex;align-items:baseline;gap:8px}.vtc .vth b{font-size:20px}.vtc .vth .vn{margin-left:auto;font-size:12px;color:var(--mu)}.vtc .vbar{height:7px;border-radius:99px;background:var(--grs);overflow:hidden}.vtc .vbar i{display:block;height:100%;border-radius:99px}.vtc .vm{font-size:12px;color:var(--mu)}'
++'.vtc .vth{display:flex;align-items:baseline;gap:8px}.vtc .vth b{font-size:20px}.vtc .vth .vn{margin-left:auto;font-size:12px;color:var(--mu)}.vtc .vfm{display:flex;align-items:center;gap:5px;margin:8px 0 2px}.vfm i{font-style:normal;font-size:11px;font-weight:700;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box}.vfm i.S{background:var(--gs);color:var(--g)}.vfm i.U{background:var(--ys);color:var(--y)}.vfm i.N{background:var(--rs);color:var(--r)}.vfm i.neu{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px currentColor;margin-right:2px}.vbar{height:7px;border-radius:99px;background:var(--grs);overflow:hidden}.vtc .vbar i{display:block;height:100%;border-radius:99px}.vtc .vm{font-size:12px;color:var(--mu)}'
 +'.vf{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.vf button{font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--card);color:var(--mu);padding:6px 14px;border-radius:99px;cursor:pointer}.vf button.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}'
 +'.vt{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;white-space:nowrap}.vt th,.vt td{padding:8px 10px;border-bottom:1px solid var(--ln);text-align:left}.vt th{font-size:11px;color:var(--mu);font-weight:600}.vt td.r,.vt th.r{text-align:right}.vt tr.dim{opacity:.5}.vt tr.dim:hover{opacity:1}'
 +'.vrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 8px}.vrow>label{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mu)}.vrow input,.vrow select{min-width:0}'
@@ -5458,12 +5465,12 @@ function mountNav(){
   if(q("#vnav"))return;
   document.documentElement.classList.add("vclub");
   const nav=document.createElement("header");nav.id="vnav";
-  nav.innerHTML='<div class="vpill" role="tablist"><button type="button" class="vbrand" id="vhome" title="Zur Mannschaft"><span class="vlogo img"><img alt="" src="'+E(W.__CLUBLOGO||"")+'"></span><span>'+E((W.__VEREIN&&W.__VEREIN.name)||"Verein")+'</span></button><span id="vmenu" style="display:contents"></span></div>'
+  nav.innerHTML='<div class="vpill" role="tablist"><button type="button" class="vbrand" id="vhome" title="Zur Übersicht"><span class="vlogo img"><img alt="" src="'+E(W.__CLUBLOGO||"")+'"></span><span>'+E((W.__VEREIN&&W.__VEREIN.name)||"Verein")+'</span></button><span id="vmenu" style="display:contents"></span></div>'
    +'<div class="vr"><button class="vchip warn" id="vview" type="button" hidden></button><span class="vchip" id="vsync" role="status" aria-live="polite">Verbinde …</span><button class="vchip err" id="vhin" type="button" hidden></button><button class="vchip" id="vteamb" type="button" aria-haspopup="true" aria-label="Mannschaft wechseln"></button><span class="vchip" id="vrole"></span><div id="vdrop" hidden></div></div>';
   const app=q(".app");app?app.parentNode.insertBefore(nav,app):document.body.insertBefore(nav,document.body.firstChild);
   const fit=()=>document.documentElement.style.setProperty("--vnh",nav.offsetHeight+"px");
   fit();try{new ResizeObserver(fit).observe(nav)}catch(e){W.addEventListener("resize",fit)}
-  q("#vhome",nav).onclick=()=>V.go("mannschaft");
+  q("#vhome",nav).onclick=()=>V.go(V.isAll()?"uebersicht":"mannschaft");
   {const sy=q("#vsync",nav),upd=()=>{const e=document.getElementById("st"),t=((e&&e.textContent)||"").trim(),c=(e&&e.className)||"";
     let x="Verbinde …",k="";
     if(/err|bad/.test(c)||/^(Nicht|Lesefehler|Fehler)/i.test(t)){x="✕ Nicht synchronisiert";k="err"}
@@ -5636,6 +5643,7 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
     const s=V.st[t.id],p=V.pflege(s),f=s?Math.min(s.fbet||0,s.fzeit||0)||s.fbet||0:0;
     return '<div class="vtc'+(p.art==="grau"?" dim":"")+(t.id===W.__TID?" cur":"")+'" data-go="'+E(t.id)+'" role="button" tabindex="0"><div class="vth"><b>'+E(t.name)+'</b><span class="note">'+E(t.ak||"")+'</span><span class="vn">'+(s?s.n+" Spieler":(got?"–":"…"))+'</span></div>'
       +'<div class="vbar" title="Training"><i style="width:'+(s&&s.bet!=null?Math.round(s.bet*100):0)+'%;background:'+BCOL[s?(s.fbet||0):0]+'"></i></div>'
+      +(s&&s.form?V.formHtml(s.form):'')
       +'<div class="vm">Training '+(s?pcx(s.bet):"–")+' · Spielzeit '+(s?pcx(s.zeit):"–")+'</div>'
       +'<div class="vm">'+(s&&s.at?"gepflegt "+E(V.pflegeTxt(p)):(got?"noch keine Daten":"…"))+' '+(p.art==="grau"&&s&&s.at?'<span class="vbad">ausgegraut</span>':p.art==="erinnerung"?'<span class="vbad o">Erinnerung</span>':"")+'</div>'
       +'<div class="vm">'+E(nextGame(s))+'</div></div>'}).join("")+'</div>';
@@ -5821,7 +5829,7 @@ function gridHtml(M,o){
   M.days.forEach((d)=>{
     g+='<div class="vgc" style="height:'+H+'px">';for(let m=M.f;m<=M.t;m+=30)g+='<div class="vgl'+((m-M.f)%60?" h":"")+'" style="top:'+((m-M.f)*PXM)+'px"></div>';
     for(let c=1;c<M.NC;c++){const strong=M.groups.some((x)=>x.off===c);g+='<div class="vqv" style="left:'+(c/M.NC*100)+'%;'+(strong?"border-left-style:solid":"")+'"></div>'}
-    d.items.forEach((it)=>{const s=it.s,c=V.col(s.tid),w=(it.c1-it.c0+1)/M.NC*100/it.nl,left=it.c0/M.NC*100+it.lane*w,kb=s.art==="Training"?stdK(s.tid,d.date):"",
+    d.items.forEach((it)=>{const s=it.s,c=V.col(s.tid),w=(it.c1-it.c0+1)/M.NC*100/it.nl,left=it.c0/M.NC*100+it.lane*w,kb=s.art==="Training"&&!isHall(s.platz)?stdK(s.tid,d.date):"",
         sm=[kb?"Kabine "+kb:"",s.art&&s.art!=="Training"?s.art:"",s.abgesagt?"abgesagt, frei":"",s.txt||""].filter(Boolean).join(" · ");
       g+='<div class="vwb'+(o.ed?" ed":"")+(o.clashes&&o.clashes.has(s.id)?" clash":"")+(s.abgesagt?" frei":"")+'" title="'+E(teamName(s.tid)+" "+s.von+"–"+s.bis)+'" data-s="'+E(s.id)+'" data-sd="'+(o.tag?d.date:"")+'" style="top:'+((it.a-M.f)*PXM)+'px;left:calc('+left+'% + 2px);right:calc('+(100-left-w)+'% + 2px);height:'+Math.max(26,(it.b-it.a)*PXM-2)+'px;background:'+(s.abgesagt?"transparent":c.bg)+';border-color:'+c.bd+'"><b>'+E(teamName(s.tid))+'</b>'+(sm?'<small>'+E(sm)+'</small>':"")+'</div>'});
     g+='</div>'});
@@ -6001,7 +6009,7 @@ async function exportWeek(el){
     for(let i=0;i<5;i++)for(let c=0;c<M.NC;c++){const x=x0+i*cw+c*colw,strong=c===0||M.groups.some((gr)=>gr.off===c);g.strokeStyle=strong?(c===0?"#9ca3af":"#cbd5e1"):"#eceff3";g.setLineDash(strong?[]:[4,4]);g.beginPath();g.moveTo(x,c===0?150:150+hDay);g.lineTo(x,yb);g.stroke()}
     g.setLineDash([]);g.strokeStyle="#9ca3af";g.beginPath();g.moveTo(xe,150);g.lineTo(xe,yb);g.stroke();g.beginPath();g.moveTo(x0,yb);g.lineTo(xe,yb);g.stroke();
     /* Einträge */
-    M.days.forEach((d,i)=>{d.items.forEach((it)=>{const s=it.s,c=V.col(s.tid),w=(it.c1-it.c0+1)*colw/it.nl,x=x0+i*cw+it.c0*colw+it.lane*w+2,y=y0+(it.a-M.f)*ph+1,bw=w-4,bh=Math.max(34,(it.b-it.a)*ph-3),kb=s.art==="Training"?stdK(s.tid,d.date):"";
+    M.days.forEach((d,i)=>{d.items.forEach((it)=>{const s=it.s,c=V.col(s.tid),w=(it.c1-it.c0+1)*colw/it.nl,x=x0+i*cw+it.c0*colw+it.lane*w+2,y=y0+(it.a-M.f)*ph+1,bw=w-4,bh=Math.max(34,(it.b-it.a)*ph-3),kb=s.art==="Training"&&!isHall(s.platz)?stdK(s.tid,d.date):"";
       rr(g,x,y,bw,bh,9);g.fillStyle="#fff";g.fill();g.fillStyle=c.bg;g.fill();g.strokeStyle=c.bd;g.lineWidth=2;g.stroke();
       g.fillStyle="#111";const nm=teamName(s.tid);let fs=bw>=90?22:bw>=62?19:16;g.font="bold "+fs+"px sans-serif";
       while(fs>12&&g.measureText(nm).width>bw-8){fs--;g.font="bold "+fs+"px sans-serif"}
@@ -6029,7 +6037,9 @@ function kabSub(db,day,redraw){
   kUnsubDay=day;kDoc=null;
   kUnsub=db.doc("kabinen/"+day).onSnapshot((s)=>{kDoc=s.exists?s.data():{datum:day,eintraege:[]};redraw()},()=>{kDoc={datum:day,eintraege:[],err:1};redraw()});
 }
-const stdK=(tid,day)=>{const p=V.plan||{};return ((p.stdKabineTag||{})[tid]||{})[V.dow(day)]||(p.stdKabine||{})[tid]||""};
+const stdKraw=(tid,day)=>{const p=V.plan||{};return ((p.stdKabineTag||{})[tid]||{})[V.dow(day)]||(p.stdKabine||{})[tid]||""};
+const stdK=(tid,day)=>{const k=stdKraw(tid,day);return k==="-"?"":k};
+const isHall=(pid)=>(((V.plan&&V.plan.plaetze)||[]).find((p)=>p.id===pid)||{}).typ==="halle";
 const eLabel=(x)=>{const who=x.fremd||teamName(x.tid);return (x.art==="Gast"?"Gast: ":x.art==="Heim"?"Heim: ":"")+who};
 function renderKab(el,o){
   /* o: {db, edit, kab(Platzwart-Seite), redraw} */
@@ -6040,16 +6050,17 @@ function renderKab(el,o){
   const ed=o.edit,kabs=plan.kabinen||[];
   const stored=((kDoc&&kDoc.eintraege)||[]),virt=[];
   /* Trainings aus dem Platzplan erscheinen automatisch (mit der Standard-Kabine) und lassen sich für diesen Tag direkt ändern */
-  if(kDoc&&!kDoc.err)slotsOn(day).filter((s2)=>s2.art!=="Spiel"&&clubTeams().some((c)=>c.id===s2.tid)).forEach((s2)=>{const src="s:"+s2.id+":"+day;if(stored.some((y)=>y.src===src))return;virt.push({id:"v~"+src,src,virt:1,kabine:stdK(s2.tid,day),art:s2.art==="Sonstiges"?"Sonstiges":"Training",tid:s2.tid,von:s2.von,bis:s2.bis,txt:s2.txt||""})});
+  if(kDoc&&!kDoc.err)slotsOn(day).filter((s2)=>s2.art!=="Spiel"&&!isHall(s2.platz)&&clubTeams().some((c)=>c.id===s2.tid)).forEach((s2)=>{const src="s:"+s2.id+":"+day;if(stored.some((y)=>y.src===src))return;virt.push({id:"v~"+src,src,virt:1,kabine:stdKraw(s2.tid,day),art:s2.art==="Sonstiges"?"Sonstiges":"Training",tid:s2.tid,von:s2.von,bis:s2.bis,txt:s2.txt||""})});
   const L=stored.filter((x)=>!x.removed).concat(virt).sort((a,b)=>(a.von||"").localeCompare(b.von||""));
   let h='<h2>Kabinenbelegung</h2><p class="sub note">'+(o.kab?"Hier trägst du ein, welche Mannschaft in welcher Kabine ist. Deine Änderungen sehen alle sofort.":"Training und Spiele (Heim- und Gastmannschaft). Alle Mitglieder können sie ansehen"+(ed?"; du kannst sie pflegen.":"; eingetragen wird sie von der Leitung oder dem Platzwart."))+'</p>';
   h+='<div class="card vc"><div class="vrow"><button class="btn" data-kd="-1" aria-label="Ein Tag zurück">◀</button><input id="kdate" type="date" value="'+day+'"><button class="btn" data-kd="1" aria-label="Ein Tag vor">▶</button><button class="btn" data-kd="0">Heute</button><b>'+E(V.fd(day))+'</b></div>';
   if(kDoc&&kDoc.err)h+='<div class="vmsg er">Die Belegung konnte nicht geladen werden.</div>';
   h+='<div class="vkabs">';
-  const noK=L.filter((x)=>!x.kabine||kabs.indexOf(x.kabine)<0);
-  const ent=(x)=>{const c=V.col(x.tid||x.fremd||"g");return '<div class="vke'+(ed?" ed":"")+'" data-e="'+E(x.id)+'" style="border-color:'+c.bd+';background:'+c.bg+'">'+(x.von?'<b style="display:inline">'+E(x.von)+(x.bis?"–"+E(x.bis):"")+'</b> · ':"")+'<b style="display:inline">'+E(eLabel(x))+'</b>'+(x.art&&x.art!=="Training"&&x.art!=="Heim"&&x.art!=="Gast"?" · "+E(x.art):x.art==="Training"?" · Training":"")+(x.txt?'<small style="display:block;opacity:.8">'+E(x.txt)+'</small>':"")+(ed?'<select data-qk="'+E(x.id)+'" aria-label="Kabine ändern" style="margin-top:4px;font-size:12px"><option value="">Kabine wählen …</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+(k===x.kabine?" selected":"")+'>Kabine '+E(k)+'</option>').join("")+'<option value="~weg">heute keine Kabine</option></select>':"")+'</div>'};
-  if(noK.length)h+='<div class="vkab" style="border-color:var(--o)"><b>Noch ohne Kabine</b>'+noK.map(ent).join("")+'</div>';
+  const noK=L.filter((x)=>x.kabine!=="-"&&(!x.kabine||kabs.indexOf(x.kabine)<0)),keine=L.filter((x)=>x.kabine==="-");
+  const ent=(x)=>{const c=V.col(x.tid||x.fremd||"g");return '<div class="vke'+(ed?" ed":"")+'" data-e="'+E(x.id)+'" style="border-color:'+c.bd+';background:'+c.bg+'">'+(x.von?'<b style="display:inline">'+E(x.von)+(x.bis?"–"+E(x.bis):"")+'</b> · ':"")+'<b style="display:inline">'+E(eLabel(x))+'</b>'+(x.art&&x.art!=="Training"&&x.art!=="Heim"&&x.art!=="Gast"?" · "+E(x.art):x.art==="Training"?" · Training":"")+(x.txt?'<small style="display:block;opacity:.8">'+E(x.txt)+'</small>':"")+(ed?'<select data-qk="'+E(x.id)+'" aria-label="Kabine ändern" style="margin-top:4px;font-size:12px"><option value="">'+(x.kabine?"Kabine wählen …":"Kabine wählen (optional) …")+'</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+(k===x.kabine?" selected":"")+'>Kabine '+E(k)+'</option>').join("")+'<option value="-"'+(x.kabine==="-"?" selected":"")+'>keine Kabine nötig</option><option value="~weg">Eintrag für heute entfernen</option></select>':"")+'</div>'};
+  if(noK.length)h+='<div class="vkab"><b>Kabine noch offen</b><span class="note">Optional: Eine Kabine muss nicht vergeben werden.</span>'+noK.map(ent).join("")+'</div>';
   kabs.forEach((k)=>{const l=L.filter((x)=>x.kabine===k);h+='<div class="vkab"><b>Kabine '+E(k)+'</b>'+(l.length?l.map(ent).join(""):'<span class="note">frei</span>')+'</div>'});
+  if(keine.length)h+='<div class="vkab"><b>Keine Kabine nötig</b>'+keine.map(ent).join("")+'</div>';
   h+='</div></div>';
   if(ed){
     const f=kF;
@@ -6057,7 +6068,7 @@ function renderKab(el,o){
     if(!f)h+='<button class="btn" id="knew">+ Eintrag hinzufügen</button>';
     else{
       const own=clubTeams().filter((t)=>t.aktiv!==false);
-      h+='<div class="vrow"><label>Wer braucht eine Kabine?<select id="kty"><option value="heim"'+(f.typ==="heim"?" selected":"")+'>Heimmannschaft</option><option value="gast"'+(f.typ==="gast"?" selected":"")+'>Auswärtsmannschaft (Gast)</option>'+(f.typ==="training"?'<option value="training" selected>Training</option>':"")+'</select></label>'+(f.typ==="gast"?'<label>Auswärtsmannschaft<input id="kfr" maxlength="40" value="'+E(f.fremd)+'" placeholder="z. B. SV Beispiel U13"></label>':'<label>Mannschaft<select id="kt">'+own.map((t)=>'<option value="'+E(t.id)+'"'+(t.id===f.tid?" selected":"")+'>'+E(t.name+(t.ak?" ("+t.ak+")":""))+'</option>').join("")+'</select></label>')+'<label>Tag<input id="kdt" type="date" value="'+E(f.datum)+'"></label><label>Kabine<select id="kk"><option value="">noch offen</option>'+kabs.map((k)=>'<option'+(k===f.kabine?" selected":"")+' value="'+E(k)+'">Kabine '+E(k)+'</option>').join("")+'</select></label>'+(f.typ==="training"?'<label>von<input id="kv" type="time" value="'+E(f.von)+'"></label><label>bis<input id="kb" type="time" value="'+E(f.bis)+'"></label>':"")+'</div>';
+      h+='<div class="vrow"><label>Wer braucht eine Kabine?<select id="kty"><option value="heim"'+(f.typ==="heim"?" selected":"")+'>Heimmannschaft</option><option value="gast"'+(f.typ==="gast"?" selected":"")+'>Auswärtsmannschaft (Gast)</option>'+(f.typ==="training"?'<option value="training" selected>Training</option>':"")+'</select></label>'+(f.typ==="gast"?'<label>Auswärtsmannschaft<input id="kfr" maxlength="40" value="'+E(f.fremd)+'" placeholder="z. B. SV Beispiel U13"></label>':'<label>Mannschaft<select id="kt">'+own.map((t)=>'<option value="'+E(t.id)+'"'+(t.id===f.tid?" selected":"")+'>'+E(t.name+(t.ak?" ("+t.ak+")":""))+'</option>').join("")+'</select></label>')+'<label>Tag<input id="kdt" type="date" value="'+E(f.datum)+'"></label><label>Kabine (optional)<select id="kk"><option value="">noch offen</option><option value="-"'+(f.kabine==="-"?" selected":"")+'>keine Kabine nötig</option>'+kabs.map((k)=>'<option'+(k===f.kabine?" selected":"")+' value="'+E(k)+'">Kabine '+E(k)+'</option>').join("")+'</select></label>'+(f.typ==="training"?'<label>von<input id="kv" type="time" value="'+E(f.von)+'"></label><label>bis<input id="kb" type="time" value="'+E(f.bis)+'"></label>':"")+'</div>';
       h+='<div class="vrow"><label style="flex:1;min-width:200px">Hinweis<input id="kx" maxlength="80" value="'+E(f.txt)+'" placeholder="optional"></label></div><div class="vrow"><button class="btn" id="ksave" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button>'+(kEd?'<button class="btn" id="kdel">Löschen</button>':"")+'<button class="btn" id="kcancel">Abbrechen</button></div>';
     }
     h+='<div class="vmsg '+kMsgK+'" id="kmsg">'+E(kMsg)+'</div></div>';
@@ -6065,7 +6076,7 @@ function renderKab(el,o){
     h+='<div class="card vc" id="qhcard"><h3>Heimspiel schnell eintragen</h3><div class="note" style="margin-bottom:8px">Heim- und Gastmannschaft bekommen je eine Kabine. Eine Uhrzeit ist optional.</div><div class="vrow"><label>Heimmannschaft<select id="qh_t">'+teamOpts("")+'</select></label><label>Gegner<input id="qh_g" maxlength="40" placeholder="z. B. SV Beispiel U13"></label><label>Kabine ab (optional)<input id="qh_v" type="time"></label><label>Kabine Heim<select id="qh_kh"><option value="">offen</option>'+kabs.map((k)=>'<option value="'+E(k)+'">'+E(k)+'</option>').join("")+'</select></label><label>Kabine Gast<select id="qh_kg"><option value="">offen</option>'+kabs.map((k)=>'<option value="'+E(k)+'">'+E(k)+'</option>').join("")+'</select></label><button class="btn" id="qh_go" style="align-self:flex-end">Eintragen</button></div></div>';
     if(!o.kab){
       h+='<div class="card vc"><h3>Aus Plan und Terminen vorschlagen</h3><div class="note" style="margin-bottom:8px">Trägt für diesen Tag die Trainings aus der Platzbelegung ein (in der Standard-Kabine der Mannschaft) und die Heimspiele (Heim- und Gastmannschaft, Kabinen noch offen).</div><button class="btn" id="kauto">Für '+E(V.fd(day))+' vorschlagen</button> <div class="vmsg" id="kam"></div>';
-      h+='<h3 style="margin-top:12px">Standard-Kabine je Mannschaft und Wochentag</h3><div class="note" style="margin-bottom:6px">Gilt nur für Trainings, nicht für Spiele. „immer“ gilt für alle Tage ohne eigene Angabe.</div><div class="tw"><table class="vt"><thead><tr><th>Mannschaft</th><th>immer</th>'+V.wt.map((n)=>'<th>'+n+'</th>').join("")+'</tr></thead><tbody>'+clubTeams().filter((t)=>t.aktiv!==false).map((t)=>'<tr><td>'+E(t.name)+'</td><td><select data-sk="'+E(t.id)+'"><option value="">–</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+((plan.stdKabine||{})[t.id]===k?" selected":"")+'>'+E(k)+'</option>').join("")+'</select></td>'+V.wt.map((n,i)=>'<td><select data-skd="'+E(t.id)+'|'+(i+1)+'"><option value="">–</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+((((plan.stdKabineTag||{})[t.id])||{})[i+1]===k?" selected":"")+'>'+E(k)+'</option>').join("")+'</select></td>').join("")+'</tr>').join("")+'</tbody></table></div></div>';
+      h+='<h3 style="margin-top:12px">Standard-Kabine je Mannschaft und Wochentag</h3><div class="note" style="margin-bottom:6px">Gilt nur für Trainings, nicht für Spiele. „immer“ gilt für alle Tage ohne eigene Angabe.</div><div class="tw"><table class="vt"><thead><tr><th>Mannschaft</th><th>immer</th>'+V.wt.map((n)=>'<th>'+n+'</th>').join("")+'</tr></thead><tbody>'+clubTeams().filter((t)=>t.aktiv!==false).map((t)=>'<tr><td>'+E(t.name)+'</td><td><select data-sk="'+E(t.id)+'"><option value="">–</option><option value="-"'+((plan.stdKabine||{})[t.id]==="-"?" selected":"")+'>keine</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+((plan.stdKabine||{})[t.id]===k?" selected":"")+'>'+E(k)+'</option>').join("")+'</select></td>'+V.wt.map((n,i)=>'<td><select data-skd="'+E(t.id)+'|'+(i+1)+'"><option value="">–</option><option value="-"'+((((plan.stdKabineTag||{})[t.id])||{})[i+1]==="-"?" selected":"")+'>keine</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+((((plan.stdKabineTag||{})[t.id])||{})[i+1]===k?" selected":"")+'>'+E(k)+'</option>').join("")+'</select></td>').join("")+'</tr>').join("")+'</tbody></table></div></div>';
     }
   }
   if(!o.kab&&V.isStaff())h+=linkCard();
@@ -6101,7 +6112,7 @@ function renderKab(el,o){
     if(t.id==="kdel"){try{await putDay(((kDoc&&kDoc.eintraege)||[]).filter((y)=>y.id!==kEd));V.log("Kabinenbelegung: Eintrag gelöscht ("+day+")");kF=null;kEd=null;kMsg="Gelöscht.";kMsgK="ok";o.redraw()}catch(x){msg("Das hat nicht geklappt.","er")}return}
     if(t.id==="kauto"){
       const m=q("#kam",el),arr=((kDoc&&kDoc.eintraege)||[]).slice(),has=(src)=>arr.some((y)=>y.src===src);let n=0;
-      slotsOn(day).filter((s)=>s.art!=="Spiel"&&clubTeams().some((c)=>c.id===s.tid)).forEach((s)=>{const src="s:"+s.id+":"+day;if(has(src))return;arr.push({id:V.id("k"),src,kabine:stdK(s.tid,day),art:s.art==="Sonstiges"?"Sonstiges":"Training",tid:s.tid,von:s.von,bis:s.bis,txt:s.txt||""});n++});
+      slotsOn(day).filter((s)=>s.art!=="Spiel"&&!isHall(s.platz)&&clubTeams().some((c)=>c.id===s.tid)).forEach((s)=>{const src="s:"+s.id+":"+day;if(has(src))return;arr.push({id:V.id("k"),src,kabine:stdKraw(s.tid,day),art:s.art==="Sonstiges"?"Sonstiges":"Training",tid:s.tid,von:s.von,bis:s.bis,txt:s.txt||""});n++});
       Object.keys(V.st).forEach((k)=>{const s=V.st[k];if(!s||!s.naechste)return;s.naechste.filter((g)=>g.d===day&&g.h==="H").forEach((g)=>{const src="g:"+s.tid+":"+g.d+":"+g.z;if(has(src))return;const a=V.min(g.z)==null?10*60:V.min(g.z),von=V.hm(Math.max(0,a-45)),bis=V.hm(Math.min(a+135,23*60+59));
         arr.push({id:V.id("k"),src,kabine:"",art:"Heim",tid:s.tid,von,bis,txt:"gegen "+(g.g||"?")});arr.push({id:V.id("k"),src:src+"~g",kabine:"",art:"Gast",fremd:g.g||"Gast",von,bis,txt:"bei "+teamName(s.tid)});n+=2})});
       if(!n){m.className="vmsg";m.textContent="Für diesen Tag gibt es nichts Neues vorzuschlagen.";return}
@@ -6122,8 +6133,8 @@ function renderKab(el,o){
         await putDay(arr);V.log("Kabine geändert ("+day+")");kMsg=v==="~weg"?"Für diesen Tag entfernt.":"Kabine gespeichert (nur für "+V.fd(day)+").";kMsgK="ok";o.redraw()}catch(x){msg("Das hat nicht geklappt.","er")}return}
     if(t.id==="kdate"){if(dateOk(t.value)){kDay=t.value;o.redraw()}return}
     if(t.id==="kty"&&kF){readF();o.redraw();return}
-    if(t.dataset&&t.dataset.skd!=null&&ed){try{const [tid,d]=t.dataset.skd.split("|"),m={...(plan.stdKabineTag||{})};m[tid]={...(m[tid]||{})};if(t.value)m[tid][d]=t.value;else delete m[tid][d];await V.savePlan({stdKabineTag:m})}catch(x){}return}
-    if(t.dataset&&t.dataset.sk!=null&&ed){try{const sk={...(plan.stdKabine||{})};if(t.value)sk[t.dataset.sk]=t.value;else delete sk[t.dataset.sk];await V.savePlan({stdKabine:sk})}catch(x){}}
+    if(t.dataset&&t.dataset.skd!=null&&ed){try{const [tid,d]=t.dataset.skd.split("|"),m={...(plan.stdKabineTag||{})};m[tid]={...(m[tid]||{})};if(t.value)m[tid][d]=t.value;else delete m[tid][d];await V.savePlan({stdKabineTag:m});kMsg="Standard-Kabine gespeichert.";kMsgK="ok";o.redraw()}catch(x){kMsg="Das hat nicht geklappt (kein Zugriff oder keine Verbindung).";kMsgK="er";o.redraw()}return}
+    if(t.dataset&&t.dataset.sk!=null&&ed){try{const sk={...(plan.stdKabine||{})};if(t.value)sk[t.dataset.sk]=t.value;else delete sk[t.dataset.sk];await V.savePlan({stdKabine:sk});kMsg="Standard-Kabine gespeichert.";kMsgK="ok";o.redraw()}catch(x){kMsg="Das hat nicht geklappt (kein Zugriff oder keine Verbindung).";kMsgK="er";o.redraw()}}
   };
 }
 async function exportKab(day,kabs,L){
