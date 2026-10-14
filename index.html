@@ -5775,7 +5775,7 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   const send=async(tid,text,art,o)=>{const m=q("#slm",el);o=o||{};try{await V.fs().doc(tid+"__vhinweise/"+V.id("h")).set({text,von:(W.__VME&&(W.__VME.name||W.__VME.email))||"",at:new Date().toISOString(),erledigt:false,art:art||"hinweis",ack:art==="erinnerung"?true:!!o.ack,...(o.bis?{bis:o.bis}:{}),...(o.ab?{ab:o.ab}:{})});V.log("Hinweis an "+V.tshort(tid),tid);if(m){m.className="vmsg ok";m.textContent="Gesendet an "+V.tshort(tid)+"."}return true}catch(e){if(m){m.className="vmsg er";m.textContent="Das hat nicht geklappt."}return false}};
   el.onclick=async(e)=>{
     const fb=e.target.closest("[data-f]");if(fb){ufilt=fb.dataset.f;try{localStorage.setItem("u13uf",ufilt)}catch(x){}V.render();return}
-    const g=e.target.closest("[data-go]");if(g){if(g.dataset.go===W.__TID)V.go("mannschaft");else V.setTeam(g.dataset.go);return}
+    const g=e.target.closest("[data-go]");if(g){if(g.dataset.go===W.__TID){V.go("mannschaft");const st=document.querySelector('nav button[data-s="h"]');if(st)st.click();try{window.scrollTo(0,0)}catch(x){}}else V.setTeam(g.dataset.go);return}
     const o=e.target.closest("[data-ok]");if(o){try{await V.fs().doc(W.__TID+"__vhinweise/"+o.dataset.ok).update({erledigt:true,erledigtAm:new Date().toISOString()})}catch(x){}return}
     const gh=e.target.closest("[data-gh]");if(gh){const [tt,dd]=gh.dataset.gh.split("|");V.ghHide(tt,dd);V.render();return}
     const r=e.target.closest("[data-rem]");if(r){await send(r.dataset.rem,"Bitte die Daten der Mannschaft aktualisieren (Anwesenheit und Spielzeit nachtragen).","erinnerung");return}
