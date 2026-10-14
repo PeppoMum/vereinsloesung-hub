@@ -3393,6 +3393,11 @@ function counted(p,pl){const m=mem(p,pl);if(!m)return false;const w=lk(pl.wk,m.w
   const ph=lk(pl.phasen,m.phase);return w?true:(ph?!!ph.z:false)}
 const inPlan=(pl)=>KD.pers.filter((p)=>mem(p,pl));
 const jgLabel=(g,pl)=>{if(!g)return"";const y=+g.slice(0,4),j=jgOf(pl.stufe,pl.saison);return y===j?"Altjahrgang":y===j+1?"Jungjahrgang":y<j?"älter ("+y+")":"jünger ("+y+")"};
+/* Sichtbare Altersjahrgänge je Planung (bezogen auf die Saison der Planung): Standard = ein Jahr jünger, gleich alt und der Partnerjahrgang derselben Jugend (z. B. U14 → U13/U14/U15, U15 → U14/U15, U16 → U15/U16/U17) */
+const autoAges=(stufe)=>{const n=nOf(stufe),pt=n%2===0?n+1:n-1;return Array.from(new Set([n-1,n,pt])).filter((x)=>x>=6&&x<=19).sort((a,b)=>a-b)};
+const agesOf=(pl)=>Array.isArray(pl.jgs)&&pl.jgs.length?pl.jgs.slice().sort((a,b)=>a-b):autoAges(pl.stufe);
+const jgYears=(pl)=>agesOf(pl).map((n)=>jgOf("U"+n,pl.saison));
+const visP=(p,pl)=>{if(!pl)return true;if((p.plans&&p.plans[pl.id])||p.typ==="eigen")return true;const g=jgY(p);if(!g)return true;return jgYears(pl).indexOf(+g)>=0};
 const jgOk=(g,pl)=>{if(!g)return true;const y=+g.slice(0,4),j=jgOf(pl.stufe,pl.saison);return y===j||y===j+1};
 const dnN=(pl,n)=>{const x=pl.pos.find((y)=>y.name===n);return x?dn(x):n};
 const ap=(pl)=>pl.pos.filter((x)=>x.aus!==true);
@@ -3440,6 +3445,7 @@ function tabPlan(pl){
   return h}
 function tabSet(pl){const jg=jgOf(pl.stufe,pl.saison);
   let h='<div class="card" style="margin-bottom:12px"><h3>Grunddaten</h3><div class="kg">'+fl("Name",'<input data-pf="name" value="'+E(pl.name)+'">',2)+fl("Altersstufe",sel('data-pf="stufe"',STUFEN,pl.stufe))+fl("Saison",'<input data-pf="saison" value="'+E(pl.saison)+'">')+fl("Go/No-Go-Frist (Bezeichnung)",'<input data-pf="fristName" value="'+E(pl.fristName)+'">',2)+fl("Frist (Datum)",'<input type="date" data-pf="frist" value="'+E(pl.frist)+'">')+'</div><div class="note" style="margin-bottom:10px">Jahrgang <b>'+jg+'</b> (Altjahrgang) und <b>'+(jg+1)+'</b> (Jungjahrgang)</div>'
+   +'<div style="margin:0 0 12px"><b>Sichtbare Altersjahrgänge in der Scouting-Datenbank</b><div class="note" style="margin:2px 0 6px">Bezogen auf die Saison '+E(pl.saison)+'. '+(Array.isArray(pl.jgs)&&pl.jgs.length?'Eigene Auswahl.':'Automatisch: '+autoAges(pl.stufe).map((n)=>"U"+n).join(" / ")+'.')+' Eigene Spieler und Personen, die schon in dieser Planung stehen, sind immer sichtbar.</div><div class="chips" style="flex-wrap:wrap;gap:6px">'+Array.from({length:14},(_,i)=>i+6).map((n)=>'<button type="button" data-ka="pjs" data-n="'+n+'" class="'+(agesOf(pl).indexOf(n)>=0?"on pS":"")+'" title="Jahrgang '+jgOf("U"+n,pl.saison)+'">U'+n+'</button>').join("")+'<button type="button" class="btn" data-ka="pjsa"'+(Array.isArray(pl.jgs)&&pl.jgs.length?"":" disabled")+'>Automatisch</button></div></div>'
    +'<table style="max-width:520px"><tr><th style="text-align:left"></th><th>Feldspieler</th><th>Torhüter</th></tr>'+[["Zielkader","ziel"],["Untergrenze","min"],["Obergrenze","max"]].map((r)=>'<tr><td style="text-align:left">'+r[0]+'</td><td><input class="ks" type="number" min="0" data-pf="'+r[1]+'.f" value="'+pl[r[1]].f+'"></td><td><input class="ks" type="number" min="0" data-pf="'+r[1]+'.t" value="'+pl[r[1]].t+'"></td></tr>').join("")+"</table></div>";
   h+='<div class="card" style="margin-bottom:12px"><h3>Positionen</h3><div class="tw"><table><tr><th style="text-align:left">Position</th><th>Aktiv</th><th>Torwart</th><th>Soll</th><th></th></tr>'
    +pl.pos.map((x,i)=>'<tr><td class="kn"><input data-pp="'+i+'.name" value="'+E(x.name)+'" style="min-width:0;width:clamp(130px,30vw,280px)"><div class="note">Anzeige: '+E(kz(x))+(dn(x)!==kz(x)?" · "+E(dn(x)):"")+'</div></td><td><input type="checkbox" data-pp="'+i+'.on"'+(x.aus?"":" checked")+' title="Position in Matrix, Listen und Chips anzeigen"></td><td><input type="checkbox" data-pp="'+i+'.tw"'+(x.tw?" checked":"")+'></td><td><input class="ks" type="number" min="0" data-pp="'+i+'.soll" value="'+x.soll+'"></td><td><button class="rm" data-ka="pd" data-i="'+i+'" title="Position löschen">✕</button></td></tr>').join("")
@@ -3483,7 +3489,7 @@ function renderKader(){const kaus=!!(D.config&&D.config.kaderAus);document.body.
     else h+=({plan:1,db:1,obs:1,pipe:1}[ks.tab||"plan"]?kxCard({pipe:"status"}[ks.tab]||ks.tab||"plan"):"")+(TABF[ks.tab]||TABF.home)(pl)}
   if(ks._lh===h&&r.firstChild&&!ks._rf){return}ks._lh=h;const y=window.scrollY;r.innerHTML=h;if(TABF.after)TABF.after(pl)}
 const force=()=>{ks._force=true;renderKader()};
-window.__kader={pfill,pbar,pipeCmp,SORTO,ap,dnN,pst,prog,sstart,dn,kz,kzN,pchips,jgY,bewIn,mergeSnap,mapPos,pOf,wkOf,zus,KD,ks,TABF,E,nid,td,fd,fs,num,r1,days,chip,fl,sel,listEd,plan,savePlan,savePers,sv,pname,pfull,gebOf,posOf,haupt,score,calc,counted,inPlan,matrix,weakest,cands,prioIdx,lk,mem,spOf,jgLabel,jgOk,jgOf,newPlan,LIGA,FARBEN,DEF,STUFEN,renderKader,force,sizes,defPos};
+window.__kader={autoAges,agesOf,jgYears,visP,jgOf,nOf,pfill,pbar,pipeCmp,SORTO,ap,dnN,pst,prog,sstart,dn,kz,kzN,pchips,jgY,bewIn,mergeSnap,mapPos,pOf,wkOf,zus,KD,ks,TABF,E,nid,td,fd,fs,num,r1,days,chip,fl,sel,listEd,plan,savePlan,savePers,sv,pname,pfull,gebOf,posOf,haupt,score,calc,counted,inPlan,matrix,weakest,cands,prioIdx,lk,mem,spOf,jgLabel,jgOk,jgOf,newPlan,LIGA,FARBEN,DEF,STUFEN,renderKader,force,sizes,defPos};
 window.renderKader=renderKader;
 TABF.plan=tabPlan;TABF.set=tabSet;
 /* kader_b.js und kader_c.js ergänzen TABF und die Ereignisse */
@@ -3525,14 +3531,14 @@ function personEd(pl){const p=ks.dr,ext=p.typ!=="eigen",isNew=ks.pe==="new";
 /* ---------- Datenbank ---------- */
 const fq=ks.flt;
 function dbList(pl){
-  let L=KD.pers.slice();if(fq.nur)L=L.filter((p)=>mem(p,pl));if(fq.typ)L=L.filter((p)=>(fq.typ==="eigen")===(p.typ==="eigen"));
+  let L=KD.pers.filter((p)=>K.visP(p,pl));if(fq.nur)L=L.filter((p)=>mem(p,pl));if(fq.typ)L=L.filter((p)=>(fq.typ==="eigen")===(p.typ==="eigen"));
   if(fq.jgPl!==pl.id){fq.jgPl=pl.id;fq.jg=String(K.jgOf(pl.stufe,pl.saison))}const jj=fq.jg;if(jj&&jj!=="alle")L=L.filter((p)=>{const g=K.jgY(p);return!g||g.slice(0,4)===jj});
   if(fq.pos)L=L.filter((p)=>posOf(p)[fq.pos]);if(fq.q){const q=fq.q.toLowerCase();L=L.filter((p)=>(pfull(p)+" "+(p.verein||"")+" "+(p.mannschaft||"")).toLowerCase().includes(q))}
   const so=ks.sort||"n";L.sort((a,b)=>so==="b"?(score(b,pl)||-1)-(score(a,pl)||-1):so==="p"?K.prioIdx(pl,mem(a,pl))-K.prioIdx(pl,mem(b,pl)):pname(a).localeCompare(pname(b)));
   return L}
 function tabDb(pl){
   const L=dbList(pl),so=ks.sort||"n",jj=fq.jg;
-  let h='<div class="bar"><input id="kfq" placeholder="Suchen …" value="'+E(fq.q)+'" style="min-width:160px"><label>Art '+sel('id="kft"',[["","alle"],["eigen","eigene"],["extern","externe"]],fq.typ)+"</label><label>Jahrgang "+sel('id="kfj"',[["alle","alle"]].concat([-1,0,1,2,3].map((d)=>{const y=String(K.jgOf(pl.stufe,pl.saison)+d);return[y,y]})),jj)+"</label><label>Position "+sel('id="kfp"',[["","alle"]].concat(pl.pos.map((x)=>[x.name,K.dn(x)])),fq.pos)+"</label><label>Sortieren "+sel('id="kfs"',[["n","Name"],["b","Bewertung"],["p","Priorität"]],so)+'</label><label style="display:flex;gap:6px"><input type="checkbox" id="kfn"'+(fq.nur?" checked":"")+"> nur diese Planung</label><span style=\"flex:1\"></span><button class=\"btn\" data-ka=\"pnew\" style=\"background:var(--ac);color:#fff;border-color:var(--ac)\">＋ Person</button></div>";
+  let h='<div class="bar"><input id="kfq" placeholder="Suchen …" value="'+E(fq.q)+'" style="min-width:160px"><label>Art '+sel('id="kft"',[["","alle"],["eigen","eigene"],["extern","externe"]],fq.typ)+"</label><label>Jahrgang "+sel('id="kfj"',[["alle","alle sichtbaren"]].concat(K.jgYears(pl).sort().map((y)=>[String(y),y+" · U"+(K.sstart(pl.saison)-y+1)])),jj)+"</label><label>Position "+sel('id="kfp"',[["","alle"]].concat(pl.pos.map((x)=>[x.name,K.dn(x)])),fq.pos)+"</label><label>Sortieren "+sel('id="kfs"',[["n","Name"],["b","Bewertung"],["p","Priorität"]],so)+'</label><label style="display:flex;gap:6px"><input type="checkbox" id="kfn"'+(fq.nur?" checked":"")+"> nur diese Planung</label><span style=\"flex:1\"></span><button class=\"btn\" data-ka=\"pnew\" style=\"background:var(--ac);color:#fff;border-color:var(--ac)\">＋ Person</button></div>";
   const wopt=pl.wk.map((w)=>[w.id,w.name+(w.z?"":" "+w.p+" %")]),ropt=[["","–"]].concat(pl.rollen.map((r)=>[r.id,r.name]));
   h+='<div class="note" style="margin-bottom:6px">'+L.length+' Einträge · Position antippen: 1× Neben, 2× Haupt ★, 3× aus · Rolle und Wahrscheinlichkeit direkt ändern · Klick auf den Namen öffnet die Details</div><div class="card tw" style="padding:0"><table class="ktab"><tr><th>In Planung</th><th style="text-align:left">Name</th><th style="text-align:center">Jg.</th><th style="text-align:center">Bew.</th><th style="text-align:left">Verein</th><th style="text-align:left">Positionen</th><th style="text-align:left">Rolle</th><th style="text-align:left">Wahrscheinlichkeit</th><th></th></tr>'+L.map((p)=>{const m=mem(p,pl),sc=score(p,pl),g=K.jgY(p),w=m&&K.wkOf(p,pl);
     return'<tr data-pid="'+p.id+'"'+(m?K.pbar(pl,m.prio):"")+'><td data-l="In Planung" class="kchk"><input type="checkbox" data-pm="inplan" data-id="'+p.id+'"'+(m?" checked":"")+' title="In dieser Planung anzeigen"></td><td class="kn kname" style="cursor:pointer;'+(m&&m.kontakt?"font-weight:700":"")+'">'+E(pname(p))+(p.typ==="eigen"?' <span class="note">eigen</span>':"")+(sc!=null?' <span class="note">· '+r1(sc)+"</span>":"")+'</td><td data-l="Jg.">'+(g?g.slice(0,4)+(jgOk(g,pl)?"":' <span class="kwarn" title="'+E(jgLabel(g,pl))+'">⚠</span>'):"")+'</td><td data-l="Bew.">'+K.bewIn(p)+'</td><td data-l="Verein" class="kn note">'+E(p.typ==="eigen"?"TuS Haltern":(p.verein||""))+'</td><td data-l="Positionen" class="kn kwide">'+K.pchips(p,pl)+"</td>"
@@ -3743,6 +3749,8 @@ function clickA(e){const xb=e.target.closest("[data-kx]");if(xb){window.__kxRun(
   const vs=e.target.closest("[data-vsel]");if(vs){ks.vo=vs.dataset.vsel||null;ks.vd=null;force();try{window.scrollTo(0,0)}catch(x){}return}
   if(!b)return;const a=b.dataset.ka,d=b.dataset;if(K.vClick&&K.vClick(a,d,pl))return;
   switch(a){
+   case"pjs":{const cur=K.agesOf(pl),n=+d.n,i=cur.indexOf(n);if(i>=0)cur.splice(i,1);else cur.push(n);if(cur.length){pl.jgs=cur.sort((a,b)=>a-b);savePlan(pl)}force();break}
+   case"pjsa":delete pl.jgs;savePlan(pl);force();break;
    case"np":R(()=>{ks.np=true});break;case"npx":R(()=>{ks.np=false});break;
    case"npok":{const p=newPlan($k("#npst").value,$k("#npsa").value.trim()||"2026/27",$k("#npna").value.trim());savePlan(p);ks.pid=p.id;try{localStorage.setItem("u13kplan",p.id)}catch(x){}ks.np=false;force();break}
    case"cust":R(()=>{ks.cust=!ks.cust});break;case"lreset":if(ks.arm==="lreset"){["wk","status","rollen","phasen","prios","krit"].forEach((k)=>{pl[k]=DEF[k]()});savePlan(pl);ks.arm=null;force()}else{ks.arm="lreset";force()}break;case"kaus":D.config={...(D.config||{}),kaderAus:true};cfgSave({kaderAus:true});try{renderPlan()}catch(x){}renderKader();if(typeof go==="function")go("h");break;case"posreset":if(ks.dr){ks.dr.pos={};force()}break;case"grund":R(()=>{ks.grund=!ks.grund});break;case"posed":R(()=>{ks.posed=!ks.posed});break;case"phf":R(()=>{ks.phf=ks.phf===d.id?"":d.id});break;case"pj":{const p=KD.pers.find((x)=>x.id===d.id);if(p&&pl&&mem(p,pl)){const k=clone(p);const s=pst(p,pl);k.plans[pl.id].pj=s===1?0:s===0?2:1;savePers(k);force()}break}case"gtog":R(()=>{ks.cl=ks.cl||{};ks.cl[d.g]=!ks.cl[d.g]});break;case"padd":{const p=KD.pers.find((x)=>x.id===d.id);if(p){const k=clone(p);k.plans=k.plans||{};k.plans[pl.id]=k.plans[pl.id]||(k.typ==="eigen"?{status:pl.status[0]?pl.status[0].id:"",next:{}}:{phase:pl.phasen[0]?pl.phasen[0].id:"",next:{}});savePers(k);force()}break}
@@ -5409,7 +5417,7 @@ const CSS='html.vclub,html.vclub body{height:auto;min-height:100%}#vnav{position
 +'html.vclub .app{display:block}@media(min-width:761px){html.vclub nav{top:var(--vnh,56px)!important}html.vclub:not([data-design="ruhig"]):not([data-design="glas"]) nav{height:calc(100vh - var(--vnh,56px))}html.vclub:not([data-design="ruhig"]):not([data-design="glas"]) .app{display:grid}}'
 +'html.kabmode .app,html.kabmode #vnav{display:none!important}'
 +'#vp{position:relative;min-height:calc(100vh - var(--vnh,56px));color:var(--tx)}#vp[hidden]{display:none}html.vopen .app{display:none!important}html.vopen body{background:var(--bg)}'
-+'html.vclub[data-design="ruhig"] nav,html.vclub[data-design="glas"] nav{width:fit-content;max-width:calc(100% - 24px);margin-left:auto!important;margin-right:auto!important}#vnav{display:grid!important;grid-template-columns:1fr auto 1fr;padding-left:clamp(20px,3vw,48px);padding-right:clamp(20px,3vw,48px)}#vnav .vpill{grid-column:2;justify-self:center}#vnav .vr{grid-column:3;justify-self:end;margin-left:0}@media(max-width:1350px){#vnav{grid-template-columns:1fr}#vnav .vpill,#vnav .vr{grid-column:1;justify-self:center}}'
++'html.vclub[data-design="ruhig"] nav,html.vclub[data-design="glas"] nav{width:fit-content;max-width:calc(100% - 24px);margin-left:auto!important;margin-right:auto!important}@media(min-width:761px){html.vclub[data-design="ruhig"] nav,html.vclub[data-design="glas"] nav{margin-left:clamp(20px,3vw,48px)!important;margin-right:auto!important;margin-top:0!important;top:calc(var(--vnh,56px) + 7px)!important}#vnav{padding-bottom:0!important}#vnav .vr:not(:has(.vchip:not([hidden]))){display:none}}#vnav{display:grid!important;grid-template-columns:minmax(0,1fr) auto;padding-left:clamp(20px,3vw,48px);padding-right:clamp(20px,3vw,48px)}#vnav .vpill{grid-column:1;justify-self:start}#vnav .vr{grid-column:2;justify-self:end;margin-left:0}@media(max-width:1350px){#vnav{grid-template-columns:1fr}#vnav .vpill,#vnav .vr{grid-column:1;justify-self:start}}#vnav .vpill .vchip{margin:0 6px 0 2px;background:rgba(127,127,127,.14);border-color:transparent}#vnav .vpill #vsync,#vnav .vpill #vrole{margin-right:4px;background:none;border-color:transparent;padding:6px 8px;color:var(--mu)}#vnav .vpill #vsync.ok{color:var(--g,#1b7a3a)}#vnav .vpill #vsync{font-size:0!important;padding:6px 6px!important}#vnav .vpill #vsync::before{content:"●";font-size:15px}#vnav .vpill #vsync.err{color:var(--r,#c0392b)}#vnav .vpill #vrole .vn,#vnav .vpill #vrole .vd{display:none}@media(min-width:761px) and (max-width:1499px){#vnav .vbrand>span:last-child{display:none}#vnav .vbrand{padding-right:8px}}'
 +'#vp .vsub{display:flex;gap:4px;flex-wrap:wrap;max-width:1840px;margin:0 auto;padding:12px clamp(20px,3vw,48px) 0}#vp .vsub button{font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--card);color:var(--mu);padding:5px 14px;border-radius:99px;cursor:pointer}#vp .vsub button.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}'
 +'#vbody{max-width:1840px;margin:0 auto;padding:18px clamp(20px,3vw,48px) 70px}#vbody h2{font-size:26px;margin:0 0 4px}#vbody .sub{margin:0 0 14px}'
 +'.vg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px;margin-bottom:12px}.vc{margin:0 0 12px}'
@@ -5437,9 +5445,9 @@ const ini=(n)=>{n=String(n||"Verein").trim();const w=n.split(/\s+/);return w[0].
 const MENU=[
  {id:"uebersicht",label:"Übersicht",tabs:["uebersicht"]},
  {id:"mannschaft",label:"Mannschaft",app:true},
- {id:"kader",label:"Kaderplanung",tabs:["kader"]},
  {id:"fach",label:()=>V.fachLabel?V.fachLabel():"Fachnotizen",tabs:["fach"]},
  {id:"planung",label:"Planung",tabs:["platz","kabinen"]},
+ {id:"kader",label:"Kaderplanung",tabs:["kader"]},
  {id:"personen",label:"Personen & Rechte",tabs:["personen"]},
  {id:"teams",label:"Mannschaften",tabs:["teams"]},
  {id:"datenschutz",label:"Datenschutz",tabs:["datenschutz"]},
@@ -5470,7 +5478,7 @@ function mountNav(){
   if(q("#vnav"))return;
   document.documentElement.classList.add("vclub");
   const nav=document.createElement("header");nav.id="vnav";
-  nav.innerHTML='<div class="vpill" role="tablist"><button type="button" class="vbrand" id="vhome" title="Zur Übersicht"><span class="vlogo img"><img alt="" src="'+E(W.__CLUBLOGO||"")+'"></span><span>'+E((W.__VEREIN&&W.__VEREIN.name)||"Verein")+'</span></button><span id="vmenu" style="display:contents"></span></div>'
+  nav.innerHTML='<div class="vpill" role="tablist"><button type="button" class="vbrand" id="vhome" title="Zur Übersicht (Verein)"><span class="vlogo img"><img alt="" src="'+E(W.__CLUBLOGO||"")+'"></span><span>'+E((W.__VEREIN&&W.__VEREIN.name)||"Verein")+'</span></button><span id="vmenu" style="display:contents"></span></div>'
    +'<div class="vr"><button class="vchip warn" id="vview" type="button" hidden></button><span class="vchip" id="vsync" role="status" aria-live="polite">Verbinde …</span><button class="vchip err" id="vhin" type="button" hidden></button><button class="vchip" id="vteamb" type="button" aria-haspopup="true" aria-label="Mannschaft wechseln"></button><span class="vchip" id="vrole"></span><div id="vdrop" hidden></div></div>';
   const app=q(".app");app?app.parentNode.insertBefore(nav,app):document.body.insertBefore(nav,document.body.firstChild);
   const fit=()=>document.documentElement.style.setProperty("--vnh",nav.offsetHeight+"px");
@@ -5488,7 +5496,7 @@ function mountNav(){
   q("#vhin",nav).onclick=()=>V.go("uebersicht");
   q("#vview",nav).onclick=()=>{V.viewAs(null);V.go("einstellungen")};
   const dr=q("#vdrop",nav);
-  q("#vteamb",nav).onclick=(e)=>{e.stopPropagation();dr.innerHTML=switcherHtml();dr.hidden=!dr.hidden};
+  q("#vteamb",nav).onclick=(e)=>{e.stopPropagation();dr.innerHTML=switcherHtml();dr.hidden=!dr.hidden;if(!dr.hidden){const vr=dr.parentNode.getBoundingClientRect(),c=q("#vteamb",nav).getBoundingClientRect(),w=Math.min(340,W.innerWidth*.92);let l=c.left-vr.left;l=Math.max(-vr.left+8,Math.min(l,W.innerWidth-8-w-vr.left));dr.style.left=l+"px";dr.style.right="auto"}};
   dr.onclick=(e)=>{const b=e.target.closest("button[data-sw]");if(b&&b.dataset.sw!==W.__TID)V.setTeam(b.dataset.sw);else dr.hidden=true};
   document.addEventListener("click",(e)=>{if(!dr.hidden&&!e.target.closest("#vdrop")&&!e.target.closest("#vteamb"))dr.hidden=true});
   refreshNav();
@@ -5537,17 +5545,23 @@ function mountNav(){
     if(sb!==sigB){bottom();sigB=ph()+"|"+(nav?[...nav.querySelectorAll("button[data-s]:not(.mobx)")].map((b)=>b.dataset.s+(b.classList.contains("on")?"*":"")).join(","):"")+"|"+(nav?nav.querySelectorAll("button.mobx").length:0)}
     if(st!==sigT){top();sigT=ph()+"|"+(vm?[...vm.querySelectorAll("button[data-m]")].map((b)=>b.dataset.m+(b.classList.contains("on")?"*":"")).join(","):"")}
   }catch(e){}};
-  W.addEventListener("resize",()=>{sigB=sigT="";tick()});
+  W.addEventListener("resize",()=>{sigB=sigT="";placeTeamBtn();tick()});
   document.addEventListener("click",(e)=>{if(!e.target.closest(".mobsheet,#mobmore,#vmore"))document.querySelectorAll(".mobsheet").forEach((x)=>x.hidden=true)});
   setInterval(tick,600);setTimeout(tick,300);
 })();
+function placeTeamBtn(){const nav=q("#vnav");if(!nav)return;const pill=q(".vpill",nav),vr=q(".vr",nav),home=q("#vhome",nav);if(!pill||!vr||!home)return;
+  const g=(id)=>q("#"+id,nav),tb=g("vteamb"),sy=g("vsync"),ro=g("vrole");if(!tb||!sy||!ro)return;
+  const desk=W.innerWidth>760,wide=W.innerWidth>=1180;
+  if(desk){if(tb.parentNode!==pill)pill.insertBefore(tb,home.nextSibling)}
+  if(desk&&wide){if(sy.parentNode!==pill||ro.parentNode!==pill){pill.appendChild(sy);pill.appendChild(ro);sy.style.marginLeft="auto"}}
+  else{sy.style.marginLeft="";["vview","vsync","vhin","vteamb","vrole","vdrop"].forEach((id)=>{const e=g(id);if(!e)return;if(id==="vteamb"&&desk)return;if(e.parentNode!==vr||true)vr.appendChild(e)})}}
 function refreshNav(){
-  const nav=q("#vnav");if(!nav)return;
+  const nav=q("#vnav");if(!nav)return;placeTeamBtn();
   const kEl=document.getElementById("k"),kOn=!V.cur&&kEl&&!kEl.hidden&&!document.body.classList.contains("scoutonly"),cur=V.cur?(menuOf(V.cur)||{}).id:(kOn?"kader":"mannschaft");
   q("#vmenu",nav).innerHTML=menuVis().map((m)=>'<button type="button" role="tab" data-m="'+m.id+'" class="'+(m.id===cur?"on":"")+'">'+E(typeof m.label==="function"?m.label():m.label)+'</button>').join("");
   q("#vteamb",nav).hidden=!!V.cur&&V.cur!=="fach";
   q("#vteamb",nav).innerHTML='<b>'+E((W.__TEAM||{}).name||"")+'</b><span class="note">'+E((W.__TEAM||{}).ak||"")+'</span> ▾';
-  q("#vrole",nav).innerHTML='<b>'+E((W.__VME&&(W.__VME.name||W.__VME.email.split("@")[0]))||"")+'</b> · '+E(V.roleLabel());
+  q("#vrole",nav).innerHTML='<b class="vn">'+E((W.__VME&&(W.__VME.name||W.__VME.email.split("@")[0]))||"")+'</b><span class="vd"> · </span>'+E(V.roleLabel());
   q("#vrole",nav).title=(W.__VME&&W.__VME.email)||"";
   {const vv=q("#vview",nav);if(vv){vv.hidden=!V.vw;if(V.vw)vv.innerHTML='Vorschau: <b>'+E(V.vw.label)+'</b> · beenden ✕'}}
 }
@@ -5673,15 +5687,45 @@ let hSub=[];
 
 V.openKader=()=>{V.close();const b=document.querySelector('nav button[data-s="k"]');if(b){b.click();try{window.scrollTo(0,0)}catch(e){}}refreshNav()};
 const kadTeams=()=>V.teams().filter((t)=>t.aktiv!==false&&(V.has(t.id,"kader")||V.has(t.id,"kaderbearb")));
+/* Altersregel (wie in der Kaderplanung): ein Jahr jünger, gleich alt, Partnerjahrgang der Jugend */
+const kNum=(st)=>+String(st).replace(/\D/g,"")||13,kStart=(sa)=>+String(sa||"").slice(0,4)||new Date().getFullYear();
+const kAuto=(st)=>{const n=kNum(st),pt=n%2===0?n+1:n-1;return Array.from(new Set([n-1,n,pt])).filter((x)=>x>=6&&x<=19).sort((a,b)=>a-b)};
+const kAges=(pl)=>Array.isArray(pl.jgs)&&pl.jgs.length?pl.jgs.slice():kAuto(pl.stufe);
+const kVis=(p,pl)=>{if((p.plans&&p.plans[pl.id])||p.typ==="eigen")return true;const g=String(p.geb||(p.jg||"")).slice(0,4);if(!g)return true;return kAges(pl).some((n)=>kStart(pl.saison)-(n-1)===+g)};
+const kScore=(p)=>{if(p.manuell!=null&&p.manuell!=="")return+p.manuell;const v=Object.values(p.kr||{}).filter((x)=>x!=null&&x!=="").map(Number);if(v.length)return v.reduce((a,b)=>a+b,0)/v.length;const b=(p.beob||[]).map((x)=>+x.bew).filter((x)=>!isNaN(x));return b.length?b.reduce((a,c)=>a+c,0)/b.length:null};
+let kadForce=false,kadC={},kadQ="",kadAge="",kadT="",kadMore=50;
+function kadLoad(tids,redraw){tids.forEach((tid)=>{if(kadC[tid])return;kadC[tid]={loading:1};
+  Promise.all([V.fs().collection(tid+"__kplan").get(),V.fs().collection(tid+"__kperson").get()]).then(([a,b])=>{kadC[tid]={plans:a.docs.map((d)=>({id:d.id,...d.data()})),pers:b.docs.map((d)=>({id:d.id,...d.data()}))};redraw()}).catch(()=>{kadC[tid]={plans:[],pers:[],err:1};redraw()})})}
 V.tab({id:"kader",label:"Kaderplanung",show:()=>kadTeams().length>0,render(el){
   const ts=kadTeams();
   if(ts.length===1&&ts[0].id===W.__TID&&!el.dataset.back){setTimeout(V.openKader,0);return}
-  let h='<h2>Kaderplanung</h2><p class="sub note">Hier siehst du alle Mannschaften, für die du die Kaderplanung ansehen oder bearbeiten darfst. Jede Mannschaft hat ihre eigene Planung.</p><div class="vg">';
-  h+=ts.map((t)=>{const s=V.st[t.id],ed=V.has(t.id,"kaderbearb"),c=V.col?V.col(t.id):{bg:"",bd:""};
-    return '<div class="card vc" style="border-left:4px solid '+(c.bd||"var(--ac)")+'"><div class="vrow" style="justify-content:space-between;margin:0"><div><b style="font-size:17px">'+E(t.name)+'</b> <span class="note">'+E(t.ak||"")+'</span></div><span class="vbad">'+(ed?"bearbeiten":"nur ansehen")+'</span></div><div class="note" style="margin:6px 0 10px">'+(s&&s.n!=null?s.n+" Spieler im Kader":"")+(t.id===W.__TID?" · aktuell gewählt":"")+'</div><button class="btn" data-ok="'+E(t.id)+'" style="width:100%;min-height:44px;background:var(--ac);color:#fff;border-color:var(--ac)">Kaderplanung öffnen</button></div>'}).join("");
-  h+='</div>';
+  if(V.typing()&&!kadForce)return;kadForce=false;
+  kadLoad(ts.map((t)=>t.id),()=>{if(V.cur==="kader")V.render()});
+  const rows=[],plansBy={};let loading=0;
+  ts.forEach((t)=>{const c=kadC[t.id];if(!c||c.loading){loading++;return}plansBy[t.id]=c.plans;
+    c.pers.forEach((p)=>{const pls=c.plans.filter((pl)=>kVis(p,pl));if(!pls.length&&c.plans.length)return;const pl=pls[0]||null,g=String(p.geb||"").slice(0,4),age=pl&&g?kStart(pl.saison)-+g+1:null;
+      rows.push({t,p,pl,age,sc:kScore(p)})})});
+  const q=kadQ.toLowerCase();
+  let L=rows.filter((r)=>(!kadT||r.t.id===kadT)&&(!kadAge||String(r.age)===kadAge)&&(!q||((r.p.vorname||"")+" "+(r.p.name||"")+" "+(r.p.verein||"")).toLowerCase().includes(q)));
+  L.sort((a,b)=>(b.sc||-1)-(a.sc||-1));
+  const ext=rows.filter((r)=>r.p.typ!=="eigen").length,nPl=Object.values(plansBy).reduce((a,x)=>a+x.length,0);
+  let h='<h2>Kaderplanung</h2><p class="sub note">Alle Planungen und die Scouting-Datenbank der Mannschaften, die du ansehen oder bearbeiten darfst. Pro Planung siehst du nur die passenden Jahrgänge (z. B. U14: U13, U14, U15 – jeweils bezogen auf die kommende Saison).</p>';
+  h+='<div class="kpis"><div class="card kpi"><b>'+ts.length+'</b><span>Mannschaften</span></div><div class="card kpi"><b>'+nPl+'</b><span>Kaderplanungen</span></div><div class="card kpi"><b>'+rows.length+'</b><span>Personen sichtbar</span></div><div class="card kpi"><b>'+ext+'</b><span>davon gescoutet</span></div></div>';
+  h+='<div class="card vc"><h3>Scouting-Datenbank</h3><div class="vrow"><input id="kdq" placeholder="Name oder Verein suchen …" value="'+E(kadQ)+'" style="flex:1;min-width:160px"><label>Mannschaft<select id="kdt"><option value="">alle</option>'+ts.map((t)=>'<option value="'+E(t.id)+'"'+(kadT===t.id?" selected":"")+'>'+E(t.name)+'</option>').join("")+'</select></label><label>Altersgruppe<select id="kda"><option value="">alle</option>'+Array.from(new Set(rows.map((r)=>r.age).filter((x)=>x))).sort((a,b)=>a-b).map((a)=>'<option value="'+a+'"'+(kadAge===String(a)?" selected":"")+'>U'+a+'</option>').join("")+'</select></label></div>';
+  if(loading)h+='<div class="note" style="padding:8px 0">Lädt …</div>';
+  h+='<div class="tw"><table class="vt"><thead><tr><th style="text-align:left">Name</th><th>Alter*</th><th style="text-align:left">Verein</th><th>Bew.</th><th style="text-align:left">Planung</th><th></th></tr></thead><tbody>'+
+   L.slice(0,kadMore).map((r)=>'<tr><td style="text-align:left"><b>'+E([r.p.vorname,r.p.name].filter(Boolean).join(" ")||"–")+'</b>'+(r.p.typ==="eigen"?' <span class="note">eigen</span>':"")+'</td><td>'+(r.age?"U"+r.age:"–")+'</td><td style="text-align:left">'+E(r.p.verein||(r.p.typ==="eigen"?r.t.name:""))+'</td><td>'+(r.sc!=null?(Math.round(r.sc*10)/10):"–")+'</td><td style="text-align:left">'+E(r.t.name)+(r.pl?' <span class="note">'+E(r.pl.name)+'</span>':"")+'</td><td><button class="btn" data-ok="'+E(r.t.id)+'">Öffnen</button></td></tr>').join("")
+   +(L.length?"":'<tr><td colspan="6" class="note" style="text-align:left;padding:12px">'+(loading?"":"Keine Personen für diese Auswahl.")+'</td></tr>')+'</tbody></table></div>'
+   +(L.length>kadMore?'<div class="vrow" style="margin-top:8px"><button class="btn" id="kdmore">Mehr anzeigen ('+(L.length-kadMore)+' weitere)</button></div>':"")
+   +'<div class="note" style="margin-top:6px">* Altersgruppe in der Saison der jeweiligen Planung.</div></div>';
+  h+='<h3 style="margin:18px 0 8px">Kaderplanungen nach Mannschaft</h3><div class="vg">'+ts.map((t)=>{const ed=V.has(t.id,"kaderbearb"),c=V.col?V.col(t.id):{bd:""},pls=plansBy[t.id]||[],cc=kadC[t.id];
+    return '<div class="card vc" style="border-left:4px solid '+(c.bd||"var(--ac)")+'"><div class="vrow" style="justify-content:space-between;margin:0"><div><b style="font-size:17px">'+E(t.name)+'</b> <span class="note">'+E(t.ak||"")+'</span></div><span class="vbad">'+(ed?"bearbeiten":"nur ansehen")+'</span></div>'
+     +'<div style="margin:8px 0 10px">'+(pls.length?pls.map((pl)=>{const mem=((cc&&cc.pers)||[]).filter((p)=>p.plans&&p.plans[pl.id]).length,zl=(pl.ziel&&((pl.ziel.f||0)+(pl.ziel.t||0)))||0;return '<div class="vrow" style="justify-content:space-between;margin:2px 0"><span>'+E(pl.name)+'</span><span class="note">'+mem+(zl?" von "+zl:"")+' im Kader</span></div>'+(zl?'<div class="vbar"><i style="width:'+Math.min(100,Math.round(mem/zl*100))+'%;background:var(--ac)"></i></div>':"")}).join(""):'<span class="note">'+(cc&&cc.loading?"Lädt …":"Noch keine Planung angelegt.")+'</span>')+'</div>'
+     +'<button class="btn" data-ok="'+E(t.id)+'" style="width:100%;min-height:44px;background:var(--ac);color:#fff;border-color:var(--ac)">Kaderplanung öffnen</button></div>'}).join("")+'</div>';
   el.innerHTML=h;
-  el.onclick=(e)=>{const b=e.target.closest("[data-ok]");if(!b)return;if(b.dataset.ok===W.__TID)V.openKader();else V.setTeam(b.dataset.ok,"app:k")};
+  el.onclick=(e)=>{const b=e.target.closest("[data-ok]");if(b){if(b.dataset.ok===W.__TID)V.openKader();else V.setTeam(b.dataset.ok,"app:k");return}if(e.target.id==="kdmore"){kadMore+=50;kadForce=true;V.render()}};
+  el.oninput=(e)=>{if(e.target.id==="kdq"){kadQ=e.target.value;kadMore=50;clearTimeout(el._kt);el._kt=setTimeout(()=>{kadForce=true;V.render();const i=q("#kdq",el);if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},250)}};
+  el.onchange=(e)=>{if(e.target.id==="kdt"){kadT=e.target.value;kadForce=true;V.render()}if(e.target.id==="kda"){kadAge=e.target.value;kadForce=true;V.render()}};
 }});
 V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasAnyT("kader"),stop(){hSub.forEach((u)=>{try{u()}catch(e){}});hSub=[]},render(el){
   if(V.typing())return;hEdit=null;

@@ -74,6 +74,31 @@ TEAMS.forEach(([tid,name],ti)=>{
   put(tid+"__todos/t1",{id:"t1",typ:"todo",text:"Lorem ipsum Bälle aufpumpen.",datum:addD(TODAY,3),wer:"Max Mustermann",done:false});
   put(tid+"__todos/t2",{id:"t2",typ:"todo",text:"Dolor sit amet Trikots abholen.",datum:null,wer:null,done:true});
   put(tid+"__notes/n1",{id:"n1",pid:ids[1],datum:addD(TODAY,-10),art:"notiz",kategorie:"Allgemein",text:"Lorem ipsum dolor sit amet, consetetur sadipscing elitr.",sichtbar:false});
+  /* Kaderplanung für die kommende Saison + Scouting-Datenbank (erfundene Personen) */
+  {const n0=+TEAMS[ti][2].slice(1),n=Math.min(19,n0+1),sa="2027/28",plid="kp"+tid,pt=n%2===0?n+1:n-1,auto=Array.from(new Set([n-1,n,pt])).filter((x)=>x>=6&&x<=19);
+   const POS=n<=11?[["Torwart",2,1],["Abwehr",4,0],["Mittelfeld",5,0],["Angriff",3,0]]:[["Torwart",2,1],["Innenverteidiger",n<=13?3:4,0],["Außenverteidiger",n<=13?2:4,0],["Zentrales MF",n<=13?4:5,0],["Außenmittelfeld",0,0],["Flügel",3,0],["Stürmer",2,0]];
+   const lk=(id,name,c,z)=>({id,name,c,z:z||0});
+   const plan={id:plid,name:"U"+n+" "+sa,stufe:"U"+n,saison:sa,ziel:{f:n<=11?12:n<=13?14:18,t:2},min:{f:n<=11?11:n<=13?13:17,t:1},max:{f:n<=11?14:n<=13?16:20,t:2},frist:"2028-04-30",fristName:"Go/No-Go-Entscheidung",
+    pos:POS.map((x,i)=>({id:"x"+i,name:x[0],soll:x[1],tw:!!x[2]})),
+    status:[lk("go","Fest eingeplant (Go)","g",1),lk("gof","Wackelkandidat (Go mit Frist)","y",1),lk("ngf","Entwicklungsfall (No-Go mit Frist)","o",1),lk("ng","Keine Perspektive (No-Go)","r",0)],
+    rollen:[{id:"an",name:"Ankerspieler",c:"g"},{id:"st",name:"Startelf",c:"b"},{id:"sr",name:"Startelf bis Rotation",c:"ac"},{id:"rp",name:"Rotation, großes Entwicklungspotenzial",c:"p"},{id:"ro",name:"Rotation",c:"be"}],
+    phasen:[lk("be","Im Blick","b"),lk("ka","Kontakt & Gespräch","ac"),lk("pe","Probetraining eingeladen","y"),lk("pa","Probetraining","o"),lk("en","Entscheidungsfindung","y"),lk("zu","Zusage","g",1),{id:"ab",name:"Absage",c:"r",z:0,aus:1}],
+    prios:[{id:"a",name:"A – Wunschspieler",c:"n1"},{id:"b",name:"B – hoch",c:"n2"},{id:"c",name:"C – mittel",c:"n3"},{id:"d",name:"D – niedrig",c:"n4"}],
+    wk:[{id:"zu",name:"Zugesagt",c:"g",p:100,z:1},{id:"sw",name:"Sehr wahrscheinlich",c:"g",p:80},{id:"wa",name:"Wahrscheinlich",c:"y",p:60},{id:"un",name:"Unsicher",c:"o",p:40},{id:"en",name:"Eher nicht",c:"r",p:20},{id:"ab",name:"Abgang / Absage",c:"gr",p:0,a:1}],
+    krit:[{id:"te",name:"Technik"},{id:"ta",name:"Taktik"},{id:"at",name:"Athletik"},{id:"pe",name:"Persönlichkeit"}]};
+   put(tid+"__kplan/"+plid,plan);
+   const posNames=POS.map((x)=>x[0]),mk=(id,o)=>put(tid+"__kperson/"+id,Object.assign({id,typ:"extern",vorname:"",name:"",geb:"",verein:"",mannschaft:"",nr:"",fuss:"",groesse:"",telM:"",telV:"",mail:"",adresse:"",pos:{},kr:{},manuell:null,staerken:"",schwaechen:"",notiz:"",beob:[],kontakt:[],probe:[],plans:{}},o));
+   /* eigene Spieler: bleiben sie? */
+   pl.forEach((pp,i)=>{const r=R(),wk=r<.55?"sw":r<.75?"wa":r<.9?"un":"zu";mk("kq_e"+pp.id,{typ:"eigen",sid:pp.id,pos:{[pp.torwart?posNames[0]:posNames[1+i%(posNames.length-1)]]:2},plans:{[plid]:{status:r<.8?"go":r<.92?"gof":"ngf",rolle:pick(["an","st","sr","rp","ro"]),wk,phase:"",prio:"",kontakt:false,wunsch:"",next:{}}}})});
+   /* gescoutete Spieler: Jahrgänge nach Regel sichtbar, zwei bewusst außerhalb */
+   const ages=auto.concat([n+3<=19?n+3:n-3,n-3>=6?n-3:n+4]);
+   ages.forEach((a,i)=>{for(let k=0;k<(i<auto.length?3:1);k++){const id="kq_x"+i+"_"+k,vor=pick(FN),nach=pick(LN),r=R(),ph=pick(["be","be","ka","pe","pa","en","zu"]),by=2028-a,inP=i<auto.length&&k<2;
+      mk(id,{vorname:vor,name:nach+" (Demo)",geb:by+"-"+pad(ri(1,12))+"-"+pad(ri(1,28)),verein:pick(CL),mannschaft:"U"+(a-1)+" / "+pick(["1","2"]),nr:String(ri(2,18)),fuss:pick(["rechts","links","beidfüßig"]),groesse:String(ri(140,175)),
+        pos:{[pick(posNames)]:2},kr:{te:ri(5,9),ta:ri(4,9),at:ri(4,9),pe:ri(5,9)},staerken:"Lorem ipsum: schnell, gutes Auge.",schwaechen:"Dolor sit amet: Zweikampfverhalten.",notiz:"Erfundene Demo-Person.",
+        beob:[{id:"b"+id,datum:addD(TODAY,-ri(5,40)),bew:ri(5,9),text:"Beispielhafte Beobachtung (erfunden).",von:"Demo-Scout"}],
+        plans:inP?{[plid]:{phase:ph,prio:pick(["a","b","c"]),rolle:"",kontakt:r<.3,wunsch:"",next:{}}}:{}})}});
+   put(tid+"__kobs/ko1",{id:"ko1",verein:CL[ti%CL.length],mannschaft:"U"+(n-1),datum:addD(TODAY,ri(2,9)),zeit:"11:00",entf:ri(5,40)+" km",status:"geplant",blick:"Beispiel: Rechtsverteidiger beobachten",notiz:"",personIds:[]});
+   put(tid+"__kobs/ko2",{id:"ko2",verein:CL[(ti+4)%CL.length],mannschaft:"U"+n,datum:addD(TODAY,-ri(6,20)),zeit:"10:00",entf:ri(5,40)+" km",status:"erledigt",blick:"",notiz:"Erledigt (erfunden)",personIds:[]})}
   put(tid+"__config/main",{saison:"2026/27",mannschaft:name,kontakte:[{titel:"Trainerteam",zeilen:"Max Mustermann · 0123 456789"}],zaehlendeAbwesenheiten:{e:true,u:true,v:false,t:false},spielformen:[{id:form,name:nF+" gegen "+nF,spieler:nF}],staff:[{id:"s1",name:"Max Mustermann",rolle:"Trainer",owner:true}]});
 });
 
