@@ -76,9 +76,9 @@ TEAMS.forEach(([tid,name],ti)=>{
   put(tid+"__notes/n1",{id:"n1",pid:ids[1],datum:addD(TODAY,-10),art:"notiz",kategorie:"Allgemein",text:"Lorem ipsum dolor sit amet, consetetur sadipscing elitr.",sichtbar:false});
   /* Kaderplanung für die kommende Saison + Scouting-Datenbank (erfundene Personen) */
   {const n0=+TEAMS[ti][2].slice(1),n=Math.min(19,n0+1),sa="2027/28",plid="kp"+tid,pt=n%2===0?n+1:n-1,auto=Array.from(new Set([n-1,n,pt])).filter((x)=>x>=6&&x<=19);
-   const POS=n<=11?[["Torwart",2,1],["Abwehr",4,0],["Mittelfeld",5,0],["Angriff",3,0]]:[["Torwart",2,1],["Innenverteidiger",n<=13?3:4,0],["Außenverteidiger",n<=13?2:4,0],["Zentrales MF",n<=13?4:5,0],["Außenmittelfeld",0,0],["Flügel",3,0],["Stürmer",2,0]];
+   const TWn=n<=10?0:2,POS=n<=11?[...(TWn?[["Torwart",TWn,1]]:[]),["Abwehr",4,0],["Mittelfeld",5,0],["Angriff",3,0]]:[["Torwart",2,1],["Innenverteidiger",n<=13?3:4,0],["Außenverteidiger",n<=13?2:4,0],["Zentrales MF",n<=13?4:5,0],["Außenmittelfeld",0,0],["Flügel",3,0],["Stürmer",2,0]];
    const lk=(id,name,c,z)=>({id,name,c,z:z||0});
-   const plan={id:plid,name:"U"+n+" "+sa,stufe:"U"+n,saison:sa,ziel:{f:n<=11?12:n<=13?14:18,t:2},min:{f:n<=11?11:n<=13?13:17,t:1},max:{f:n<=11?14:n<=13?16:20,t:2},frist:"2028-04-30",fristName:"Go/No-Go-Entscheidung",
+   const plan={id:plid,name:"U"+n+" "+sa,stufe:"U"+n,saison:sa,ziel:{f:n<=11?12:n<=13?14:18,t:TWn},min:{f:n<=11?11:n<=13?13:17,t:TWn?1:0},max:{f:n<=11?14:n<=13?16:20,t:TWn},frist:"2028-04-30",fristName:"Go/No-Go-Entscheidung",
     pos:POS.map((x,i)=>({id:"x"+i,name:x[0],soll:x[1],tw:!!x[2]})),
     status:[lk("go","Fest eingeplant (Go)","g",1),lk("gof","Wackelkandidat (Go mit Frist)","y",1),lk("ngf","Entwicklungsfall (No-Go mit Frist)","o",1),lk("ng","Keine Perspektive (No-Go)","r",0)],
     rollen:[{id:"an",name:"Ankerspieler",c:"g"},{id:"st",name:"Startelf",c:"b"},{id:"sr",name:"Startelf bis Rotation",c:"ac"},{id:"rp",name:"Rotation, großes Entwicklungspotenzial",c:"p"},{id:"ro",name:"Rotation",c:"be"}],
@@ -89,7 +89,7 @@ TEAMS.forEach(([tid,name],ti)=>{
    put(tid+"__kplan/"+plid,plan);
    const posNames=POS.map((x)=>x[0]),mk=(id,o)=>put(tid+"__kperson/"+id,Object.assign({id,typ:"extern",vorname:"",name:"",geb:"",verein:"",mannschaft:"",nr:"",fuss:"",groesse:"",telM:"",telV:"",mail:"",adresse:"",pos:{},kr:{},manuell:null,staerken:"",schwaechen:"",notiz:"",beob:[],kontakt:[],probe:[],plans:{}},o));
    /* eigene Spieler: bleiben sie? */
-   pl.forEach((pp,i)=>{const r=R(),wk=r<.55?"sw":r<.75?"wa":r<.9?"un":"zu";mk("kq_e"+pp.id,{typ:"eigen",sid:pp.id,pos:{[pp.torwart?posNames[0]:posNames[1+i%(posNames.length-1)]]:2},plans:{[plid]:{status:r<.8?"go":r<.92?"gof":"ngf",rolle:pick(["an","st","sr","rp","ro"]),wk,phase:"",prio:"",kontakt:false,wunsch:"",next:{}}}})});
+   pl.forEach((pp,i)=>{const r=R(),wk=r<.55?"sw":r<.75?"wa":r<.9?"un":"zu";mk("kq_e"+pp.id,{typ:"eigen",sid:pp.id,pos:{[pp.torwart&&TWn?posNames[0]:posNames[(TWn?1:0)+i%(posNames.length-(TWn?1:0))]]:2},plans:{[plid]:{status:r<.8?"go":r<.92?"gof":"ngf",rolle:pick(["an","st","sr","rp","ro"]),wk,phase:"",prio:"",kontakt:false,wunsch:"",next:{}}}})});
    /* gescoutete Spieler: Jahrgänge nach Regel sichtbar, zwei bewusst außerhalb */
    const ages=auto.concat([n+3<=19?n+3:n-3,n-3>=6?n-3:n+4]);
    ages.forEach((a,i)=>{for(let k=0;k<(i<auto.length?3:1);k++){const id="kq_x"+i+"_"+k,vor=pick(FN),nach=pick(LN),r=R(),ph=pick(["be","be","ka","pe","pa","en","zu"]),by=2028-a,inP=i<auto.length&&k<2;
