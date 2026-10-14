@@ -244,7 +244,7 @@ html[data-design="glas"] #vp :is(.card,.vc){backdrop-filter:none;-webkit-backdro
 <section id="a" hidden><h2>Beteiligung</h2><p class="sub" id="asub"></p><div class="seg" id="abseg" role="group" aria-label="Ansicht" style="margin:0 0 12px"><button type="button" data-bwv="b" class="on">Beteiligung</button><button type="button" data-bwv="w">Bewertung</button></div><div id="a_b"><div class="kpis" id="kp"></div>
 <div class="bar"><div class="seg" id="vw" role="group" aria-label="Ansicht"><button data-v="all" class="on">Alles</button><button data-v="tr">Training</button><button data-v="sp">Spiele</button></div><label>Sortieren nach <select id="so"><option value="b" data-grp="tr" selected>Beteiligung gewichtet</option><option value="x" data-grp="tr">Beteiligung absolut</option><option value="l" data-grp="tr">Letzte 60 Tage gewichtet</option><option value="g" data-grp="sp">Spielzeit gewichtet</option><option value="a" data-grp="sp">Spielzeit absolut</option><option value="k" data-grp="sp">Spielzeit im Kader</option><option value="m" data-grp="sp">Minuten</option></select></label><label>Reihenfolge <select id="od"><option value="-1">Absteigend</option><option value="1">Aufsteigend</option></select></label><span style="flex:1"></span><label class="note">Modus <select class="xth"><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label class="note">Seiten <select id="xsp" aria-label="Seiten des Exports"><option value="all">Übersicht + Streudiagramm</option><option value="z3">Alle drei Seiten (mit Zusatzkennzahlen)</option><option value="ue">Nur Übersicht</option><option value="sc">Nur Streudiagramm</option><option value="zu">Nur Zusatzkennzahlen</option></select></label><span class="note">A4-Export (quer)</span><div class="seg" id="xa"><button data-f="png">PNG</button><button data-f="jpg">JPG</button><button data-f="pdf">PDF</button></div></div>
 <div class="leg" id="lg"></div><div class="card tw" style="padding:0"><table id="tb"></table></div><div class="gr" id="ch" style="margin:14px 0 0"></div><div id="sc" style="margin:14px 0 0"></div></div><div id="a_w" hidden></div></section>
-<section id="s" hidden><h2>Stammdaten</h2><div class="seg" id="sseg" style="margin-bottom:14px"><button data-v="p" class="on">Spieler</button><button data-v="t">Trainer &amp; Verantwortliche</button></div><div id="s_pl"><p class="sub">Positionen: 1× klicken = <span class="chip pN">Nebenposition</span>, 2× = <span class="chip pS">Stammposition</span>, 3× = aus · 25 Plätze · nur belegte Plätze erscheinen in allen anderen Ansichten · Änderungen werden sofort gespeichert</p><div class="kpis" id="sdk"></div><div class="card tw" style="padding:0"><table id="sdt"></table></div></div><div id="s_st" hidden><p class="sub">Trainer, Co-Trainer und weitere Verantwortliche. Die Namen lassen sich bei To-Dos als Zuständige auswählen (ohne Namen nur als Platzhalter, z. B. für einen Torwarttrainer, dessen Name noch offen ist); Geburtstage erscheinen auf Start und im Trainer-Export.</p><div class="card tw" style="padding:0;margin-bottom:12px"><table id="stt"></table></div><div class="card"><h3>Neu hinzufügen</h3><div class="bar" style="margin:0"><label class="note">Name<br><input id="stn" style="width:200px" autocomplete="off"></label><label class="note">Rolle<br><select id="str"><option>Trainer</option><option>Co-Trainer</option><option>Betreuer</option><option>Torwarttrainer</option><option>Athletiktrainer</option></select></label><label class="note">Geburtsdatum (optional)<br><input type="date" id="stg"></label><button class="btn" id="sta" style="background:var(--ac);color:#fff;border-color:var(--ac)">＋ Hinzufügen</button></div></div></div></section>
+<section id="s" hidden><h2>Stammdaten</h2><div class="seg" id="sseg" style="margin-bottom:14px"><button data-v="p" class="on">Spieler</button><button data-v="t">Trainer &amp; Verantwortliche</button></div><div id="s_pl"><p class="sub">Positionen: 1× klicken = <span class="chip pN">Nebenposition</span>, 2× = <span class="chip pS">Stammposition</span>, 3× = aus · 30 Plätze · nur belegte Plätze erscheinen in allen anderen Ansichten · Änderungen werden sofort gespeichert</p><div class="kpis" id="sdk"></div><div class="card tw" style="padding:0"><table id="sdt"></table></div></div><div id="s_st" hidden><p class="sub">Trainer, Co-Trainer und weitere Verantwortliche. Die Namen lassen sich bei To-Dos als Zuständige auswählen (ohne Namen nur als Platzhalter, z. B. für einen Torwarttrainer, dessen Name noch offen ist); Geburtstage erscheinen auf Start und im Trainer-Export.</p><div class="card tw" style="padding:0;margin-bottom:12px"><table id="stt"></table></div><div class="card"><h3>Neu hinzufügen</h3><div class="bar" style="margin:0"><label class="note">Name<br><input id="stn" style="width:200px" autocomplete="off"></label><label class="note">Rolle<br><select id="str"><option>Trainer</option><option>Co-Trainer</option><option>Betreuer</option><option>Torwarttrainer</option><option>Athletiktrainer</option></select></label><label class="note">Geburtsdatum (optional)<br><input type="date" id="stg"></label><button class="btn" id="sta" style="background:var(--ac);color:#fff;border-color:var(--ac)">＋ Hinzufügen</button></div></div></div></section>
 <section id="p" hidden><div id="pwrap" class="pw"><div class="ph"><div class="av" id="av"></div><div style="min-width:0"><h2 id="pn" style="margin:0"></h2><div class="sub" style="margin:0" id="pi"></div></div><span style="flex:1"></span><span class="pnav"><button class="btn" id="pprev" aria-label="Vorheriger Spieler">◀</button><select id="ps" aria-label="Spieler"></select><button class="btn" id="pnext" aria-label="Nächster Spieler">▶</button></span></div>
 <div class="seg" id="pmode" style="margin-bottom:12px"><button data-pm="s">Einfach</button><button data-pm="d">Detailliert</button></div>
 <div class="bar"><label class="note">Modus <select class="xth"><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><label class="note">Version <select id="xpv"><option value="d">Detailliert</option><option value="s">Einfach</option></select></label><span class="note">A4-Export (hoch)</span><div class="seg" id="xp"><button data-f="png">PNG</button><button data-f="jpg">JPG</button><button data-f="pdf">PDF</button></div><span style="width:14px"></span><span class="note">Alle Spieler</span><div class="seg" id="xpa"><button data-f="pdf" title="Eine PDF-Datei, eine Seite pro Spieler">PDF (1 Datei)</button><button data-f="png" title="ZIP mit einem Bild pro Spieler">PNG (ZIP)</button><button data-f="jpg" title="ZIP mit einem Bild pro Spieler">JPG (ZIP)</button></div></div><div class="bar" style="margin-top:-4px"><span class="note">Einzelnachweis (alle Trainings &amp; Spiele, Saison)</span><div class="seg" id="xnw"><button data-f="pdf">PDF</button><button data-f="png" title="ZIP bei mehreren Seiten">PNG</button><button data-f="jpg" title="ZIP bei mehreren Seiten">JPG</button></div></div><div id="psimp"></div><div id="pfull"><div class="kpis" id="pk"></div>
@@ -591,7 +591,7 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,(c)=>({"&":"&amp;
 function renderStamm(){
   if($("#sdt").contains(document.activeElement))return; // nicht während der Eingabe neu zeichnen
   const m={};D.spieler.forEach((p)=>m[p.slot]=p);
-  $("#sdt").innerHTML='<tr><th>#</th><th style="text-align:left">Nachname</th><th style="text-align:left">Vorname</th><th style="text-align:left">Geburtsdatum</th><th>Alter</th><th style="text-align:left">Positionen</th><th>Torhüter</th><th>Aktiv</th><th style="text-align:left">Nr.</th></tr>'+Array.from({length:25},(_,i)=>row(i+1,m[i+1])).join("");
+  $("#sdt").innerHTML='<tr><th>#</th><th style="text-align:left">Nachname</th><th style="text-align:left">Vorname</th><th style="text-align:left">Geburtsdatum</th><th>Alter</th><th style="text-align:left">Positionen</th><th>Torhüter</th><th>Aktiv</th><th style="text-align:left">Nr.</th></tr>'+Array.from({length:30},(_,i)=>row(i+1,m[i+1])).join("");
   const b=D.spieler.filter((p)=>p.name).length;$("#sdk").innerHTML=[[b,"Spieler im Kader"],[b-D.spieler.filter((p)=>p.name&&p.torwart).length,"Feldspieler"],[D.spieler.filter((p)=>p.name&&p.torwart).length,"Torhüter"]].map((a)=>'<div class="card kpi"><b>'+a[0]+"</b><span>"+a[1]+"</span></div>").join("");
 }
 function saveRow(tr){
@@ -4250,7 +4250,7 @@ async function wzRun(){
       if(k)KDs().pers.filter((x)=>x.sid===p.id).forEach((x)=>k.savePers({...x,name:x.name||p.name,vorname:x.vorname||p.vorname,geb:x.geb||p.geburtsdatum||""}))});
     /* neue Spieler aus der Planung */
     const used=new Set(D.spieler.filter((p)=>keepIds.has(p.id)).map((p)=>p.slot));let nxt=1;
-    newC.forEach((c)=>{const x=KDs().pers.find((q)=>q.id===c.id);if(!x||!pl)return;while(used.has(nxt)&&nxt<=25)nxt++;if(nxt>25)return;used.add(nxt);
+    newC.forEach((c)=>{const x=KDs().pers.find((q)=>q.id===c.id);if(!x||!pl)return;while(used.has(nxt)&&nxt<=30)nxt++;if(nxt>30)return;used.add(nxt);
       const po=k.posOf(x),h=k.haupt(x),kzs=Object.keys(po).sort((a,b)=>(po[b]||0)-(po[a]||0)).map((n)=>k.kzN(pl,n)),st=h?[k.kzN(pl,h)]:[];
       const id="p"+nxt;jobs.push(save("players",id,{id,slot:nxt,name:x.name||"",vorname:x.vorname||"",geburtsdatum:x.geb||null,positionen:kzs,stamm:st,torwart:st[0]==="TW",aktiv:true,nr:x.nr||""}));
       k.savePers({...x,sid:id})});
@@ -5337,7 +5337,9 @@ V.roleLabel=()=>{const r=V.rolle();if(r!=="team")return ROLLEN[r]||"";
   const me=V.me(),n=(me.zu||[]).filter((z)=>z.alle||z.bereich||(z.teams||[]).indexOf(W.__TID)>=0).map((z)=>V.artName(z.art));
   const u=Array.from(new Set(n));return u.length?u.join(" · "):((me.zu||[])[0]?V.artName(me.zu[0].art):"Mitglied")};
 V.visTeams=()=>V.teams().filter((t)=>V.isAll()||V.has(t.id,"sehen")||V.has(t.id,"bearbeiten"));
-V.teams=()=>(W.__VEREIN&&W.__VEREIN.teams)||[];
+const ageRank=(t)=>{const m=/U\s*(\d+)/i.exec(t.ak||"");if(m)return +m[1];const n=String(t.name||t.id||"").toLowerCase(),L={a:19,b:17,c:15,d:13,e:11,f:9,g:7};if(/^mini/.test(n))return 6;return L[n[0]]||0};
+let _tk=null,_tv=null;
+V.teams=()=>{const a=(W.__VEREIN&&W.__VEREIN.teams)||[];if(_tk===a)return _tv;_tk=a;_tv=a.map((t,i)=>[t,i]).sort((x,y)=>ageRank(y[0])-ageRank(x[0])||x[1]-y[1]).map((x)=>x[0]);return _tv};
 V.set=()=>Object.assign({ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},(W.__VEREIN&&W.__VEREIN.settings)||{});
 V.tname=(id)=>{const t=V.teams().find((x)=>x.id===id);if(t)return t.name+(t.ak?" ("+t.ak+")":"");const e=((V.plan&&V.plan.extern)||[]).find((x)=>x.id===id);return e?e.name:(id||"–")};
 V.tshort=(id)=>{const t=V.teams().find((x)=>x.id===id);if(t)return t.name;const e=((V.plan&&V.plan.extern)||[]).find((x)=>x.id===id);return e?e.name:(id||"–")};
@@ -5426,7 +5428,8 @@ const CSS='html.vclub,html.vclub body{height:auto;min-height:100%}#vnav{position
 +'.vgl{position:absolute;left:0;right:0;border-top:1px dashed var(--ln);font-size:10px;color:var(--mu);padding-left:3px}.vblk{position:absolute;left:3px;right:3px;border-radius:8px;padding:3px 6px;font-size:12px;line-height:1.25;overflow:hidden;border:1.5px solid;cursor:default;color:var(--tx)}.vblk.ed{cursor:pointer}.vblk.clash{outline:2px solid var(--r);outline-offset:1px}.vwb.clash{outline:2px solid var(--r);outline-offset:1px}.vblk small{display:block;opacity:.8}'
 +'.vkabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}.vkab{border:1px solid var(--ln);border-radius:12px;padding:8px 10px;background:var(--card);min-height:90px}.vkab b{display:block;margin-bottom:4px}.vke{border-left:4px solid;border-radius:6px;padding:3px 7px;margin:4px 0;font-size:12px;background:var(--bg)}.vke.ed{cursor:pointer}'
 +'.vmx td.c,.vmx th.c{text-align:center}.vmx input[type=checkbox]{width:18px;height:18px}'
-+'@media(max-width:760px){#vnav{padding:8px 12px}#vnav .vr{margin-left:0;width:100%}#vp{bottom:0}#vbody{padding:14px 12px 90px}}';
++'@media(max-width:760px){#vnav .vpill button.mobx,nav button.mobx{display:none!important}#vnav .vbrand>span:last-child{display:none}#vnav .vbrand{padding:5px 8px 5px 6px}#vnav .vpill{overflow:visible!important}#vnav .vpill button{padding:7px 10px!important}html.mobnav nav button[data-s="h"]{position:static!important;box-shadow:none!important}html.mobnav nav button[data-s="h"]:not(.on){background:none!important}html.mobnav nav{width:auto!important;max-width:none!important;left:8px!important;right:8px!important;bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;border-radius:26px!important;padding:6px 4px!important}html.mobnav nav button{font-size:10.5px!important;flex:1 1 0!important;min-width:0!important;padding-left:2px!important;padding-right:2px!important}.mobsheet{position:fixed;z-index:400;left:12px;right:12px;background:var(--card);border:1px solid var(--ln);border-radius:20px;padding:10px;display:grid;gap:6px;box-shadow:0 12px 40px rgba(0,0,0,.35);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);max-height:70vh;overflow-y:auto}.mobsheet[hidden]{display:none}.mobsheet button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid var(--ln);background:var(--card);color:var(--tx);font:inherit;font-size:15px;border-radius:14px;padding:8px 10px;cursor:pointer;text-align:center}.mobsheet button.on{background:var(--acs);color:var(--ac);font-weight:600;border-color:var(--ac)}#mobsheetB{bottom:calc(84px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(3,1fr)}#mobsheetT{top:calc(var(--vnh,56px) + 6px);grid-template-columns:1fr}}'
++'@media(max-width:760px){#vnav{padding:8px 12px}#vnav .vr{margin-left:0;width:100%}#vp{bottom:0}#vbody{padding:14px 12px 90px}#vbody .card.vc,#vbody .vc{padding:12px 10px}#vbody .vrow .vseg{width:100%;display:flex}#vbody .vrow .vseg .btn{flex:1}}';
 function css(){if(q("#vcss"))return;const s=document.createElement("style");s.id="vcss";s.textContent=CSS;document.head.appendChild(s)}
 V.css=css;
 const ini=(n)=>{n=String(n||"Verein").trim();const w=n.split(/\s+/);return w[0].length<=4?w[0]:w.slice(0,3).map((x)=>x[0]).join("").toUpperCase()};
@@ -5489,6 +5492,53 @@ function mountNav(){
   refreshNav();
   try{const g=sessionStorage.getItem("u13go");if(g){sessionStorage.removeItem("u13go");setTimeout(()=>{if(V.tabs.some((x)=>x.id===g))V.open(g)},500)}}catch(e){}
 }
+
+/* Handy: Menüs mit „Mehr“ statt verstecktem Wischen */
+(function(){
+  const ph=()=>W.innerWidth<=760;let sigB="",sigT="";
+  const mk=(id)=>{let e=document.getElementById(id);if(!e){e=document.createElement("div");e.id=id;e.className="mobsheet";e.hidden=true;document.body.appendChild(e)}return e};
+  function bottom(){
+    const nav=document.querySelector("body > .app > nav")||document.querySelector("nav");if(!nav)return;
+    const bs=[...nav.querySelectorAll("button[data-s]")];bs.forEach((b)=>b.classList.remove("mobx"));
+    const more0=nav.querySelector("#mobmore");if(more0)more0.remove();
+    const sh=mk("mobsheetB");
+    if(!ph()){document.documentElement.classList.remove("mobnav");sh.hidden=true;return}
+    const vis=bs.filter((b)=>b.offsetParent!==null||getComputedStyle(b).display!=="none");
+    if(vis.length<=5){document.documentElement.classList.remove("mobnav");return}
+    document.documentElement.classList.add("mobnav");
+    const act=vis.find((b)=>b.classList.contains("on"));let keep=vis.slice(0,4);if(act&&keep.indexOf(act)<0)keep[3]=act;
+    const rest=vis.filter((b)=>keep.indexOf(b)<0);rest.forEach((b)=>b.classList.add("mobx"));
+    const m=document.createElement("button");m.type="button";m.id="mobmore";m.innerHTML='<span class="em">⋯</span><span>Mehr</span>';
+    nav.appendChild(m);
+    sh.innerHTML=rest.map((b)=>'<button type="button" data-mb="'+b.dataset.s+'">'+(b.innerText||b.textContent).trim().replace(/\s+/g," ")+'</button>').join("");
+    m.onclick=(e)=>{e.stopPropagation();sh.hidden=!sh.hidden};
+    sh.onclick=(e)=>{const x=e.target.closest("[data-mb]");if(!x)return;sh.hidden=true;const b=nav.querySelector('button[data-s="'+x.dataset.mb+'"]');if(b)b.click()};
+  }
+  function top(){
+    const nav=q("#vnav");if(!nav)return;
+    const bs=[...nav.querySelectorAll("#vmenu button[data-m]")];bs.forEach((b)=>b.classList.remove("mobx"));
+    const more0=nav.querySelector("#vmore");if(more0)more0.remove();
+    const sh=mk("mobsheetT");
+    if(!ph()||bs.length<=4){sh.hidden=true;return}
+    const act=bs.find((b)=>b.classList.contains("on"));let keep=bs.slice(0,3);if(act&&keep.indexOf(act)<0)keep[2]=act;
+    const rest=bs.filter((b)=>keep.indexOf(b)<0);rest.forEach((b)=>b.classList.add("mobx"));
+    const m=document.createElement("button");m.type="button";m.id="vmore";m.textContent="⋯";m.setAttribute("aria-label","Weitere Menüpunkte");m.style.cssText="flex:none;border:0;background:none;color:var(--mu);font:inherit;font-size:18px;padding:5px 14px;border-radius:99px;cursor:pointer";
+    q(".vpill",nav).appendChild(m);
+    sh.innerHTML=rest.map((b)=>'<button type="button" data-mt="'+b.dataset.m+'">'+b.textContent+'</button>').join("");
+    m.onclick=(e)=>{e.stopPropagation();sh.hidden=!sh.hidden};
+    sh.onclick=(e)=>{const x=e.target.closest("[data-mt]");if(x){sh.hidden=true;V.go(x.dataset.mt)}};
+  }
+  const tick=()=>{try{
+    const nav=document.querySelector("body > .app > nav")||document.querySelector("nav");
+    const sb=ph()+"|"+(nav?[...nav.querySelectorAll("button[data-s]:not(.mobx)")].map((b)=>b.dataset.s+(b.classList.contains("on")?"*":"")).join(","):"")+"|"+(nav?nav.querySelectorAll("button.mobx").length:0);
+    const vm=q("#vmenu");const st=ph()+"|"+(vm?[...vm.querySelectorAll("button[data-m]")].map((b)=>b.dataset.m+(b.classList.contains("on")?"*":"")).join(","):"");
+    if(sb!==sigB){bottom();sigB=ph()+"|"+(nav?[...nav.querySelectorAll("button[data-s]:not(.mobx)")].map((b)=>b.dataset.s+(b.classList.contains("on")?"*":"")).join(","):"")+"|"+(nav?nav.querySelectorAll("button.mobx").length:0)}
+    if(st!==sigT){top();sigT=ph()+"|"+(vm?[...vm.querySelectorAll("button[data-m]")].map((b)=>b.dataset.m+(b.classList.contains("on")?"*":"")).join(","):"")}
+  }catch(e){}};
+  W.addEventListener("resize",()=>{sigB=sigT="";tick()});
+  document.addEventListener("click",(e)=>{if(!e.target.closest(".mobsheet,#mobmore,#vmore"))document.querySelectorAll(".mobsheet").forEach((x)=>x.hidden=true)});
+  setInterval(tick,600);setTimeout(tick,300);
+})();
 function refreshNav(){
   const nav=q("#vnav");if(!nav)return;
   const cur=V.cur?(menuOf(V.cur)||{}).id:"mannschaft";
@@ -5762,7 +5812,7 @@ const timeOk=(a,b)=>V.min(a)!=null&&V.min(b)!=null&&V.min(a)<V.min(b);
 const dateOk=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||"");
 
 /* ============ Platzbelegung ============ */
-let pAusSrc="",pGroup=null,pDay=null,pEdit=null,pEditDay=null,pF=null,pMsg="",pMsgK="ok",pMode="woche",pFilt="plaetze",pSel=new Set();
+let pAusSrc="",pGroup=null,pDay=null,pEdit=null,pEditDay=null,pF=null,pMsg="",pMsgK="ok",pMode="woche",pFilt="plaetze",pSel=new Set(),pWd=null;
 const PXM=1.05;
 const planOn=(s,date)=>{if(!s.pid)return true;const P=V.plan||{};if(P.aktiv)return s.pid===P.aktiv;const pl=(P.plans||[]).find((x)=>x.id===s.pid);return !pl||((!pl.von||date>=pl.von)&&(!pl.bis||date<=pl.bis))};
 const sameK=(a,b)=>!a.datum&&!b.datum&&a.tid===b.tid&&a.art===b.art&&a.platz===b.platz&&a.von===b.von&&a.bis===b.bis&&(a.txt||"")===(b.txt||"")&&(a.pid||"")===(b.pid||"")&&JSON.stringify(a.teil||[])===JSON.stringify(b.teil||[])&&!!a.teilen===!!b.teilen&&(a.gv||"")===(b.gv||"")&&(a.gb||"")===(b.gb||"");
@@ -5821,8 +5871,8 @@ function areaHdr(M){
   return h;
 }
 function gridHtml(M,o){
-  const H=(M.t-M.f)*PXM,minW=(o.tag?70:38)*M.NC;
-  let g='<div class="tw"><div class="vgrid" style="grid-template-columns:48px repeat('+M.days.length+',minmax('+minW+'px,1fr))"><div class="vgh"></div>';
+  const ph=window.innerWidth<700,H=(M.t-M.f)*PXM,minW=(ph?(o.tag?34:30):(o.tag?70:38))*M.NC;
+  let g='<div class="tw"><div class="vgrid" style="grid-template-columns:'+(ph?40:48)+'px repeat('+M.days.length+',minmax('+minW+'px,1fr))"><div class="vgh"></div>';
   g+=M.days.map((d)=>'<div class="vgh'+(o.mark&&d.date===V.today()?" today":"")+'">'+E(d.label)+areaHdr(M)+'</div>').join("");
   let lines="";for(let m=M.f;m<=M.t;m+=60)lines+='<div class="vgl" style="top:'+((m-M.f)*PXM)+'px">'+V.hm(m)+'</div>';
   g+='<div class="vgc" style="height:'+H+'px;border-left:0">'+lines+'</div>';
@@ -5861,7 +5911,10 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
   h+='<div class="vrow"><span class="note">Anzeigen:</span>'+[["alle","Alles"],["plaetze","Alle Plätze"],["hallen","Hallen"]].map(([k,n])=>'<span class="vch'+(!pSel.size&&pFilt===k?" on":"")+'" data-pf="'+k+'" role="button" tabindex="0">'+E(n)+'</span>').join("")+'<span class="note" style="margin-left:6px">oder einzeln (mehrere möglich):</span>'+PL0.map((p)=>'<span class="vch'+(pSel.has(p.id)?" on":"")+'" data-pp="'+E(p.id)+'" role="button" tabindex="0">'+E(p.name)+'</span>').join("")+'</div>';
   if(!PL0.length)h+='<div class="note" style="padding:10px 0">Es sind noch keine Plätze oder Hallen angelegt.'+(ed?" Lege sie unten unter „Plätze und Hallen“ an.":"")+'</div>';
   else{
-    const M=pMode==="woche"?buildModel(weekDaysDef(),visP,false):buildModel([{label:WDL[V.dow(day)-1]+", "+V.fd(day).replace(/^\S+\s/,""),date:day,slots:dayAll.filter((s)=>platzOn(pById(s.platz),day))}],visP,true);
+    const phone=window.innerWidth<700;if(pWd===null)pWd=phone?Math.min(4,Math.max(0,V.dow(V.today())-1)):-1;
+    if(pMode==="woche"&&phone)h+='<div class="vrow" id="pwd" style="gap:6px;flex-wrap:nowrap;overflow-x:auto">'+[0,1,2,3,4].map((i)=>'<button class="btn'+(pWd===i?" on":"")+'" data-wd="'+i+'" style="flex:none;min-width:46px;'+(pWd===i?"background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600":"")+'">'+V.wt[i]+'</button>').join("")+'<button class="btn'+(pWd<0?" on":"")+'" data-wd="-1" style="flex:none;'+(pWd<0?"background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600":"")+'">Woche</button></div>';
+    const wdays=()=>{const w=weekDaysDef();return(phone&&pWd>=0)?[w[pWd]]:w};
+    const M=pMode==="woche"?buildModel(wdays(),visP,false):buildModel([{label:WDL[V.dow(day)-1]+", "+V.fd(day).replace(/^\S+\s/,""),date:day,slots:dayAll.filter((s)=>platzOn(pById(s.platz),day))}],visP,true);
     if(!M.groups.length)h+='<div class="note" style="padding:10px 0">'+(pMode==="woche"?"In der Standardwoche ist noch nichts eingetragen.":"An diesem Tag ist nichts eingetragen.")+(ed?" Unten kannst du Einträge hinzufügen.":"")+'</div>';
     else{
       if(M.teams.length)h+='<div class="vrow" style="gap:4px"><span class="note">Mannschaften:</span>'+M.teams.map((t)=>{const c=V.col(t);return '<span class="vch" style="background:'+c.bg+';border-color:'+c.bd+';cursor:default">'+E(teamName(t))+'</span>'}).join("")+'</div>';
@@ -5918,6 +5971,7 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
   el.onclick=async(e)=>{
     const t=e.target;
     const w=t.closest("[data-w]");if(w){const n=+w.dataset.w;pDay=n===0?V.today():V.add(pDay||V.today(),n);redraw();return}
+    const wd=t.closest("[data-wd]");if(wd){pWd=+wd.dataset.wd;redraw();return}
     const pm=t.closest("[data-pm]");if(pm){pMode=pm.dataset.pm;redraw();return}
     const pf=t.closest("[data-pf]");if(pf){pFilt=pf.dataset.pf;pSel=new Set();redraw();return}
     const pp1=t.closest("[data-pp]");if(pp1){const id=pp1.dataset.pp;if(pSel.has(id))pSel.delete(id);else pSel.add(id);redraw();return}
