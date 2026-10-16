@@ -102,6 +102,39 @@ TEAMS.forEach(([tid,name],ti)=>{
   put(tid+"__config/main",{saison:"2026/27",mannschaft:name,kontakte:[{titel:"Trainerteam",zeilen:"Max Mustermann · 0123 456789"}],zaehlendeAbwesenheiten:{e:true,u:true,v:false,t:false},spielformen:[{id:form,name:nF+" gegen "+nF,spieler:nF}],staff:[{id:"s1",name:"Max Mustermann",rolle:"Trainer",owner:true}]});
 });
 
+/* ---------- FUSSBALL.DE (erfundene Daten: Spielplan, Tabelle, Abweichungen zum Ausprobieren) ---------- */
+{
+  const NAMES=["SV Musterstadt","FC Beispieldorf","TuS Platzhausen","SC Testfeld","Spvgg Demotal","BV Probeheim","VfL Zufallsburg","SG Loremberg"];
+  const fdid=(t)=>"DEMO"+t.toUpperCase()+"00000000000000000000";
+  const gamesOf=(tid)=>[...store.entries()].filter(([k])=>k.indexOf(tid+"__games/")===0).map(([,v])=>v).sort((a,b)=>a.datum.localeCompare(b.datum));
+  const idx={v:1,stand:new Date(Date.now()-2*36e5).toISOString(),aktiv:true,teams:{}};
+  [["d1",true,3],["d2",true,5],["g1",false,0]].forEach(([tid,liga,platz])=>{
+    const cfg=store.get(tid+"__config/main");
+    cfg.fd={team:"https://www.fussball.de/mannschaft/demo/-/saison/2627/team-id/"+fdid(tid)+"#!/",liga:liga?"https://www.fussball.de/spieltagsuebersicht/demo/-/staffel/DEMOSTAFFEL#!/":""};put(tid+"__config/main",cfg);
+    const own="TuS Musterstadt "+tid.toUpperCase(),gs=gamesOf(tid),sp=[],fut=gs.filter((g)=>g.datum>=TODAY);
+    gs.forEach((g,i)=>{
+      const past=g.datum<TODAY,h=g.ha==="H",f={id:"DG"+tid+i,d:g.datum,z:"10:30",wett:liga?"Kreisliga B D-Junioren":"Spielfest",alt:"D-Junioren",heim:h?own:g.gegner,gast:h?g.gegner:own,st:"",ht:null,gt:null,ort:"Sportanlage Musterstadt, Beispielweg 1, 12345 Musterstadt",ortUrl:"",h};
+      if(past){f.ht=h?g.tore:g.gt;f.gt=h?g.gt:g.tore;g.fd=f.id}
+      else{const k=fut.indexOf(g);
+        if(k===0){g.fd=f.id;f.z="11:00"}                 /* verknüpft, Anstoß wird still ergänzt */
+        else if(k===1){/* unverknüpft, gleicher Tag und Gegner: wird still verbunden */}
+        else if(k===2&&tid==="d1"){g.fd=f.id;f.d=addD(g.datum,1);f.z="11:00"}   /* verlegt: App fragt */
+        else if(k===3&&tid==="d1"){f.heim=h?own:NAMES[5];f.gast=h?NAMES[5]:own}  /* gleicher Tag, anderer Gegner: App fragt */}
+      put(tid+"__games/"+g.id,g);sp.push(f)});
+    if(tid==="d1"){const last=fut[fut.length-1],d=addD(last?last.datum:TODAY,14);sp.push({id:"DG"+tid+"neu",d,z:"10:30",wett:"Kreisliga B D-Junioren",alt:"D-Junioren",heim:NAMES[3],gast:own,st:"",ht:null,gt:null,ort:"Sportplatz Testfeld, Probeweg 2",ortUrl:"",h:false});
+      sp.push({id:"DG"+tid+"fr",d:addD(d,7),z:"11:00",wett:"Freundschaftsspiele",alt:"D-Junioren",heim:own,gast:NAMES[6],st:"",ht:null,gt:null,ort:"",ortUrl:"",h:true})}
+    sp.sort((a,b)=>(a.d+a.z).localeCompare(b.d+b.z));
+    const opps=NAMES.filter((n)=>n!==NAMES[0]).slice(0,7),tab=[own].concat(opps).map((t,i)=>({team:t,sp:6,s:0,u:0,n:0,tore:"",diff:0,pkt:0,auf:false,ab:false}));
+    const order=tab.slice(1);order.splice(platz-1,0,tab[0]);
+    const T=liga?order.map((r,i)=>{const w=Math.max(0,6-i),u=i%3===0?1:0,l=6-w-u;return{p:i+1,team:r.team,sp:6,s:w,u,n:Math.max(0,l),tore:(w*2+u+3)+":"+(l*2+u+2),diff:(w*2+u+3)-(l*2+u+2),pkt:w*3+u,auf:i===0,ab:i===order.length-1}}):[];
+    put("fussball/"+fdid(tid),{v:1,id:fdid(tid),tids:[tid],abgeholt:idx.stand,geaendert:idx.stand,fehler:null,eigen:own,spiele:sp,tabelle:T,tabelleStand:idx.stand,hash:"demo"+tid});
+    idx.teams[fdid(tid)]={tids:[tid],ok:true,fehler:null,abgeholt:idx.stand,geaendert:idx.stand,nSpiele:sp.length,nTabelle:T.length,eigen:own}});
+  put("fussball/_index",idx);
+  /* Kennzahlen: nächste Spiele (mit Ort) für Übersicht und Wochenende */
+  TEAMS.forEach(([tid])=>{const vs=store.get(tid+"__vstat/main");if(!vs)return;
+    vs.naechste=gamesOf(tid).filter((g)=>g.datum>=TODAY).slice(0,8).map((g)=>({d:g.datum,z:"10:30",g:g.gegner,h:g.ha,o:"Sportanlage Musterstadt",a:"Meisterschaft"}));put(tid+"__vstat/main",vs)});
+}
+
 /* ---------- Verein, Rollen, Personen ---------- */
 put("verein/main",{name:"TuS Musterstadt (Demo)",saison:"2026/27",teams:TEAMS.map(([id,name,ak])=>({id,name,ak,aktiv:true})),arten:ARTEN,bereiche:[{id:"mini",name:"Minis bis U13",teams:["g1","f1","f2","e1","e2","d1","d2"]},{id:"gross",name:"U14 bis U19",teams:["c1","b1","a1"]}],settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},kontakteVerein:[]});
 const memDoc=(email,name,art,teams)=>{const a=ARTEN.find((x)=>x.id===art),all=TEAMS.map((t)=>t[0]),tl=teams==="*"?all:teams,tr={};tl.forEach((t)=>{tr[t]=a.rechte.slice()});return{email,name,rolle:"team",zu:[{art,teams:teams==="*"?[]:tl,...(teams==="*"?{alle:true}:{})}],tr,g:a.gl.slice(),kader:{}}};
