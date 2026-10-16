@@ -56,7 +56,7 @@ TEAMS.forEach(([tid,name],ti)=>{
   const ids=pl.map((p)=>p.id);
   [-35,-28,-21,-14,-7].forEach((off,i)=>{const d=addD(TODAY,off),sp={};ids.forEach((id)=>{const r=R();sp[id]=r<.75?"x":r<.85?"e":r<.92?"u":"v"});put(tid+"__trainings/t"+i,{id:"t"+i,datum:d,spieler:sp})});
   const gl=[];
-  [-40,-26,-12,-5,4,11,25].forEach((off,i)=>{let d=addD(TODAY,off);while(dow(d)<6)d=addD(d,1);const past=d<TODAY,sp={};
+  [-54,-40,-26,-12,-5,4,11,25].forEach((off,i)=>{let d=addD(TODAY,off);while(dow(d)<6)d=addD(d,1);const past=d<TODAY,sp={};
     ids.forEach((id,j)=>{const r=R();sp[id]=past&&r<.7?{status:"k",minuten:Math.round(30*(1+R()))}:{status:past?"t":"n",minuten:0}});
     const to=past?pick([0,1,2,3,4]):null,gg=past?pick([0,1,2,3]):null;if(past)gl.push([d,to,gg]);
     put(tid+"__games/g"+(i+1),{id:"g"+(i+1),nr:i+1,datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:i%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:past?sp:{}})});
@@ -119,7 +119,7 @@ TEAMS.forEach(([tid,name],ti)=>{
         if(k===0){g.fd=f.id;f.z="11:00"}                 /* verknüpft, Anstoß wird still ergänzt */
         else if(k===1){/* unverknüpft, gleicher Tag und Gegner: wird still verbunden */}
         else if(k===2&&tid==="d1"){g.fd=f.id;f.d=addD(g.datum,1);f.z="11:00"}   /* verlegt: App fragt */
-        else if(k===3&&tid==="d1"){f.heim=h?own:NAMES[5];f.gast=h?NAMES[5]:own}  /* gleicher Tag, anderer Gegner: App fragt */}
+        else if(k===3&&tid==="d1"){const o=NAMES.find((n)=>n!==g.gegner&&n!==NAMES[0]&&n!==own);f.heim=h?own:o;f.gast=h?o:own}  /* gleicher Tag, anderer Gegner: App fragt */}
       put(tid+"__games/"+g.id,g);sp.push(f)});
     if(tid==="d1"){const last=fut[fut.length-1],d=addD(last?last.datum:TODAY,14);sp.push({id:"DG"+tid+"neu",d,z:"10:30",wett:"Kreisliga B D-Junioren",alt:"D-Junioren",heim:NAMES[3],gast:own,st:"",ht:null,gt:null,ort:"Sportplatz Testfeld, Probeweg 2",ortUrl:"",h:false});
       sp.push({id:"DG"+tid+"fr",d:addD(d,7),z:"11:00",wett:"Freundschaftsspiele",alt:"D-Junioren",heim:own,gast:NAMES[6],st:"",ht:null,gt:null,ort:"",ortUrl:"",h:true})}
@@ -130,6 +130,9 @@ TEAMS.forEach(([tid,name],ti)=>{
     put("fussball/"+fdid(tid),{v:1,id:fdid(tid),tids:[tid],abgeholt:idx.stand,geaendert:idx.stand,fehler:null,eigen:own,spiele:sp,tabelle:T,tabelleStand:idx.stand,hash:"demo"+tid});
     idx.teams[fdid(tid)]={tids:[tid],ok:true,fehler:null,abgeholt:idx.stand,geaendert:idx.stand,nSpiele:sp.length,nTabelle:T.length,eigen:own}});
   put("fussball/_index",idx);
+  /* Nutzungsstufen (Demo): D1 voll wie bisher, D2 und E1 Standard, E2 Basis */
+  [["d2","standard"],["e1","standard"],["e2","basis"]].forEach(([tid,st])=>{const c=store.get(tid+"__config/main");if(c){c.stufe=st;put(tid+"__config/main",c)}const v=store.get(tid+"__vstat/main");if(v){v.st=st;put(tid+"__vstat/main",v)}});
+
   /* Kennzahlen: nächste Spiele (mit Ort) für Übersicht und Wochenende */
   TEAMS.forEach(([tid])=>{const vs=store.get(tid+"__vstat/main");if(!vs)return;
     vs.naechste=gamesOf(tid).filter((g)=>g.datum>=TODAY).slice(0,8).map((g)=>({d:g.datum,z:"10:30",g:g.gegner,h:g.ha,o:"Sportanlage Musterstadt",a:"Meisterschaft"}));put(tid+"__vstat/main",vs)});
