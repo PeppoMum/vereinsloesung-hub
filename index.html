@@ -100,7 +100,7 @@ body.bgimg main>section>.kpis{background:none}body.bgimg .hl{display:none}body.b
 @media(max-width:600px){.vh{flex-wrap:wrap;gap:8px 10px}.vh>span{display:none}.vh>div{flex:1 1 calc(100% - 60px);min-width:0}.vh select{flex:1 1 calc(50% - 6px);min-width:0;width:auto}}#qk{grid-template-columns:repeat(4,1fr)}@media(max-width:760px){#qk{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){nav{-webkit-overflow-scrolling:touch;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button[data-s="h"]{position:sticky;left:0;z-index:3;background:var(--card);box-shadow:8px 0 8px -6px rgba(0,0,0,.25)}}
 .etb{margin:0 0 14px}.etb button{flex:1;min-width:0}.etp>.card{margin:0 0 12px!important}.etp>.gr{margin:0 0 12px}.coonly{display:none}body.co .coonly{display:inline}body.co .ownonly{display:none}
-body.co #etb,body.co #etp-m,body.co #etp-p,body.co #etp-s{display:none!important}body.co #etp-l{display:block!important}body.co #etp-l>.card:not(#lkh):not(#ktc){display:none}
+body.co #etb,body.co #etp-m,body.co #etp-p,body.co #etp-s{display:none!important}body.co #etp-l{display:block!important}body.co #etp-l>.card:not(#lkh):not(#ktc):not(#swc){display:none}
 nav button[hidden]{display:none!important}
 body.scoutonly nav button:not([data-s="k"]){display:none!important}body.scoutonly #lkw,body.scoutonly #bkw,body.scoutonly #ccw{display:none!important}
 body.kaus nav button[data-s="k"],body.kaus #hn [data-go="k"],body.kaus #k{display:none!important}
@@ -356,9 +356,10 @@ nav button .em{display:inline-flex;justify-content:center;align-items:center}
 <div class="card" id="lkco" style="margin-top:12px"><h3>Trainer-Links (Co-Trainer)</h3><p class="note" style="margin-top:0">Für Trainer und Verantwortliche aus den Stammdaten (außer dem Besitzer). Sie sehen und bearbeiten alles, aber nicht die Einstellungen. <b>Wichtig:</b> Bearbeiten geht nur mit Claude-Konto, und die Person muss unter „Teilen“ der Seite als Mitwirkende eingeladen sein; der Link allein reicht nicht. Ein ausgeschalteter Link sperrt den Zugang über die App sofort (ohne „Aktualisieren“).</p><div class="tw"><table id="lkct"></table></div></div>
 <div class="card" id="lkx" style="margin-top:12px"><h3>Externe Links (nur ansehen)</h3><p class="note" style="margin-top:0">Für Personen außerhalb des Teams. „Vollansicht“ und „Struktur“ zeigen die komplette App (ohne Änderungen). <b>„Teamlink“</b> zeigt ausschließlich den Terminplan (Monats- und Wochenplan) und lässt sich ohne Anmeldung öffnen (der A4-Download steht nur den Trainern zur Verfügung) – Spielerprofile, Notizen und To-Dos sind darin nicht enthalten. <b>„Demo“</b> zeigt die ganze App samt A4-Export-Knöpfen mit komplett zufällig erzeugten Daten (Lorem ipsum) – ohne Anmeldung, nichts davon ist echt. Ein-/Ausschalten gilt nach wenigen Sekunden, neue Daten werden etwa alle 6 Stunden übernommen. <span id="lkxadm" class="note" hidden><b>Vollansicht, Struktur und Demo kann nur der Administrator anlegen</b> (Verein → Einstellungen).</span></p><div class="tw"><table id="lkxt"></table></div></div>
 
+<div class="card" id="swc" style="margin-top:12px"></div>
 </div>
 <div class="etp" id="etp-s" hidden>
-<div class="card" id="bkc" style="margin-top:12px"></div><div class="card" style="margin-top:12px"><h3>Datensicherung</h3><p class="note" style="margin-top:0">Lädt alle Daten als Datei herunter. Die Excel-Datei enthält Saisonübersicht, Stammdaten, Spiele, Training und Notizen. Die JSON-Datei ist die vollständige Sicherung inklusive Logo und Fotos.</p><div class="bar" style="margin:0"><button class="btn" id="bxl">⬇ Excel-Datei (.xlsx)</button><button class="btn" id="bjs">⬇ Vollständige Sicherung (.json)</button><button class="btn" id="bre">⬆ Sicherung einspielen …</button><input type="file" id="brf" accept=".json,application/json" hidden></div><div class="bar" style="margin:10px 0 0"><span class="note" id="brm"></span><button class="btn" id="brc" hidden>Jetzt einspielen</button></div></div><div class="card" id="arc" style="margin-top:12px"></div><div class="card" id="swc" style="margin-top:12px;border-color:var(--r)"></div>
+<div class="card" id="bkc" style="margin-top:12px"></div><div class="card" style="margin-top:12px"><h3>Datensicherung</h3><p class="note" style="margin-top:0">Lädt alle Daten als Datei herunter. Die Excel-Datei enthält Saisonübersicht, Stammdaten, Spiele, Training und Notizen. Die JSON-Datei ist die vollständige Sicherung inklusive Logo und Fotos.</p><div class="bar" style="margin:0"><button class="btn" id="bxl">⬇ Excel-Datei (.xlsx)</button><button class="btn" id="bjs">⬇ Vollständige Sicherung (.json)</button><button class="btn" id="bre">⬆ Sicherung einspielen …</button><input type="file" id="brf" accept=".json,application/json" hidden></div><div class="bar" style="margin:10px 0 0"><span class="note" id="brm"></span><button class="btn" id="brc" hidden>Jetzt einspielen</button></div></div><div class="card" id="arc" style="margin-top:12px"></div>
 </div></section>
 </main></div>
 <script type="application/json" id="snap">{}</script><script type="text/plain" id="src"></script>
@@ -2569,11 +2570,12 @@ function renderStart(){
     gEnd=(g)=>{const ev=(D.events||[]).find((e)=>e.spielId===g.id)||(D.events||[]).find((e)=>e.datum===g.datum&&isGameTyp(e.typ)&&hmM(e.beginn)!=null),k=ev?hmM(ev.beginn):null;return k==null?null:k+150};
   {const h=$("#htd");if(h){const tile2=(...a)=>tile(...a).replace(/class="card kpi( hasx)?"/,'class="card kpi htile"'),tile=(l,v,n,x,w)=>'<div class="card kpi'+(x?" hasx":"")+'"'+' style="border-color:var(--ac);margin-bottom:8px"><span style="display:block">'+esc(l)+"</span><b>"+esc(v)+'</b><span class="note" style="display:block">'+esc(n)+"</span>"+(x||"")+"</div>",T=[],trX=(e)=>{const r=(k,v,b)=>v?'<div style="text-align:left;margin-top:8px;font-size:14px;line-height:1.4;white-space:pre-line">'+(k?'<span class="note" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em">'+k+"</span>":"")+(b?'<b style="font-size:17px;line-height:1.3;display:block;padding:2px 0">':"")+esc(v)+(b?"</b>":"")+"</div>":"",c=e.ctask?'<div style="text-align:left;margin-top:8px;font-size:14px;line-height:1.4;white-space:pre-line;color:var(--ac)">'+esc(e.ctask)+"</div>":"";return'<div class="trx" style="margin-top:10px;padding-top:2px;border-top:1px solid var(--bd,rgba(128,128,128,.25))"><div class="trl">Schwerpunkt</div>'+r("",e.schwerpunkt,1)+r("",e.detail)+c+"</div>"};
     if(trT&&alive(trEnd))T.push(tile("Training heute"+(trT.beginn?" · "+trT.beginn+" Uhr":""),aT?aT.f+" + "+aT.g:"–",aT?"Feldspieler + Torhüter · "+(aT.k?aT.k+" Kreisauswahl":"keine Kreisauswahl")+" · "+(aT.tot-aT.c)+" nicht dabei"+(aT.tot<act.length?" · "+(act.length-aT.tot)+" ohne Eintrag":""):"Anwesenheit noch nicht eingetragen",trT.schwerpunkt||trT.detail||trT.ctask?trX(trT):"",t));
+    const kabTxt=(g)=>{try{const k=window.__V&&window.__V.kabinen&&window.__V.kabinen(window.__TID,g.datum);return k&&(k.own||k.opp)?" · "+[k.own?"deine Kabine: "+k.own:"",k.opp?"Gegner: "+k.opp:""].filter(Boolean).join(", "):""}catch(e){return""}};
     D.spiele.filter((g)=>g.datum===t&&alive(gEnd(g))).sort((x,y)=>x.nr-y.nr).forEach((g)=>{const E=act.filter((p)=>g.spieler&&g.spieler[p.id]),ka=E.filter((p)=>g.spieler[p.id].status==="k"),tw=ka.filter((p)=>twOf(p)).length,nd=E.length-ka.length;
-      T.push(tile2("Spiel heute · "+(g.art||"Spiel")+(g.gegner?" gegen "+g.gegner:""),E.length?(ka.length-tw)+" + "+tw:"–",E.length?"Feldspieler + Torhüter im Kader · "+nd+" nicht dabei"+(E.length<act.length?" · "+(act.length-E.length)+" ohne Eintrag":""):"Kader noch nicht eingetragen"))});
-    D.spiele.filter((g)=>g.datum===t).sort((x,y)=>x.nr-y.nr).forEach((g)=>{const ev=(D.events||[]).find((e)=>e.spielId===g.id)||(D.events||[]).find((e)=>e.datum===g.datum&&isGameTyp(e.typ)&&hmM(e.beginn)!=null),k=ev?hmM(ev.beginn):null;const run0=g.live&&g.live.clk&&g.live.clk.run;if(k==null){T.push(tile2("Spieltag · Spiel "+g.nr+(g.gegner?" gegen "+g.gegner:""),"Heute",run0?"Die Uhr läuft – hier geht es zurück zur Erfassung":"Aufstellung, Ansprache und Skizzen vorbereiten, Spielzeit live erfassen",'<div class="hbtn"><button class="btn" data-lv="'+g.id+'" style="background:var(--ac);color:#fff;border-color:var(--ac)">🏟 '+(run0?"Zurück zum Spieltag":"Zum Spieltag")+"</button>"+'<button class="btn" data-lv="'+g.id+'" data-lvt="l">⏱ Live-Spielzeit</button></div>'));return}const n=nowM();
+      T.push(tile2("Spiel heute · "+(g.art||"Spiel")+(g.gegner?" gegen "+g.gegner:""),E.length?(ka.length-tw)+" + "+tw:"–",(E.length?"Feldspieler + Torhüter im Kader · "+nd+" nicht dabei"+(E.length<act.length?" · "+(act.length-E.length)+" ohne Eintrag":""):"Kader noch nicht eingetragen")+kabTxt(g)))});
+    D.spiele.filter((g)=>g.datum===t).sort((x,y)=>x.nr-y.nr).forEach((g)=>{const ev=(D.events||[]).find((e)=>e.spielId===g.id)||(D.events||[]).find((e)=>e.datum===g.datum&&isGameTyp(e.typ)&&hmM(e.beginn)!=null),k=ev?hmM(ev.beginn):null;const run0=g.live&&g.live.clk&&g.live.clk.run;if(k==null){T.push(tile2("Spieltag · Spiel "+g.nr+(g.gegner?" gegen "+g.gegner:""),"Heute",(run0?"Die Uhr läuft – hier geht es zurück zur Erfassung":"Aufstellung, Ansprache und Skizzen vorbereiten, Spielzeit live erfassen")+kabTxt(g),'<div class="hbtn"><button class="btn" data-lv="'+g.id+'" style="background:var(--ac);color:#fff;border-color:var(--ac)">🏟 '+(run0?"Zurück zum Spieltag":"Zum Spieltag")+"</button>"+'<button class="btn" data-lv="'+g.id+'" data-lvt="l">⏱ Live-Spielzeit</button></div>'));return}const n=nowM();
       if(n<k-120){nextHide=nextHide==null?k-120-n:Math.min(nextHide,k-120-n);return}if(n>k+90)return;nextHide=nextHide==null?k+90-n:Math.min(nextHide,k+90-n);
-      const run=g.live&&g.live.clk&&g.live.clk.run;T.push(tile2("Spieltag · Spiel "+g.nr+(g.gegner?" gegen "+g.gegner:""),"Anstoß "+ev.beginn+" Uhr",run?"Die Uhr läuft – hier geht es zurück zur Erfassung":(n<k?"Anstoß in "+(Math.ceil(k-n)>=60?Math.floor(Math.ceil(k-n)/60)+" Std. "+Math.ceil(k-n)%60+" Min.":Math.ceil(k-n)+" Min.")+" · Aufstellung, Ansprache und Skizzen vorbereiten":"Aufstellung, Wechsel und Minuten live erfassen"),'<div class="hbtn"><button class="btn" data-lv="'+g.id+'" style="background:var(--ac);color:#fff;border-color:var(--ac)">🏟 '+(run?"Zurück zum Spieltag":"Zum Spieltag")+"</button>"+'<button class="btn" data-lv="'+g.id+'" data-lvt="l">⏱ Live-Spielzeit</button></div>'))});
+      const run=g.live&&g.live.clk&&g.live.clk.run;T.push(tile2("Spieltag · Spiel "+g.nr+(g.gegner?" gegen "+g.gegner:""),"Anstoß "+ev.beginn+" Uhr",(run?"Die Uhr läuft – hier geht es zurück zur Erfassung":(n<k?"Anstoß in "+(Math.ceil(k-n)>=60?Math.floor(Math.ceil(k-n)/60)+" Std. "+Math.ceil(k-n)%60+" Min.":Math.ceil(k-n)+" Min.")+" · Aufstellung, Ansprache und Skizzen vorbereiten":"Aufstellung, Wechsel und Minuten live erfassen"))+kabTxt(g),'<div class="hbtn"><button class="btn" data-lv="'+g.id+'" style="background:var(--ac);color:#fff;border-color:var(--ac)">🏟 '+(run?"Zurück zum Spieltag":"Zum Spieltag")+"</button>"+'<button class="btn" data-lv="'+g.id+'" data-lvt="l">⏱ Live-Spielzeit</button></div>'))});
     h.innerHTML=T.join("")}}
   clearTimeout(window.__htdT);if(nextHide!=null)window.__htdT=setTimeout(()=>{typeof renderStart==="function"&&renderStart()},Math.max(1000,Math.ceil(nextHide*60000)+1000));
   $("#hk").innerHTML=K.map((k)=>'<div class="card kpi"'+(k[1]==="Nächstes Spiel"&&nxt&&!window.__RO?' data-sp="'+nxt.id+'" style="cursor:pointer" title="Antippen: Spielvorbereitung (A4)"':(k[3]?' style="border-color:var(--ac)"':""))+'><span style="display:block">'+esc(k[1])+"</span><b"+(String(k[0]).length>10?' style="font-size:16px;line-height:1.3;padding:3px 0"':"")+">"+esc(k[0])+'</b><span class="note" style="display:block">'+esc(k[2])+"</span>"+(k[1]==="Nächstes Spiel"&&nxt&&!window.__RO?'<span class="note" style="display:block;font-size:11px">📄 Antippen: Spielvorbereitung (A4)</span>':"")+"</div>").join("");
@@ -4378,23 +4380,40 @@ async function viewArch(id){
   }catch(e){box.innerHTML='<p class="note warn">Das Archiv konnte nicht geladen werden.</p>'}
 }
 
-/* ---- Saisonwechsel ---- */
-const nextMann=()=>{const m=String(mann()).match(/^(.*?)(\d+)(.*)$/);return m?m[1]+(+m[2]+1)+m[3]:mann()};
+/* ---- Saisonwechsel: Trainer bereiten ihre Mannschaft vor, die Leitung vollzieht den Wechsel für alle ---- */
+const can=()=>!window.__VIEWER&&(window.__ROLE==="voll"||BK.ok===true);
+const akNum=(s)=>{const m=/^U(\d{1,2})$/i.exec(String(s||"").trim());return m?+m[1]:0};
+const seasonY=(s)=>+String(s||"").slice(0,4)||0;
+const VS=()=>(window.__VEREIN||{}).sw||{};
+const vz=()=>VS().vollzug||null;
+const myTid=()=>window.__TID||"";
+const vzMine=()=>{const v=vz();return v&&(v.teams||[]).indexOf(myTid())>=0?v:null};
 const K=()=>window.__kader||null,KDs=()=>(K()&&K().KD)||{plans:[],pers:[]};
+/* Altersklasse der Mannschaft in der neuen Saison: vor dem Vollzug laut Plan der Leitung, danach die aktuelle */
+function akNeu(){
+  const tm=window.__TEAM||{};if(vzMine())return tm.ak||"";
+  const p=(VS().ak||{})[tm.id];if(p!==undefined&&p!=="")return p;
+  const n=akNum(tm.ak);return n&&n<19?"U"+(n+1):(tm.ak||"")}
+/* darf der Spieler in der neuen Altersklasse noch spielen? Jahrgang >= Saisonbeginn - Altersklasse + 1 (U19 in 2027/28: ab Jahrgang 2009) */
+function elig(p,N,Y){const g=+String(p.geburtsdatum||"").slice(0,4);if(!g||!N||!Y)return null;return g>=Y-N+1}
+function wzSaison(){const v=vzMine();return v&&v.saison||VS().saison||nextSeason()}
 function wzStart(){
-  const sn=nextSeason(),y=+sn.slice(0,4),t=new Date();t.setDate(t.getDate()+1);
-  const cut=[y+"-07-01",iso(t)].sort()[0],pls=KDs().plans,pl=pls.find((p)=>p.saison===sn)||pls.slice().sort((a,b)=>String(b.saison).localeCompare(String(a.saison)))[0]||null;
-  BK.wz={saison:sn,mann:nextMann(),cut,plan:pl?pl.id:"",sel:{},keepNotes:false,arm:false,run:false,done:null};
-  wzDefaults(false);wzRender();
+  const sn=wzSaison(),y=seasonY(sn),t=new Date();t.setDate(t.getDate()+1);
+  const cut=[y+"-07-01",iso(t)].sort()[0],pls=KDs().plans,pr=D.config&&D.config.swPrep||null,pl=pr?pr.plan:((pls.find((p)=>p.saison===sn)||pls.slice().sort((a,b)=>String(b.saison).localeCompare(String(a.saison)))[0]||{}).id||"");
+  BK.wz={saison:sn,cut:pr?pr.cut:cut,plan:pl||"",sel:{},keepNotes:pr?!!pr.keepNotes:false,run:false,done:null};
+  wzDefaults(false);
+  if(pr){const keep=new Set((pr.keep||[]).concat(pr.neu||[]));wzCands().forEach((c)=>{if(c.kind==="own"&&(pr.keep||[]).length+(pr.gehen||[]).length&&(pr.keep.indexOf(c.id)>=0||(pr.gehen||[]).indexOf(c.id)>=0))BK.wz.sel[c.id]=pr.keep.indexOf(c.id)>=0;else if(c.kind==="new")BK.wz.sel[c.id]=keep.has(c.id)})}
+  wzRender();
 }
 function wzCands(){
-  const z=BK.wz,pl=KDs().plans.find((p)=>p.id===z.plan),k=K(),own=D.spieler.filter((p)=>p.name).sort((a,b)=>a.slot-b.slot).map((p)=>{
-    const pe=pl&&KDs().pers.find((x)=>x.sid===p.id),zs=pl?(pe?!!k.zus(pe,pl):false):null;
-    return{id:p.id,kind:"own",label:p.vorname+" "+p.name,jg:(p.geburtsdatum||"").slice(0,4),z:zs,tag:pl?(pe?(zs?"Zusage":"keine Zusage"):"nicht in der Planung"):""}});
-  const ext=pl?KDs().pers.filter((x)=>x.typ!=="eigen"&&!x.sid&&k.zus(x,pl)).map((x)=>({id:x.id,kind:"new",label:k.pfull(x),jg:k.jgY(x),z:true,tag:"neu aus der Planung (Zusage)"})):[];
+  const z=BK.wz,pl=KDs().plans.find((p)=>p.id===z.plan),k=K(),N=akNum(akNeu()),Y=seasonY(z.saison),own=D.spieler.filter((p)=>p.name).sort((a,b)=>a.slot-b.slot).map((p)=>{
+    const pe=pl&&KDs().pers.find((x)=>x.sid===p.id),zs=pl?(pe?!!k.zus(pe,pl):false):null,el=elig(p,N,Y);
+    const tags=[];if(el===false)tags.push("zu alt für "+akNeu());else if(el===null)tags.push("Geburtsjahr fehlt");if(pl)tags.push(pe?(zs?"Zusage":"keine Zusage"):"nicht in der Planung");
+    return{id:p.id,kind:"own",label:p.vorname+" "+p.name,jg:(p.geburtsdatum||"").slice(0,4),z:zs,el,tag:tags.join(" · ")}});
+  const ext=pl?KDs().pers.filter((x)=>x.typ!=="eigen"&&!x.sid&&k.zus(x,pl)).map((x)=>({id:x.id,kind:"new",label:k.pfull(x),jg:k.jgY(x),z:true,el:null,tag:"neu aus der Planung (Zusage)"})):[];
   return own.concat(ext);
 }
-function wzDefaults(all){const z=BK.wz;z.sel={};wzCands().forEach((c)=>{z.sel[c.id]=all?true:(c.kind==="new"?true:(c.z==null?true:c.z))})}
+function wzDefaults(all){const z=BK.wz;z.sel={};wzCands().forEach((c)=>{z.sel[c.id]=all?true:(c.kind==="new"?true:(c.el===false?false:true))})}
 function wzPlanCounts(){
   const z=BK.wz,c=z.cut,old=(d)=>d&&d<c;
   return{spiele:D.spiele.filter((g)=>old(g.datum)).length,trainings:D.trainings.filter((t)=>old(t.datum)).length,events:(D.events||[]).filter((e)=>((e.bis||e.datum)||"9999")<c).length,dienste:(D.dienste||[]).filter((e)=>((e.bis||e.datum)||"9999")<c).length,notizen:z.keepNotes?0:D.notizen.filter((n)=>old(n.datum)).length,
@@ -4402,18 +4421,52 @@ function wzPlanCounts(){
 }
 function wzRender(){
   const box=$b("#swc");if(!box)return;const z=BK.wz;
-  const head='<h3 style="color:var(--r)">Saisonwechsel</h3>';
-  if(!z){box.innerHTML=head+'<p class="note" style="margin-top:0">Schließt die laufende Saison ab, archiviert sie vollständig und startet die neue Saison. Spieler mit Zusage werden übernommen, ihre Spielerlinks bleiben gültig. Termine, Spiele und Trainings ab dem Stichtag bleiben erhalten. Die Kader-Planung wird nicht verändert. Vorher entstehen automatisch ein Sicherungsstand und das Saisonarchiv.</p><div class="bar" style="margin:0"><button class="btn" data-bk="wz">Saisonwechsel starten …</button></div>'+(BK.wzDone?'<p class="note" style="margin:10px 0 0">'+BK.wzDone+"</p>":"");return}
+  if(!can()){box.hidden=true;return}box.hidden=false;
+  const head='<h3>Saisonwechsel</h3>',pr=D.config&&D.config.swPrep||null,v=vzMine();
+  if(!z){
+    let st="";
+    if(v&&D.config&&D.config.swVz===v.id)st='<p class="note" style="margin:0">Der Saisonwechsel ist durchgeführt. Es läuft die Saison '+esc(v.saison)+'.</p>';
+    else if(v)st='<p class="note" style="margin:0">Die Leitung hat den Saisonwechsel vollzogen. Er wird für deine Mannschaft jetzt durchgeführt.</p>';
+    else{
+      st='<p class="note" style="margin-top:0">Hier legst du fest, welche Spieler nach dem Saisonwechsel in deiner Mannschaft bleiben. Die App schlägt das nach dem Geburtsjahr vor, du kannst alles ändern. <b>Es ändert sich noch nichts:</b> Erst wenn die Leitung den Saisonwechsel vollzieht, wird dein Vorschlag umgesetzt. Dabei entsteht automatisch ein Archiv der alten Saison.</p>';
+      if(pr){const nk=(pr.keep||[]).length,ng=(pr.gehen||[]).length,nn=(pr.neu||[]).length;st+='<p class="note"><b>Vorbereitet</b> am '+esc(dd(String(pr.am||"").slice(0,10)))+': '+nk+' Spieler bleiben'+(nn?', '+nn+' kommen neu dazu':'')+', '+ng+' gehen.</p><div class="bar" style="margin:0"><button class="btn" data-bk="wz">Vorbereitung ändern</button><button class="btn" data-bk="wzu">Zurücknehmen</button></div>'}
+      else st+='<div class="bar" style="margin:0"><button class="btn" data-bk="wz">Saisonwechsel vorbereiten …</button></div>';
+    }
+    box.innerHTML=head+st+(BK.wzDone?'<p class="note" style="margin:10px 0 0">'+esc(BK.wzDone)+'</p>':"");return}
   if(z.run){box.innerHTML=head+'<p class="note">'+esc(z.msg||"Wird durchgeführt …")+"</p>";return}
-  const C=wzCands(),pls=KDs().plans,n=C.filter((c)=>z.sel[c.id]),nNew=n.filter((c)=>c.kind==="new").length,nOwn=n.length-nNew,gehen=C.filter((c)=>c.kind==="own"&&!z.sel[c.id]).length,P=wzPlanCounts(),bad=!/^\d{4}\/\d{2}$/.test(z.saison)||!z.mann.trim();
+  const C=wzCands(),pls=KDs().plans,n=C.filter((c)=>z.sel[c.id]),nNew=n.filter((c)=>c.kind==="new").length,nOwn=n.length-nNew,gehen=C.filter((c)=>c.kind==="own"&&!z.sel[c.id]).length,P=wzPlanCounts();
   box.innerHTML=head+
-  '<div class="bar" style="margin:0 0 6px"><label>Neue Saison <input data-wz="saison" value="'+esc(z.saison)+'" style="width:100px" autocomplete="off"></label><label>Mannschaft <input data-wz="mann" value="'+esc(z.mann)+'" style="width:80px" autocomplete="off"></label><label>Stichtag <input type="date" data-wz="cut" value="'+esc(z.cut)+'"></label></div>'+
-  '<p class="note" style="margin-top:0">Alles <b>vor dem '+dd(z.cut)+'</b> kommt ins Archiv und wird entfernt: '+P.spiele+" Spiele, "+P.trainings+" Trainings, "+P.events+" Termine, "+P.dienste+" Dienste"+(z.keepNotes?"":", "+P.notizen+" Notizen")+". Es bleiben: "+P.bleibenS+" Spiele, "+P.bleibenT+" Trainings, "+P.bleibenE+" Termine. Standard ist der 1. Juli, bei einem Wechsel im Juni der morgige Tag.</p>"+
-  '<div class="bar" style="margin:10px 0 6px"><label>Zusagen aus der Planung<select data-wz="plan"><option value="">(keine Planung – alle übernehmen)</option>'+pls.map((p)=>'<option value="'+esc(p.id)+'"'+(p.id===z.plan?" selected":"")+">"+esc(p.name)+"</option>").join("")+'</select></label><button class="btn" data-bk="wzz">Nur Zusagen</button><button class="btn" data-bk="wza">Alle übernehmen</button><button class="btn" data-bk="wzn">Keine</button></div>'+
-  '<div class="tw" style="max-height:300px;overflow:auto"><table style="font-size:13px"><tr><th></th><th style="text-align:left">Spieler</th><th>Jg.</th><th style="text-align:left">Planung</th></tr>'+C.map((c)=>'<tr><td><input type="checkbox" data-wzc="'+esc(c.id)+'"'+(z.sel[c.id]?" checked":"")+'></td><td style="text-align:left">'+esc(c.label)+'</td><td>'+esc(c.jg)+'</td><td style="text-align:left" class="note">'+esc(c.tag)+"</td></tr>").join("")+"</table></div>"+
+  '<p class="note" style="margin-top:0">Neue Saison <b>'+esc(z.saison)+'</b>, Altersklasse <b>'+esc(akNeu()||"–")+'</b>. Wer laut Geburtsjahr in der neuen Altersklasse nicht mehr spielen darf, ist abgewählt. Jungjahrgänge bleiben. Prüfe die Liste und ändere, was nicht stimmt.</p>'+
+  '<div class="tw" style="max-height:340px;overflow:auto"><table style="font-size:13px"><tr><th></th><th style="text-align:left">Spieler</th><th>Jg.</th><th style="text-align:left">Hinweis</th></tr>'+C.map((c)=>'<tr><td><input type="checkbox" data-wzc="'+esc(c.id)+'"'+(z.sel[c.id]?" checked":"")+' aria-label="bleibt: '+esc(c.label)+'"></td><td style="text-align:left">'+esc(c.label)+'</td><td>'+esc(c.jg)+'</td><td style="text-align:left" class="note">'+esc(c.tag)+"</td></tr>").join("")+"</table></div>"+
   '<p class="note"><b>'+n.length+" Spieler</b> in der neuen Saison ("+nOwn+" bisherige"+(nNew?", "+nNew+" neu":"")+"), "+gehen+" verlassen die Mannschaft (Spielerlink wird gesperrt, Daten bleiben im Archiv).</p>"+
-  '<label class="note" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" data-wz="keepNotes"'+(z.keepNotes?" checked":"")+'> Notizen und Entwicklungsziele der übernommenen Spieler behalten</label>'+
-  '<div class="bar" style="margin:10px 0 0"><button class="btn" data-bk="wzgo" style="color:var(--r)"'+(bad?" disabled":"")+">"+(z.arm?"Wirklich durchführen? Nochmal klicken":"Saisonwechsel durchführen")+'</button><button class="btn" data-bk="wzx">Abbrechen</button><span class="note" id="wzm"></span></div>';
+  '<div class="bar" style="margin:6px 0"><label>Zusagen aus der Kaderplanung<select data-wz="plan"><option value="">(keine Planung)</option>'+pls.map((p)=>'<option value="'+esc(p.id)+'"'+(p.id===z.plan?" selected":"")+">"+esc(p.name)+"</option>").join("")+'</select></label><button class="btn" data-bk="wzz">Nur Zusagen</button><button class="btn" data-bk="wza">Alle bleiben</button><button class="btn" data-bk="wzv">Vorschlag nach Geburtsjahr</button></div>'+
+  '<div class="bar" style="margin:6px 0"><label>Stichtag <input type="date" data-wz="cut" value="'+esc(z.cut)+'"></label></div>'+
+  '<p class="note" style="margin-top:0">Alles <b>vor dem '+dd(z.cut)+'</b> kommt ins Archiv und wird entfernt: '+P.spiele+" Spiele, "+P.trainings+" Trainings, "+P.events+" Termine, "+P.dienste+" Dienste"+(z.keepNotes?"":", "+P.notizen+" Notizen")+". Es bleiben: "+P.bleibenS+" Spiele, "+P.bleibenT+" Trainings, "+P.bleibenE+" Termine.</p>"+
+  '<label class="note" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" data-wz="keepNotes"'+(z.keepNotes?" checked":"")+'> Notizen und Entwicklungsziele der bleibenden Spieler behalten</label>'+
+  '<div class="bar" style="margin:10px 0 0"><button class="btn" data-bk="wzgo" style="background:var(--ac);color:#fff;border-color:var(--ac)">Vorbereitung speichern</button><button class="btn" data-bk="wzx">Abbrechen</button><span class="note" id="wzm"></span></div>';
+}
+async function wzPrepSave(){
+  const z=BK.wz,C=wzCands(),m=$b("#wzm");
+  const prep={saison:z.saison,cut:z.cut,plan:z.plan||"",keepNotes:!!z.keepNotes,keep:C.filter((c)=>c.kind==="own"&&z.sel[c.id]).map((c)=>c.id),gehen:C.filter((c)=>c.kind==="own"&&!z.sel[c.id]).map((c)=>c.id),neu:C.filter((c)=>c.kind==="new"&&z.sel[c.id]).map((c)=>c.id),am:new Date().toISOString()};
+  try{await save("config","main",{...(D.config||{}),swPrep:prep});BK.wz=null;BK.wzDone="Gespeichert. Die Leitung sieht jetzt, dass deine Mannschaft vorbereitet ist.";wzRender()}
+  catch(e){if(m){m.className="note warn";m.textContent="Das konnte nicht gespeichert werden."}}
+}
+async function wzUndo(){try{const c={...(D.config||{})};delete c.swPrep;await save("config","main",c);BK.wzDone="Die Vorbereitung ist zurückgenommen.";wzRender()}catch(e){}}
+/* Nach dem Vollzug durch die Leitung führt die Mannschaft ihren Wechsel selbst aus (mit der Vorbereitung des Trainers oder dem Vorschlag nach Geburtsjahr) */
+let autoBusy=false,autoFail=0;
+async function wzAuto(){
+  const v=vzMine();if(!v||autoBusy||autoFail>2||BK.busy||BK.wz||!D.ready||!D.config||!can())return;
+  if(D.config.swVz===v.id)return;
+  autoBusy=true;
+  try{
+    const s=await db.collection("config").doc("main").get(),c=s&&s.data&&s.data();if(c&&c.swVz===v.id){autoBusy=false;return}
+    const pr=D.config.swPrep||null,sn=v.saison,y=seasonY(sn),t=new Date();t.setDate(t.getDate()+1);
+    BK.wz={saison:sn,cut:pr?pr.cut:[y+"-07-01",iso(t)].sort()[0],plan:pr?pr.plan:"",sel:{},keepNotes:pr?!!pr.keepNotes:false,run:false,done:null,vz:v};
+    wzDefaults(false);
+    if(pr)wzCands().forEach((c)=>{if(c.kind==="own"){if((pr.keep||[]).indexOf(c.id)>=0)BK.wz.sel[c.id]=true;else if((pr.gehen||[]).indexOf(c.id)>=0)BK.wz.sel[c.id]=false}else BK.wz.sel[c.id]=(pr.neu||[]).indexOf(c.id)>=0});
+    await wzRun();
+  }catch(e){autoFail++}
+  autoBusy=false;
 }
 async function wzRun(){
   const z=BK.wz,C=wzCands(),keepIds=new Set(C.filter((c)=>c.kind==="own"&&z.sel[c.id]).map((c)=>c.id)),newC=C.filter((c)=>c.kind==="new"&&z.sel[c.id]),k=K(),pl=KDs().plans.find((p)=>p.id===z.plan),old=D.config&&D.config.saison||"";
@@ -4443,12 +4496,12 @@ async function wzRun(){
     const keepG=D.spiele.filter((g)=>!oldD(g.datum)).sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")||a.nr-b.nr);
     keepG.forEach((g,i)=>{const sp={};let ch=g.nr!==i+1;Object.keys(g.spieler||{}).forEach((p)=>{if(drop2.has(p))ch=true;else sp[p]=g.spieler[p]});if(ch)jobs.push(save("games",g.id,{...g,nr:i+1,spieler:sp}))});
     D.trainings.filter((t)=>!oldD(t.datum)).forEach((t)=>{const sp={};let ch=false;Object.keys(t.spieler||{}).forEach((p)=>{if(drop2.has(p))ch=true;else sp[p]=t.spieler[p]});if(ch)jobs.push(save("trainings",t.id,{...t,spieler:sp}))});
-    jobs.push(save("config","main",{...(D.config||{}),saison:z.saison.trim(),mannschaft:z.mann.trim()}));
+    {const cfg={...(D.config||{}),saison:z.saison.trim(),mannschaft:akNeu()||(D.config||{}).mannschaft||""};delete cfg.swPrep;if(z.vz)cfg.swVz=z.vz.id;jobs.push(save("config","main",cfg))}
     await Promise.all(jobs);
     try{PID=null;cm=null;armed=null;gOpen=null;$("#gd").hidden=true;nEdit=null}catch(e){}
-    BK.wzDone="Fertig. Die Saison "+old+" ist archiviert, die Saison "+z.saison.trim()+" ("+z.mann.trim()+") läuft mit "+(keepIds.size+newC.length)+" Spielern. Danach unter „Hinweise &amp; Links“ auf „Jetzt sofort aktualisieren“ klicken und in den Stammdaten die neuen Spieler prüfen.";
+    BK.wzDone="Saisonwechsel durchgeführt: Die Saison "+old+" ist archiviert, die Saison "+z.saison.trim()+" läuft mit "+(keepIds.size+newC.length)+" Spielern. Bitte unter „Spielerlinks“ auf „Alle Links aktualisieren“ klicken und in den Stammdaten die neuen Spieler prüfen.";
     BK.wz=null;
-  }catch(e){z.run=false;z.arm=false;z.msg="";BK.wz=z;wzRender();const m=$b("#wzm");if(m){m.className="note warn";m.textContent="Der Wechsel ist nicht vollständig durchgelaufen ("+((e&&(e.code||e.message))||"Fehler")+"). Das Archiv und ein Sicherungsstand sind angelegt. Bitte Seite neu laden und prüfen, sonst über „Wiederherstellen“ zurückgehen."}BK.busy=false;return}
+  }catch(e){z.run=false;z.msg="";if(z.vz){BK.wz=null;autoFail++;BK.wzDone="Der Saisonwechsel konnte nicht vollständig durchgeführt werden ("+((e&&(e.code||e.message))||"Fehler")+"). Das Archiv ist angelegt. Bitte Seite neu laden; die App versucht es erneut.";BK.busy=false;wzRender();return}BK.wz=z;wzRender();const m=$b("#wzm");if(m){m.className="note warn";m.textContent="Der Wechsel ist nicht vollständig durchgelaufen ("+((e&&(e.code||e.message))||"Fehler")+"). Das Archiv und ein Sicherungsstand sind angelegt. Bitte Seite neu laden und prüfen, sonst über „Wiederherstellen“ zurückgehen."}BK.busy=false;return}
   BK.busy=false;wzRender();bkRender();
 }
 
@@ -4462,19 +4515,21 @@ document.addEventListener("click",async(e)=>{
   else if(a==="ax"){$b("#arv").innerHTML="";BK.view=null}
   else if(a==="axl"&&BK.view)xBackupXlsx(BK.view.o);
   else if(a==="ajs"&&BK.view)xSaveFile("U13_Archiv_"+String(BK.view.m.saison||"").replace("/","-")+".json",new Blob([JSON.stringify(BK.view.o)],{type:"application/json"}));
-  else if(a==="wz"){if(!BK.ok){BK.wzDone="Der Saisonwechsel steht nur dem Besitzer (Admin) zur Verfügung.";wzRender();return}BK.wzDone="";wzStart()}
+  else if(a==="wz"){if(!can())return;BK.wzDone="";wzStart()}
+  else if(a==="wzu"){wzUndo()}
+  else if(a==="wzv"){wzDefaults(false);wzRender()}
   else if(a==="wzx"){BK.wz=null;wzRender()}
   else if(a==="wzz"){wzDefaults(false);wzRender()}
   else if(a==="wza"){wzDefaults(true);wzRender()}
   else if(a==="wzn"){Object.keys(BK.wz.sel).forEach((k)=>BK.wz.sel[k]=false);wzRender()}
-  else if(a==="wzgo"){if(!BK.wz.arm){BK.wz.arm=true;wzRender();return}wzRun()}
+  else if(a==="wzgo"){wzPrepSave()}
 });
 document.addEventListener("change",(e)=>{
   const t=e.target;if(!t.closest||!t.closest("#swc")||!BK.wz)return;const z=BK.wz;
-  if(t.dataset.wzc){z.sel[t.dataset.wzc]=t.checked;z.arm=false;wzRender();return}
+  if(t.dataset.wzc){z.sel[t.dataset.wzc]=t.checked;return}
   const w=t.dataset.wz;if(!w)return;
   if(w==="keepNotes"){z.keepNotes=t.checked}else if(w==="plan"){z.plan=t.value;wzDefaults(false)}else z[w]=t.value;
-  z.arm=false;wzRender();
+  wzRender();
 });
 document.addEventListener("input",(e)=>{const t=e.target;if(t.closest&&t.closest("#swc")&&BK.wz&&t.dataset.wz&&t.type!=="checkbox"&&t.tagName!=="SELECT"&&t.type!=="date")BK.wz[t.dataset.wz]=t.value});
 
@@ -4486,7 +4541,8 @@ function subscribe(){
   db.collection("backups").onSnapshot((s)=>{BK.ok=true;BK.metas=s.docs.map((d)=>({id:d.id,...d.data()}));bkRender();auto()},()=>{BK.ok=false;bkRender()});
   db.collection("archiv").onSnapshot((s)=>{BK.arch=s.docs.map((d)=>({id:d.id,...d.data()}));bkRender()},()=>{});
 }
-setInterval(()=>{subscribe();auto()},3000);
+let wzSig="";
+setInterval(()=>{subscribe();auto();wzAuto();if(!BK.wz){const g=[can(),!!D.ready,JSON.stringify((D.config||{}).swPrep||0),(D.config||{}).swVz||"",(vz()||{}).id||"",BK.wzDone||""].join("|");if(g!==wzSig){wzSig=g;wzRender()}}},3000);
 })();
 </script>
 <script>/* ---------- WhatsApp-Bild fürs Training (4:5): Teilnehmer + Schwerpunkt ---------- */
@@ -5504,7 +5560,67 @@ document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.close
   if(a==="slnew"){e.preventDefault();window.slOpenNew()}else if(a==="slo"||a==="sls"){e.preventDefault();window.slOpenFrom(b.dataset.id)}});
 })();
 </script>
-<script>/* ===== QR-Code-Erzeuger (eigene kleine Umsetzung nach ISO 18004: Byte-Modus, Stufe L oder M, Version 1–10) ===== */
+<script>window.__ANL={
+"titel": "TuS Haltern am See · Jugend: Anleitung",
+"stand": "Oktober 2026",
+"allgemein": [
+ {"t":"Anmelden","p":["Öffne den Link der App. Du meldest dich mit Google oder mit deiner E-Mail-Adresse und einem Passwort an. Es zählt die E-Mail-Adresse, die die Jugendleitung für dich eingetragen hat.","Noch kein Zugang? Öffne den Einladungslink oder scanne den QR-Code, den du bekommen hast. Melde dich an und trage Name, Rolle und Mannschaft ein. Die Jugendleitung bestätigt deine Angaben, danach kannst du die App ganz normal öffnen. Ohne Link meldest du dich einfach an und füllst das Formular „Du bist noch nicht freigegeben“ aus."],"l":["Passwort vergessen? Tippe auf der Anmeldeseite auf „Passwort vergessen“. Du bekommst eine E-Mail mit einem Link, über den du ein neues Passwort wählst. Das geht ohne Hilfe der Jugendleitung.","Mit Google angemeldet? Dann gibt es hier kein eigenes Passwort, du nutzt dein Google-Konto.","Abmelden: Knopf „Abmelden“ oben rechts."]},
+ {"t":"Zurechtfinden","p":["Oben steht das Menü. Am Handy verstecken sich weitere Punkte hinter den drei Punkten. Welche Punkte du siehst, hängt von deiner Rolle ab."],"l":["Mannschaft wechseln: Tippe oben auf den Namen der Mannschaft, zum Beispiel „U13“, und wähle eine andere.","Hinweise: Oben erscheint „1 Hinweis“ oder „2 Hinweise“, wenn etwas für dich vorliegt, zum Beispiel ein Spieltag-Hinweis oder eine Nachricht der Leitung. Tippe darauf, um sie zu lesen und auszublenden.","Hell oder Dunkel: Oben stellst du „Auto“, Hell oder Dunkel ein. Auto richtet sich nach deinem Gerät."]},
+ {"t":"Wie eine App auf dem Handy","p":["iPhone: Öffne die Seite in Safari, tippe auf das Teilen-Symbol und wähle „Zum Home-Bildschirm“. Android: Öffne das Browser-Menü und wähle „Zum Startbildschirm hinzufügen“. Danach startet die App mit einem Symbol wie jede andere."]},
+ {"t":"Aussehen und Einführung","p":["Das Design wählst du unter „Einstellungen“: Vereinsfarben, Klar & ruhig oder Liquid Glass. Die Wahl gilt für dein Konto, auch auf einem anderen Gerät. Die kurze Einführung vom ersten Öffnen kannst du dort mit „Einführung noch einmal ansehen“ wiederholen."]},
+ {"t":"Wenn etwas nicht klappt","l":["Es fehlt ein Menüpunkt? Er ist für deine Rolle nicht vorgesehen. Frag die Jugendleitung, wenn du mehr Rechte brauchst.","Die Seite lädt nicht? Prüfe die Internetverbindung und lade neu. Bereits geöffnete Daten stehen auch kurz ohne Netz zur Verfügung.","Etwas sieht falsch aus oder fehlt? Schicke der Jugendleitung ein Foto vom Bildschirm und schreibe dazu, was du gemacht hast."]}
+],
+"rollen": [
+ {"id":"admin","name":"Administrator","wer":"Du richtest den Verein in der App ein und gibst Personen frei. Du darfst alles ansehen und bearbeiten.",
+  "abschnitte":[
+   {"t":"Das ist dein Bereich","l":["Übersicht: alle Mannschaften auf einen Blick, mit Form, Tabellenplatz und Pflegestand.","Mannschaft: die Daten einer einzelnen Mannschaft, genau wie die Trainer sie sehen.","Planung: Platzplan und Kabinenbelegung.","Kaderplanung: Kader und Scouting aller Mannschaften.","Personen & Rechte: wer darf was.","Mannschaften: Mannschaften, Bereiche, Nutzungsstufen und Saisonwechsel.","Datenschutz und Einstellungen des Vereins."]},
+   {"t":"Neue Personen einladen","p":["Öffne „Personen & Rechte“ und die Karte „Neue Personen einladen“. Wähle, wie lange der Link gilt, und tippe auf „Link erstellen“."],"l":["Den Link kopierst du oder schickst ihn mit „Link senden“. Der QR-Code lässt sich mit „QR-Code senden“ verschicken oder direkt am Bildschirm zeigen.","Die Person meldet sich an und trägt Name, Rolle und Mannschaft ein. Du siehst die Anfrage unter „Offene Anfragen“ und oben als Hinweis.","Tippe auf „Prüfen und freigeben“. Das Formular erscheint ganz oben, mit den Angaben der Person. Ändere, was nötig ist, und tippe auf „Speichern“. Danach hat die Person Zugriff.","Die Rolle „Jugendleiter“ darf nur ein Administrator oder ein anderer Jugendleiter freigeben.","Mit „Ablehnen“ löschst du eine Anfrage. Mit „Beenden“ stoppst du einen Link sofort."]},
+   {"t":"Personen und Rollen verwalten","l":["Person hinzufügen: „Person hinzufügen“, E-Mail-Adresse und Name eintragen (der Name ist Pflicht), Rolle und Mannschaften wählen, speichern.","Eine Person kann mehrere Rollen haben, zum Beispiel Trainer der D1 und Co-Trainer der D2.","Kaderplanung freigeben: Du kannst einer Person zeitlich begrenzt die Kaderplanung einer oder mehrerer Mannschaften öffnen („Alle Mannschaften“ geht auch). Nach dem Datum endet die Freigabe von selbst.","Rollen und Berechtigungen: Weiter unten stellst du je Rolle ein, was sie darf. Neue Rollen legst du mit „Neue Rolle“ an.","Entfernen: Die Person kommt sofort nicht mehr hinein. Ihr Anmeldekonto bleibt bei Firebase bestehen und kann dort unter „Authentication“ gelöscht werden."]},
+   {"t":"Mannschaften","l":["Neue Mannschaft anlegen (zum Beispiel E3), Name und Altersklasse ändern, Farbe im Plan wählen.","Nicht besetzte Mannschaften archivierst du. Ihre Daten bleiben erhalten.","Bereiche fassen Mannschaften zusammen, zum Beispiel „Minis bis U13“. Damit gibst du einem Sportlichen Leiter genau seinen Bereich.","Nutzungsstufen (Basis, Standard, Voll) legen fest, wie viel eine Mannschaft pflegen muss. Trainer können ihre Stufe selbst wählen.","Pflege-Erinnerung: Nach der eingestellten Zeit erscheint ein Hinweis, danach wird die Mannschaft grau."]},
+   {"t":"Platz- und Kabinenplan","l":["Plätze, Hallen, Zeiten und Kabinen trägst du unter „Planung“ ein.","Die Kabinenbelegung zeigt Training und Spiele. Beim Spiel stehen Heim- und Gastmannschaft mit ihrer Kabine.","Für den Platzwart gibt es einen eigenen Link, über den er nur die Kabinen ändert.","Am Spieltag bekommen die Mannschaften einen Spieltag-Hinweis mit eigener Kabine und der Kabine des Gegners."]},
+   {"t":"Hinweise an Mannschaften","p":["In der Übersicht gibt es die Karte „Hinweis an eine Mannschaft“. Wähle eine, mehrere oder alle Mannschaften, schreibe den Text und lege optional fest, ab wann und bis wann er gilt. Die Trainer sehen ihn oben in der Kopfzeile."]},
+   {"t":"Saisonwechsel","p":["Unter „Mannschaften“ im Reiter „Saisonwechsel“ führt dich ein Assistent in vier Schritten durch den Wechsel: neue Saison, Altersklassen um eine Stufe erhöhen, Trainingszeiten im Platzplan leeren (mit Sicherheitskopie) und die Mannschaften selbst. Den Wechsel innerhalb einer Mannschaft (Archiv, Spieler mit Zusage übernehmen) startest du dort unter „Einstellungen → Sicherung“. Lege vorher immer eine Sicherung an."]},
+   {"t":"Datenschutz und Sicherung","l":["Datenschutz: Aufbewahrungsfrist, Zugriffsprotokoll (wer hat wann was geändert) und die Personenliste als Tabelle zum Speichern.","Sicherung: Jede Mannschaft sichert sich selbst. Du siehst Stände unter „Einstellungen → Sicherung“ und kannst sie zurückholen.","Besitzer: Als Besitzer kannst du deine Administratorrechte abgeben, wenn ein zweiter Administrator vorhanden ist. Er kann dir deine Rechte nicht wegnehmen."]},
+   {"t":"Teamlink und Spielerlinks","p":["Jede Mannschaft hat Spielerlinks für Eltern und Spieler und einen Teamlink mit dem Terminplan. Du findest sie in der Mannschaft unter „Einstellungen → Hinweise & Links“. Kurzlinks wie „d1team“ und „d1vornamenachname“ entstehen automatisch. Mit „Kurzlink-Namen bereinigen“ räumst du alte Namen mit Zahlen am Ende auf."]}
+ ]},
+ {"id":"jugendleiter","name":"Jugendleiter","wer":"Du leitest die Jugendabteilung und gibst Personen frei. Du darfst fast alles wie ein Administrator.",
+  "abschnitte":[
+   {"t":"Das ist dein Bereich","l":["Übersicht aller Mannschaften, Planung (Platz und Kabinen), Kaderplanung, Personen & Rechte, Mannschaften.","Du siehst und bearbeitest alle Mannschaften wie ein Administrator.","Nicht möglich für dich: Administratoren anlegen oder ändern, Besitzerfunktionen und die Sicherung sowie der Saisonwechsel innerhalb einer Mannschaft."]},
+   {"t":"Neue Personen einladen und freigeben","p":["Öffne „Personen & Rechte“ und die Karte „Neue Personen einladen“. Erstelle einen Link, schicke ihn mit „Link senden“ oder zeige den QR-Code."],"l":["Anfragen erscheinen unter „Offene Anfragen“. Tippe auf „Prüfen und freigeben“, prüfe das Formular oben und tippe auf „Speichern“.","Du darfst die Rolle „Jugendleiter“ freigeben, aber keine Administratoren.","Der Name der Person ist Pflicht."]},
+   {"t":"Personen verwalten","l":["Rolle und Mannschaften einer Person ändern, Person entfernen.","Kaderplanung zeitlich begrenzt für eine oder mehrere Mannschaften freigeben.","Rollen und ihre Berechtigungen siehst du in der Tabelle weiter unten."]},
+   {"t":"Mannschaften, Planung und Hinweise","l":["Mannschaften anlegen, benennen, archivieren, Bereiche pflegen.","Plätze, Zeiten und Kabinen unter „Planung“ eintragen.","Hinweise an Mannschaften über die Karte „Hinweis an eine Mannschaft“ in der Übersicht senden.","Spieltag-Hinweise zeigen eigene und gegnerische Kabine automatisch an."]},
+   {"t":"Saisonwechsel","p":["Unter „Mannschaften“ im Reiter „Saisonwechsel“ steht der Assistent für den ganzen Verein: neue Saison, Altersklassen, Platzplan, Mannschaften abhaken und abschließen. Der Wechsel innerhalb einer einzelnen Mannschaft läuft über den Administrator."]}
+ ]},
+ {"id":"sportleiter","name":"Sportlicher Leiter","wer":"Du hast den Überblick über deine Mannschaften oder deinen Bereich und kannst Hinweise schreiben.",
+  "abschnitte":[
+   {"t":"Das siehst du","l":["Die Übersicht mit deinen Mannschaften: Form (letzte Meisterschaftsspiele), Tabellenplatz und wann zuletzt gepflegt wurde.","Die Mannschaften selbst: ansehen, nicht bearbeiten. Zum Wechseln tippe oben auf den Mannschaftsnamen.","Notizen der Trainer und die Kaderplanung zum Ansehen.","Den Platz- und Kabinenplan unter „Planung“."]},
+   {"t":"Hinweise schreiben","p":["In der Übersicht gibt es die Karte „Hinweis an eine Mannschaft“. Wähle die Mannschaften, schreibe den Text und sende ihn. Du siehst darunter, was du schon gesendet hast, und kannst es ändern oder löschen."]},
+   {"t":"Platzplan pflegen","p":["Wenn dir die Jugendleitung das Recht dafür gegeben hat, trägst du unter „Planung“ Plätze, Zeiten und Kabinen ein. Siehst du nur den Plan zum Lesen, ist dieses Recht nicht vergeben."]},
+   {"t":"Bereiche","p":["Die Jugendleitung kann dir einen Bereich zuteilen, zum Beispiel „Minis bis U13“. In der Übersicht kannst du nach diesem Bereich filtern. Ändert sich der Bereich, passt sich dein Zugriff automatisch an."]}
+ ]},
+ {"id":"trainer","name":"Trainer und Co-Trainer","wer":"Du betreust eine Mannschaft und pflegst ihre Daten.",
+  "abschnitte":[
+   {"t":"Deine Mannschaft","p":["Nach dem Öffnen landest du direkt in deiner Mannschaft. Die Reiter heißen Start, Termine, Training, Spiele, Beteiligung, Profil, Bilanz, Stammdaten, Notizen, Schwerpunkte, Kader und Einstellungen. Welche du siehst und ändern darfst, hängt von deiner Rolle ab."],"l":["Stammdaten: Spieler anlegen und pflegen.","Training und Spiele: Anwesenheit, Spielzeiten und Ergebnisse eintragen. Aus den Spielen entstehen Bilanz und Form.","Termine: Training, Spiele, Dienste und Hinweise für Eltern und Spieler.","Notizen und Schwerpunkte: nur für das Trainerteam."]},
+   {"t":"Spieltag","l":["Am Spieltag steht oben ein Hinweis: bei Heimspiel mit deiner Kabine und der Kabine des Gegners.","Die Spielinfo für Eltern und Spieler erstellst du bei den Spielen. Sie enthält Treffen, Anstoß und Dienste.","Live-Spielzeit am Spieltag: Wechsel direkt am Handy oder iPad erfassen."]},
+   {"t":"Links für Eltern und Spieler","p":["Unter „Einstellungen → Hinweise & Links“ findest du die Spielerlinks und den Teamlink mit dem Terminplan. Jeder Link hat einen Kurzlink, zum Beispiel „d1team“. Passwörter stehen in der Tabelle. Wenn sich etwas geändert hat, klickst du auf „Alle Links aktualisieren“."]},
+   {"t":"Hinweise und Pflege","l":["Hinweise der Leitung siehst du oben in der Kopfzeile („1 Hinweis“).","Die Übersicht aller Mannschaften brauchst du nur, wenn du mehrere Mannschaften betreust. Sonst startest du direkt in deiner Mannschaft.","Du kannst die Nutzungsstufe deiner Mannschaft selbst wählen (Basis, Standard oder Voll), je nachdem, wie viel du pflegen willst.","Eine Erinnerung erscheint, wenn die Mannschaft länger nicht gepflegt wurde."]},
+   {"t":"Kader und Scouting","p":["Wenn du das Recht hast, siehst du unter „Kaderplanung“ die Kader- und Scoutingdaten. Die Jugendleitung kann dir die Kaderplanung einer anderen Mannschaft zeitlich begrenzt freigeben, zum Beispiel für die Planung der nächsten Saison."]}
+ ]},
+ {"id":"platzwart","name":"Platzwart","wer":"Du hältst die Kabinenbelegung aktuell.",
+  "abschnitte":[
+   {"t":"Dein Bereich","l":["Du siehst die Kabinenbelegung und den Platzplan.","Du darfst nur die Kabinen ändern, sonst nichts.","Alternativ gibt es für dich einen eigenen Link, über den du ohne Anmeldung die Kabinen eintragen kannst."]},
+   {"t":"Kabinen ändern","l":["Wähle den Tag. Du siehst Training und Spiele mit ihrer Kabine.","Trainingstage erscheinen automatisch. Tippe auf die Kabine und wähle eine andere, die Änderung gilt nur für diesen Tag.","Bei Spielen siehst du Heim- und Gastmannschaft. Jede Seite hat ihre eigene Kabine.","Mannschaften sehen am Spieltag ihre Kabine und die des Gegners im Hinweis oben."]}
+ ]},
+ {"id":"lesen","name":"Nur lesen und Scouting","wer":"Du darfst ansehen, aber nichts ändern. Als Scout siehst du nur Kader und Scouting.",
+  "abschnitte":[
+   {"t":"Was du darfst","l":["Nur lesen: Du siehst die Daten deiner Mannschaft und die Notizen, kannst aber nichts ändern.","Scout: Du siehst und bearbeitest nur „Kader & Scouting“, sonst nichts.","Vieles ist bewusst ausgeblendet. Das ist keine Störung."]},
+   {"t":"Kaderplanung","p":["Unter „Kaderplanung“ siehst du Spieler, Beobachtungen und Pläne. Als Scout trägst du Beobachtungen ein. Bei „Nur lesen“ kannst du alles ansehen."]},
+   {"t":"Mehr Rechte","p":["Brauchst du mehr Rechte, melde dich bei der Jugendleitung. Sie kann deine Rolle unter „Personen & Rechte“ ändern."]}
+ ]}
+]
+}
+;
+/* ===== QR-Code-Erzeuger (eigene kleine Umsetzung nach ISO 18004: Byte-Modus, Stufe L oder M, Version 1–10) ===== */
 (function(W){
 "use strict";
 const EXP=new Array(512),LOG=new Array(256);
@@ -5880,7 +5996,7 @@ V.hin=[];
 const hAct=(x)=>!x.erledigt&&(!x.bis||x.bis>=V.today())&&(!x.ab||x.ab<=V.today());
 let hSel=new Set();
 let hEdit=null;
-V.updHin=()=>{const b=q("#vhin");if(!b)return;let n=(V.hin||[]).filter(hAct).length;try{n+=V.spielHinweise(V.isAdmin()?"*":W.__TID).length}catch(e){}
+V.updHin=()=>{const b=q("#vhin");if(!b)return;let n=(V.hin||[]).filter(hAct).length;n=0;
   b.hidden=!n;b.textContent=n+(n===1?" Hinweis":" Hinweise")};
 function subHinweise(){
   V.fs().collection(W.__TID+"__vhinweise").onSnapshot((s)=>{
@@ -5902,23 +6018,15 @@ V.ghKey=(tid,d)=>tid+"|"+d;
 V.ghHidden=(tid,d)=>{const m=window.__ghP||{};return !!m[V.ghKey(tid,d)]};
 V.ghHide=(tid,d)=>{const T=V.today(),m={};Object.keys(window.__ghP||{}).forEach((k)=>{if(k.split("|")[1]>=T)m[k]=1});m[V.ghKey(tid,d)]=1;window.__ghP=m;try{window.__dzSavePrefs&&window.__dzSavePrefs()}catch(e){}};
 /* Hinweis nur am Tag selbst und am Tag davor. Administratoren sehen ihn vereinsweit (tid "*"), unabhängig von der gewählten Mannschaft. Ausblenden wird pro Konto gemerkt. */
-V.spielHinweise=(tid)=>{const out=[],T=V.today(),adm=tid==="*";
+/* Kabinen für den Spieltag einer Mannschaft: eigene Kabine und Kabine des Gegners (nur bei Heimspielen) – wird im Spieltag-Hinweis der Mannschaft angezeigt */
+V.kabinen=(tid,d)=>{
   const kb=(k)=>k===undefined||k===null||k===""?"":"Kabine "+k;
-  /* Kabine des Gegners: der Gast-Eintrag zum Heimspiel (gleiche Anstoßzeit, Name des Gegners passt) */
-  const gegner=(g,x)=>{const c=g.filter((y)=>y.art==="Gast"&&y!==x&&kb(y.kabine));if(!c.length)return"";const nm=(y)=>String(y.fremd||(y.tid?V.tname(y.tid):"")).toLowerCase();
-    const best=c.find((y)=>(!x.von||y.von===x.von)&&nm(y)&&String(x.txt||"").toLowerCase().indexOf(nm(y))>=0)||c.find((y)=>!x.von||y.von===x.von)||c[0];return kb(best.kabine)};
-  Object.keys(V.gd||{}).sort().forEach((d)=>{if(d<T||d>V.add(T,1))return;
-    const g=(V.gd[d]||[]).filter((x)=>(x.art==="Heim"||x.art==="Gast")&&!x.removed);if(!g.length)return;
-    const plays=!adm&&g.some((x)=>x.tid===tid),wk=V.dow(d)>5;if(wk&&!plays)return;
-    const trains=!adm&&!wk&&typeof V.slotsOn==="function"&&V.slotsOn(d).some((x)=>x.tid===tid&&x.art!=="Spiel");
-    if(!adm&&!plays&&!trains)return;
-    if(V.ghHidden(tid,d))return;
-    const heimE=g.filter((x)=>x.art==="Heim"),
-      kab=(x)=>{const a=kb(x.kabine),b=gegner(g,x);if(!a&&!b)return"";return adm?" – "+[a?"Heim: "+a:"",b?"Gast: "+b:""].filter(Boolean).join(", "):" – "+[a?"deine Kabine: "+a:"",b?"Gegner: "+b:""].filter(Boolean).join(", ")},
-      heim=heimE.map((x)=>V.tname(x.tid)+(x.txt?" "+x.txt:"")+((adm||x.tid===tid)?kab(x):"")).join(", "),gast=g.filter((x)=>x.art==="Gast"&&x.tid).map((x)=>V.tname(x.tid)+(x.txt?" "+x.txt:"")).join(", ");
-    const wann=d===T?"Heute":"Morgen";
-    out.push({d,tid,txt:wann+" ("+V.fd(d)+") "+(heim?"gibt es ein Heimspiel ("+heim+")":"spielt eine Mannschaft bei uns")+(gast?"; auswärts: "+gast:"")+". "+(plays?"Deine Mannschaft spielt an diesem Tag. ":"")+(trains?"Dein Training an diesem Tag kann dadurch verlegt sein. ":"")+"Bitte in Platz- und Kabinenbelegung nachsehen."})});
-  return out};
+  const g=(V.gd&&V.gd[d]||[]).filter((x)=>(x.art==="Heim"||x.art==="Gast")&&!x.removed),x=g.find((y)=>y.art==="Heim"&&y.tid===tid);if(!x)return{own:"",opp:""};
+  const c=g.filter((y)=>y.art==="Gast"&&y!==x&&kb(y.kabine)),nm=(y)=>String(y.fremd||(y.tid?V.tname(y.tid):"")).toLowerCase();
+  const best=c.find((y)=>(!x.von||y.von===x.von)&&nm(y)&&String(x.txt||"").toLowerCase().indexOf(nm(y))>=0)||c.find((y)=>!x.von||y.von===x.von)||c[0];
+  return{own:kb(x.kabine),opp:best?kb(best.kabine):""}};
+/* Der frühere eigene Spieltag-Hinweis ist entfallen: Die Kabinen stehen im Spieltag-Hinweis der Mannschaft (Startseite). */
+V.spielHinweise=()=>[];
 window.__ghOnPrefs=()=>{try{V.updHin()}catch(e){}if(V.cur==="uebersicht"&&!(V.typing&&V.typing()))V.render()};
 V.savePlan=async(patch)=>{V.plan=Object.assign({},V.plan,patch);await V.fs().doc("plaene/platz").set(V.plan)};
 /* Teamnamen für den Platzwart-Link (er darf „verein“ nicht lesen) im Plan mitführen */
@@ -6059,8 +6167,6 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   if(V.isAll()&&V.anfN>0)h+='<div class="card vc" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="flex:1;min-width:180px">'+V.anfN+(V.anfN===1?" neue Anfrage":" neue Anfragen")+' von eingeladenen Personen</b><button class="btn" data-goanf="1" style="background:var(--ac);color:#fff;border-color:var(--ac)">Ansehen</button></div>';
   if(filters.length>1)h+='<div class="vf" role="tablist">'+filters.map((x)=>'<button type="button" data-f="'+E(x.id)+'" class="'+(x.id===fid?"on":"")+'">'+E(x.n)+'</button>').join("")+'</div>';
   if(open.length&&V.has(W.__TID,"sehen"))h+='<div class="card vc" style="border-color:var(--y);background:var(--ys)"><b>Hinweise für '+E(V.tname(W.__TID))+'</b>'+open.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+E(x.text)+' <span class="note">· '+E(x.von||"")+' · '+E(String(x.at||"").slice(0,10).split("-").reverse().join("."))+'</span></span>'+(V.canWrite()&&x.ack!==false?'<button class="btn" data-ok="'+E(x.id)+'">Erledigt</button>':"")+(x.bis?' <span class="note">bis '+E(V.fdl(x.bis).slice(0,6))+'</span>':"")+'</div>').join("")+'</div>';
-  {const adm=V.isAdmin(),gts=adm?["*"]:Array.from(new Set((V.isAll()?[]:mineIds).concat([W.__TID]))).filter((id)=>V.has(id,"sehen")||V.isAll()),gh=[];gts.forEach((id)=>V.spielHinweise(id).forEach((x)=>gh.push(x)));
-   if(gh.length)h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Spieltag-Hinweis</b>'+gh.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+(!adm&&gts.length>1?'<b>'+E(V.tname(x.tid))+':</b> ':"")+E(x.txt)+'</span><button class="btn" data-gh="'+E(x.tid+"|"+x.d)+'">Ausblenden</button></div>').join("")+'</div>'}
   if(V.canWrite()&&ow.art&&own!==undefined&&!(own&&own.st==="basis"))h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Erinnerung</b><div class="note" style="color:inherit">Die Daten von '+E(V.tname(W.__TID))+' wurden zuletzt '+E(V.pflegeTxt(ow))+' gepflegt. Bitte Anwesenheit und Spielzeit nachtragen.</div></div>';
   const cut=h.length;
   if(act.length>1||have.length)h+='<div class="kpis"><div class="card kpi"><b>'+act.length+'</b><span>aktive Mannschaften</span></div><div class="card kpi"><b>'+have.reduce((a,s)=>a+(s.n||0),0)+'</b><span>Spieler insgesamt</span></div><div class="card kpi"><b>'+pcx(avg((s)=>s.bet))+'</b><span>Ø Training</span></div><div class="card kpi c'+(need.length?2:4)+'"><b>'+need.length+'</b><span>brauchen Aufmerksamkeit</span></div></div>';
@@ -6787,7 +6893,7 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
       return}
     if(t.id==="oabg"){if(!t.dataset.arm){t.dataset.arm="1";t.textContent="Wirklich abgeben? Dann hast du keine Administratorrechte mehr";return}try{await V.fs().doc("ownercheck/frei").set({at:new Date().toISOString()});V.log("Besitzer hat Administratorrechte abgegeben");location.reload()}catch(x){const o=q("#omsg",el);if(o){o.textContent="Das hat nicht geklappt.";o.className="vmsg er"}}return}
     if(t.id==="obk"){try{await V.fs().doc("ownercheck/frei").delete();location.reload()}catch(x){const o=q("#omsg",el);if(o){o.textContent="Das hat nicht geklappt.";o.className="vmsg er"}}return}
-    const md=t.closest("[data-md]");if(md){if(!md.dataset.arm){md.dataset.arm="1";md.textContent="Wirklich entfernen?";return}try{await V.fs().doc("mitglieder/"+md.dataset.md).delete();V.log("Person entfernt: "+md.dataset.md);msg("Entfernt. Die Person kommt ab sofort nicht mehr hinein.")}catch(x){msg("Das konnte nicht gespeichert werden.","er")}return}
+    const md=t.closest("[data-md]");if(md){if(!md.dataset.arm){md.dataset.arm="1";md.textContent="Wirklich entfernen?";return}try{await V.fs().doc("mitglieder/"+md.dataset.md).delete();V.log("Person entfernt: "+md.dataset.md);msg("Entfernt. Die Person kommt ab sofort nicht mehr hinein. Ihr Anmeldekonto (Google oder E-Mail) bleibt bestehen, hat aber keinen Zugriff mehr auf Vereinsdaten.")}catch(x){msg("Das konnte nicht gespeichert werden.","er")}return}
     if(t.id==="ivnew"){const sel=q("#ivd",el),dv=sel?sel.value:"7";invDays=dv;const bis=dv==="0"?0:dv==="s"?endMs(seasonEnd()):Date.now()+(+dv)*864e5,id=rnd(24);
       try{await V.fs().doc("einladungen/"+id).set({aktiv:true,bis,rollen:arten.filter((a)=>a.id!=="platzwart").map((a)=>({id:a.id,name:a.name})),teams:teams.map((x)=>({id:x.id,name:x.name,ak:x.ak||""})),von:(W.__VME&&W.__VME.email)||"",am:new Date().toISOString()});V.log("Einladungslink erstellt");qrOpen=id;const m=q("#imsg",el);if(m){m.textContent="Link erstellt. Kopiere ihn oder zeige den QR-Code.";m.className="vmsg ok"}}
       catch(x){const m=q("#imsg",el);if(m){m.textContent="Der Link konnte nicht erstellt werden (fehlende Berechtigung?).";m.className="vmsg er"}}return}
@@ -7097,6 +7203,11 @@ function can(){
   }
   if(!L.length)L.push("Deine Rechte legt die Jugendleitung fest. Wenn dir etwas fehlt, melde dich bei ihr.");
   return L}
+function pdfId(){const r=V.rolle(),tm=V.teams(),has=(x)=>V.isAll()||tm.some((t)=>V.has(t.id,x));
+  if(r==="admin"||r==="jugendleiter"||r==="platzwart")return r;
+  if(has("bearbeiten"))return "trainer";
+  if(has("hinweise")||has("kader")||has("kaderbearb"))return "sportleiter";
+  return "lesen"}
 const steps=()=>{
   const nm=first(),multi=V.teams().filter((t)=>t.aktiv!==false).length>1;
   const S=[];
@@ -7104,6 +7215,8 @@ const steps=()=>{
   S.push({t:"Das kannst du tun",h:'<ul>'+can().map((x)=>'<li>'+E(x)+'</li>').join("")+'</ul><p class="ewn">Was du nicht siehst, ist für deine Rolle nicht vorgesehen.</p>'});
   S.push({t:"So findest du dich zurecht",h:'<ul><li><b>Menü oben:</b> Dort wechselst du zwischen den Bereichen, zum Beispiel Übersicht, Mannschaft oder Platzplan. Am Handy steht hinter den drei Punkten der Rest.</li>'+(multi?'<li><b>Mannschaft wechseln:</b> Tippe oben auf den Namen der Mannschaft, zum Beispiel „U13“.</li>':'')+'<li><b>Hell oder Dunkel:</b> Das kannst du oben einstellen. „Auto“ richtet sich nach deinem Gerät.</li><li><b>Am Handy wie eine App:</b> Öffne das Teilen-Menü des Browsers und wähle „Zum Home-Bildschirm“.</li></ul>'});
   S.push({t:"Dein Design",h:'<p>Wähle, wie die App aussehen soll. Du kannst das später jederzeit unter „Einstellungen“ ändern.</p><div class="ewd">'+[["kobalt","Vereinsfarben"],["ruhig","Klar & ruhig"],["glas","Liquid Glass"]].map((d)=>'<button type="button" data-ewd="'+d[0]+'"'+(W.__dz&&W.__dz.get()===d[0]?' class="on"':"")+'>'+E(d[1])+'</button>').join("")+'</div>'});
+  const pid=pdfId();
+  S.push({t:"Deine Anleitung",h:'<p>Wenn du magst, lade dir jetzt einmal die vollständige Anleitung für deine Rolle als PDF herunter. Mit Bildschirmfotos und Schritt für Schritt erklärt.</p><p><a class="btn" id="ewpdf" href="anleitungen/'+pid+'.pdf" target="_blank" rel="noopener" download>Anleitung herunterladen (PDF)</a></p><p class="ewn">Du findest sie später auch unter „Einstellungen“ → „Anleitungen (PDF)“.</p>'});
   return S}
 function css(){if(document.getElementById("ewcss"))return;const c=document.createElement("style");c.id="ewcss";c.textContent='#ew{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#ew[hidden]{display:none}'
  +'#ew .ewc{width:100%;max-width:440px;max-height:calc(100dvh - 32px);overflow:auto;background:var(--cs,var(--card));color:var(--tx);border:1px solid var(--ln);border-radius:22px;padding:22px 20px 16px;box-shadow:0 24px 70px rgba(0,0,0,.4)}'
@@ -7144,7 +7257,9 @@ if(W.__V)boot();else{let n=0;const iv=setInterval(()=>{if(W.__V){clearInterval(i
 })();
 
 /* ===== Verein: Saisonwechsel-Assistent (Administrator und Jugendleiter) =====
-   Führt durch die Schritte über alle Mannschaften. Der Wechsel innerhalb einer Mannschaft (Archiv, Spieler übernehmen) bleibt in der Mannschaft selbst. */
+   Die Trainer bereiten ihre Mannschaft vor (in der Mannschaft unter „Einstellungen → Hinweise & Links“).
+   Die Leitung plant hier Altersklassen und Trainer und vollzieht den Wechsel für alle Mannschaften auf einmal.
+   Erst beim Vollzug ändern sich Saison, Altersklassen und Trainerrechte; danach führt jede Mannschaft ihren Teil selbst aus. */
 (function(){
 "use strict";
 const W=window;
@@ -7152,50 +7267,123 @@ function boot(){
 const V=W.__V;if(!V||!V.tab)return;
 const E=V.E,q=(s,r)=>(r||document).querySelector(s);
 const nextSeason=(s)=>{const m=/^(\d{4})\s*\/\s*(\d{2,4})$/.exec(String(s||"").trim());if(!m)return"";const a=+m[1]+1,b=String(a+1).slice(-2);return a+"/"+b};
-const nextAk=(ak)=>{const m=/^U(\d{1,2})$/i.exec(String(ak||"").trim());if(!m)return String(ak||"");return +m[1]>=19?"":"U"+(+m[1]+1)};
-const sw=()=>({saison:"",ak:{},bar:{},done:{},...((W.__VEREIN||{}).sw||{})});
-let busy="",msg="",msgK="ok",armPl=false,armGo=false;
-const keep=async(patch)=>{const s={...sw(),...patch};await V.saveVerein({sw:s});return s};
+const akN=(ak)=>{const m=/^U(\d{1,2})$/i.exec(String(ak||"").trim());return m?+m[1]:0};
+/* U13 wird U14; die U19 bleibt U19 (Jungjahrgänge spielen ein weiteres Jahr), ohne Zahl bleibt alles gleich */
+const nextAk=(ak)=>{const n=akN(ak);return n&&n<19?"U"+(n+1):String(ak||"")};
+const sw=()=>({saison:"",ak:{},bar:{},pl:{},neu:[],plReset:true,...((W.__VEREIN||{}).sw||{})});
+const vzOf=()=>((W.__VEREIN||{}).sw||{}).vollzug||null;
+let busy="",msg="",msgK="ok",armGo=false,prep={},prepLoaded=false,mem=[],memLoaded=false,nf={email:"",name:"",art:"",teams:[]};
+const keep=async(patch)=>{const cur=(W.__VEREIN||{}).sw||{};const s={...cur,...patch};await V.saveVerein({sw:s});return s};
 const mt=V.MENU&&V.MENU.find((m)=>m.id==="teams");if(mt&&mt.tabs.indexOf("saison")<0)mt.tabs.push("saison");
+const ts=()=>V.teams().filter((t)=>t.aktiv!==false);
+async function loadPrep(){
+  const out={};
+  for(const t of V.teams()){try{const d=await V.fs().doc(t.id+"__config/main").get();out[t.id]=(d&&d.exists!==false&&d.data&&d.data())||{}}catch(e){out[t.id]=null}}
+  prep=out;prepLoaded=true;if(V.cur==="saison"&&!V.typing())V.render()}
+async function loadMem(){
+  try{const s=await V.fs().collection("mitglieder").get();mem=s.docs.map((d)=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name||a.id).localeCompare(String(b.name||b.id)))}catch(e){mem=[]}
+  memLoaded=true;if(V.cur==="saison"&&!V.typing())V.render()}
+const teamsOfZu=(m)=>{const a=[];(m.zu||[]).forEach((z)=>{if(!z.alle&&!z.bereich)(z.teams||[]).forEach((t)=>{if(a.indexOf(t)<0)a.push(t)})});return a};
+const planOf=(s,m)=>s.pl[m.id]||{teams:teamsOfZu(m),ende:false};
+const chips=(sel,mk,list)=>list.map((t)=>'<span class="vch'+(sel.indexOf(t.id)>=0?" on":"")+'" '+mk(t)+' role="button" tabindex="0">'+E(t.name)+'</span>').join("");
 V.tab({id:"saison",label:"Saisonwechsel",show:()=>V.isAll(),render(el){
   if(V.typing())return;
-  const cur=(W.__VEREIN||{}).saison||"",s=sw(),neu=s.saison||nextSeason(cur)||"",ts=V.teams().filter((t)=>t.aktiv!==false);
-  const adm=V.isAdmin();
-  const open=ts.filter((t)=>!s.done[t.id]).length;
-  let h='<h2>Saisonwechsel</h2><p class="sub note">Aktuelle Saison: <b>'+E(cur||"–")+'</b>. Dieser Assistent führt dich in vier Schritten durch den Wechsel für den ganzen Verein. Du kannst jederzeit unterbrechen, der Stand wird gespeichert.</p>';
-  h+='<div class="card vc"><h3>1. Neue Saison</h3><div class="note" style="margin-bottom:8px">Lege vor dem Wechsel eine Sicherung an: In jeder Mannschaft unter „Einstellungen → Sicherung“ (Administrator). Der Saisonwechsel in einer Mannschaft legt sie außerdem selbst an.</div><div class="vrow"><label>Neue Saison<input id="sw_s" maxlength="12" style="width:110px" value="'+E(neu)+'"></label></div></div>';
-  h+='<div class="card vc"><h3>2. Altersklassen</h3><div class="note" style="margin-bottom:8px">Ein Jahr weiter: Die Altersklassen werden um eine Stufe erhöht (U13 wird U14). Du kannst jede ändern. Mannschaften, die nicht mehr besetzt sind, werden archiviert; ihre Daten bleiben erhalten.</div>'
-    +ts.map((t)=>{const na=s.ak[t.id]!==undefined?s.ak[t.id]:nextAk(t.ak),ar=s.bar[t.id]!==undefined?!!s.bar[t.id]:!nextAk(t.ak)&&/^U\d+/i.test(t.ak||"");
-      return'<div class="vrow" style="align-items:center;border-top:1px solid var(--ln);padding-top:8px;gap:10px"><b style="min-width:64px">'+E(t.name)+'</b><span class="note" style="min-width:54px">'+E(t.ak||"–")+' →</span><input data-swa="'+E(t.id)+'" maxlength="12" style="width:84px" aria-label="Neue Altersklasse von '+E(t.name)+'" value="'+E(na)+'"><label style="display:flex;flex-direction:row;align-items:center;gap:6px;margin:0"><input type="checkbox" data-swb="'+E(t.id)+'"'+(ar?" checked":"")+'> archivieren</label></div>'}).join("")
-    +'<div class="vrow" style="margin-top:10px"><button class="btn" id="sw_ak" type="button"'+(busy?" disabled":"")+'>Altersklassen übernehmen</button>'+(s.akDone?'<span class="vbad g">erledigt</span>':"")+'</div></div>';
-  h+='<div class="card vc"><h3>3. Platzplan</h3><div class="note" style="margin-bottom:8px">Die Trainingszeiten im Platzplan gelten meist nur für eine Saison. Der bisherige Plan wird zuerst als Kopie gesichert, danach leer gestartet. Du trägst die neuen Zeiten selbst ein. Kabinen und Plätze selbst bleiben bestehen.</div><div class="vrow"><button class="btn" id="sw_pl" type="button"'+(busy?" disabled":"")+'>'+(armPl?"Wirklich? Trainingszeiten leeren":"Trainingszeiten leeren")+'</button>'+(s.plDone?'<span class="vbad g">erledigt</span>':'<span class="note">'+(((V.plan||{}).slots||[]).length)+' Einträge im Plan</span>')+'</div></div>';
-  h+='<div class="card vc"><h3>4. Die Mannschaften</h3><div class="note" style="margin-bottom:8px">In jeder Mannschaft gibt es unter „Einstellungen → Sicherung → Saisonwechsel“ den eigentlichen Wechsel: Archiv anlegen, Spieler mit Zusage übernehmen, Spielerlinks neu erzeugen. Er steht dem Administrator zur Verfügung. Hake ab, was erledigt ist.</div>'
-    +ts.map((t)=>'<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px"><label style="display:flex;flex-direction:row;gap:8px;align-items:center;flex:1;min-width:150px;margin:0"><input type="checkbox" data-swd="'+E(t.id)+'"'+(s.done[t.id]?" checked":"")+'> <b>'+E(t.name)+'</b> <span class="note">'+E(t.ak||"")+'</span></label>'+(adm?'<button class="btn" data-swo="'+E(t.id)+'" type="button">Mannschaft öffnen</button>':"")+'</div>').join("")+'</div>';
-  h+='<div class="card vc" style="border:2px solid var(--ac)"><h3>Abschluss</h3><div class="note" style="margin-bottom:8px">Setzt die Saison des Vereins auf <b>'+E(neu||"–")+'</b>.'+(open?" Bei "+open+(open===1?" Mannschaft":" Mannschaften")+" ist der Wechsel noch nicht abgehakt.":" Alles abgehakt.")+'</div><div class="vrow"><button class="btn" id="sw_go" type="button" style="background:var(--ac);color:#fff;border-color:var(--ac)"'+(busy||!neu?" disabled":"")+'>'+(armGo?"Wirklich abschließen?":"Saisonwechsel abschließen")+'</button></div></div>';
+  if(!prepLoaded&&!busy)loadPrep();if(!memLoaded)loadMem();
+  const cur=(W.__VEREIN||{}).saison||"",s=sw(),neu=s.saison||nextSeason(cur)||"",T=ts(),vz=vzOf();
+  let h='<h2>Saisonwechsel</h2>';
+  if(vz){
+    const done=(vz.teams||[]).filter((t)=>prep[t]&&prep[t].swVz===vz.id).length,all=(vz.teams||[]).length;
+    h+='<p class="sub note">Der Saisonwechsel wurde am '+E(String(vz.at||"").slice(0,10).split("-").reverse().join("."))+' vollzogen. Aktuelle Saison: <b>'+E(cur)+'</b>.</p>';
+    h+='<div class="card vc"><h3>Stand in den Mannschaften</h3><div class="note" style="margin-bottom:8px">Jede Mannschaft führt ihren Teil (Archiv anlegen, Spieler übernehmen, Spielerlinks sperren) selbst aus, sobald sie geöffnet wird. Das geschieht von selbst, sobald ein Trainer die Mannschaft öffnet. Du kannst die Mannschaft auch selbst öffnen. <b>'+done+' von '+all+' erledigt.</b></div>'
+      +(vz.teams||[]).map((id)=>{const t=V.teams().find((x)=>x.id===id)||{id,name:id},ok=prep[id]&&prep[id].swVz===vz.id;return'<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px;align-items:center"><b style="min-width:90px">'+E(t.name)+'</b><span class="vbad '+(ok?"g":"")+'">'+(ok?"erledigt":"wartet")+'</span><span style="flex:1"></span>'+(ok?"":'<button class="btn" data-swo="'+E(id)+'" type="button">Mannschaft öffnen</button>')+'</div>'}).join("")
+      +'<div class="vrow" style="margin-top:10px"><button class="btn" id="sw_ref" type="button">Stand aktualisieren</button>'+(done===all&&all?'<button class="btn" id="sw_clr" type="button">Assistent für den nächsten Wechsel zurücksetzen</button>':"")+'</div></div>';
+    h+='<div class="vmsg '+msgK+'" id="swm">'+E(msg)+'</div>';el.innerHTML=h;
+    el.onclick=async(e)=>{const t=e.target,b=t.closest("[data-swo]");if(b){V.setTeam(b.dataset.swo);return}
+      if(t.id==="sw_ref"){prepLoaded=false;V.render();return}
+      if(t.id==="sw_clr"){try{await V.saveVerein({sw:{}});prep={};prepLoaded=false;msg="";V.render()}catch(x){}return}};
+    return}
+  h+='<p class="sub note">Aktuelle Saison: <b>'+E(cur||"–")+'</b>. Ablauf: Die Trainer bereiten ihre Mannschaft vor. Du planst Altersklassen und Trainer und vollziehst den Wechsel. <b>Bis dahin ändert sich nichts</b>, du kannst jederzeit unterbrechen, der Stand wird gespeichert.</p>';
+  h+='<div class="card vc"><h3>1. Neue Saison</h3><div class="vrow"><label>Neue Saison<input id="sw_s" maxlength="12" style="width:110px" value="'+E(neu)+'"></label></div></div>';
+  h+='<div class="card vc"><h3>2. Altersklassen</h3><div class="note" style="margin-bottom:8px">Ein Jahr weiter: U13 wird U14. Die U19 bleibt U19, denn Spieler des jüngeren Jahrgangs spielen ein weiteres Jahr; wer laut Geburtsjahr zu alt ist, wird von den Trainern bei den Spielern aussortiert. Du kannst jede Altersklasse ändern und eine Mannschaft archivieren (ihre Daten bleiben erhalten). Die Änderungen gelten ab dem Vollzug.</div>'
+    +T.map((t)=>{const na=s.ak[t.id]!==undefined?s.ak[t.id]:nextAk(t.ak),ar=!!s.bar[t.id];
+      return'<div class="vrow" style="align-items:center;border-top:1px solid var(--ln);padding-top:8px;gap:10px"><b style="min-width:64px">'+E(t.name)+'</b><span class="note" style="min-width:54px">'+E(t.ak||"–")+' →</span><input data-swa="'+E(t.id)+'" maxlength="12" style="width:84px" aria-label="Neue Altersklasse von '+E(t.name)+'" value="'+E(na)+'"><label style="display:flex;flex-direction:row;align-items:center;gap:6px;margin:0"><input type="checkbox" data-swb="'+E(t.id)+'"'+(ar?" checked":"")+'> archivieren</label></div>'}).join("")+'</div>';
+  h+='<div class="card vc"><h3>3. Vorbereitung der Mannschaften</h3><div class="note" style="margin-bottom:8px">Jeder Trainer legt in seiner Mannschaft unter „Einstellungen → Hinweise &amp; Links → Saisonwechsel“ fest, wer bleibt und wer geht. Ohne Vorbereitung gilt der Vorschlag nach Geburtsjahr.</div>'
+    +(prepLoaded?T.map((t)=>{const c=prep[t.id],p=c&&c.swPrep;return'<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px;align-items:center"><b style="min-width:90px">'+E(t.name)+'</b>'+(c===null?'<span class="note">nicht lesbar</span>':p?'<span class="vbad g">vorbereitet</span><span class="note">'+(p.keep||[]).length+' bleiben, '+(p.gehen||[]).length+' gehen'+((p.neu||[]).length?', '+p.neu.length+' neu':"")+'</span>':'<span class="vbad">nicht vorbereitet</span><span class="note">Vorschlag nach Geburtsjahr</span>')+'</div>'}).join(""):'<div class="note">Wird geladen …</div>')
+    +'<div class="vrow" style="margin-top:10px"><button class="btn" id="sw_ref" type="button">Stand aktualisieren</button></div></div>';
+  /* Trainer */
+  const tp=mem.filter((m)=>m.rolle==="team"&&teamsOfZu(m).length);
+  h+='<div class="card vc"><h3>4. Trainer</h3><div class="note" style="margin-bottom:8px">Lege fest, in welchen Mannschaften jede Person ab der neuen Saison arbeitet. Die Rechte werden erst beim Vollzug umgestellt, bis dahin sieht niemand eine neue Mannschaft. Wer aufhört, verliert den Zugang; das Anmeldekonto bei Firebase bleibt bestehen und kann dort gelöscht werden.</div>'
+    +(memLoaded?(tp.length?tp.map((m)=>{const p=planOf(s,m);return'<div style="border-top:1px solid var(--ln);padding-top:8px;margin-top:8px"><div class="vrow" style="align-items:center"><b>'+E(m.name||m.id)+'</b><span class="note">'+E(m.id)+'</span></div><div class="vrow" style="gap:6px;flex-wrap:wrap;align-items:center">'+chips(p.ende?[]:p.teams,(t)=>'data-swt="'+E(m.id)+'|'+E(t.id)+'"',T)+'</div><label style="display:flex;flex-direction:row;align-items:center;gap:6px;margin:6px 0 0"><input type="checkbox" data-swe="'+E(m.id)+'"'+(p.ende?" checked":"")+'> hört auf, Zugang entfernen</label></div>'}).join(""):'<div class="note">Keine Trainer mit Mannschaftszuordnung vorhanden.</div>'):'<div class="note">Wird geladen …</div>');
+  h+='<div style="border-top:1px solid var(--ln);padding-top:10px;margin-top:10px"><b>Neuer Trainer ab der neuen Saison</b>'+((s.neu||[]).length?(s.neu||[]).map((x,i)=>'<div class="vrow" style="align-items:center"><span>'+E(x.name)+' · '+E(x.email)+' · '+E(V.artName(x.art))+': '+E((x.teams||[]).map((t)=>V.tshort(t)).join(", "))+'</span><button class="btn" data-swx="'+i+'" type="button">Entfernen</button></div>').join(""):"")
+    +'<div class="vrow" style="align-items:flex-end"><label>Name<input id="nf_n" maxlength="60" value="'+E(nf.name)+'"></label><label>E-Mail<input id="nf_e" maxlength="120" inputmode="email" value="'+E(nf.email)+'"></label><label>Rolle<select id="nf_a">'+V.arten().filter((a)=>(a.rechte||[]).length).map((a)=>'<option value="'+E(a.id)+'"'+(a.id===nf.art?" selected":"")+'>'+E(a.name)+'</option>').join("")+'</select></label></div><div class="vrow" style="gap:6px;flex-wrap:wrap">'+chips(nf.teams,(t)=>'data-nft="'+E(t.id)+'"',T)+'</div><div class="vrow"><button class="btn" id="nf_add" type="button">Hinzufügen</button></div></div></div>';
+  h+='<div class="card vc"><h3>5. Platzplan</h3><div class="note" style="margin-bottom:8px">Die Trainingszeiten im Platzplan gelten meist nur für eine Saison. Beim Vollzug wird der bisherige Plan als Kopie gesichert und danach leer gestartet. Kabinen und Plätze selbst bleiben bestehen.</div><label style="display:flex;flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="sw_pr"'+(s.plReset!==false?" checked":"")+'> Trainingszeiten beim Vollzug leeren ('+(((V.plan||{}).slots||[]).length)+' Einträge im Plan)</label></div>';
+  const notPrep=prepLoaded?T.filter((t)=>!(prep[t.id]&&prep[t.id].swPrep)).length:0;
+  h+='<div class="card vc" style="border:2px solid var(--ac)"><h3>Vollzug</h3><div class="note" style="margin-bottom:8px">Setzt die Saison des Vereins auf <b>'+E(neu||"–")+'</b>, übernimmt die Altersklassen, stellt die Trainerrechte um'+(s.plReset!==false?" und leert den Platzplan":"")+'. Danach führt jede Mannschaft ihren Teil selbst aus; die alte Saison wird dort archiviert.'+(notPrep?' <b>'+notPrep+(notPrep===1?" Mannschaft ist":" Mannschaften sind")+' nicht vorbereitet</b> (es gilt der Vorschlag nach Geburtsjahr).':"")+'</div><div class="vrow"><button class="btn" id="sw_go" type="button" style="background:var(--ac);color:#fff;border-color:var(--ac)"'+(busy||!neu?" disabled":"")+'>'+(armGo?"Wirklich vollziehen?":"Saisonwechsel vollziehen")+'</button></div></div>';
   h+='<div class="vmsg '+msgK+'" id="swm">'+E(msg)+'</div>';
   el.innerHTML=h;
   const say=(t,k)=>{msg=t;msgK=k||"ok";const m=q("#swm",el);if(m){m.textContent=t;m.className="vmsg "+msgK}};
+  const planSet=async(id,patch)=>{const m=mem.find((x)=>x.id===id);if(!m)return;const p={...planOf(sw(),m),...patch};await keep({pl:{...sw().pl,[id]:p}});V.render()};
   el.onchange=async(e)=>{const t=e.target,d=t.dataset||{};
     try{
       if(t.id==="sw_s"){await keep({saison:t.value.trim()});return}
-      if(d.swa){const ak={...sw().ak,[d.swa]:t.value.trim()};await keep({ak});return}
-      if(d.swb){const bar={...sw().bar,[d.swb]:t.checked};await keep({bar});return}
-      if(d.swd){const done={...sw().done,[d.swd]:t.checked};await keep({done});V.render();return}
+      if(t.id==="sw_pr"){await keep({plReset:t.checked});V.render();return}
+      if(d.swa){await keep({ak:{...sw().ak,[d.swa]:t.value.trim()}});return}
+      if(d.swb){await keep({bar:{...sw().bar,[d.swb]:t.checked}});return}
+      if(d.swe){await planSet(d.swe,{ende:t.checked});return}
     }catch(x){say("Das konnte nicht gespeichert werden.","er")}};
+  el.oninput=(e)=>{const t=e.target;if(t.id==="nf_n")nf.name=t.value;if(t.id==="nf_e")nf.email=t.value;if(t.id==="nf_a")nf.art=t.value};
   el.onclick=async(e)=>{const t=e.target,b=t.closest("[data-swo]");
     if(b){V.setTeam(b.dataset.swo);return}
     try{
-      if(t.id==="sw_ak"){busy="ak";V.render();const S=sw(),teams=V.teams().map((x)=>{if(x.aktiv===false)return x;const ar=S.bar[x.id]!==undefined?!!S.bar[x.id]:!nextAk(x.ak)&&/^U\d+/i.test(x.ak||"");const na=S.ak[x.id]!==undefined?S.ak[x.id]:nextAk(x.ak);return{...x,ak:na||x.ak,...(ar?{aktiv:false}:{})}});
-        await V.saveVerein({teams});try{await V.syncTeamNames()}catch(x){}V.log("Saisonwechsel: Altersklassen übernommen");await keep({akDone:true,ak:{},bar:{}});busy="";say("Altersklassen übernommen.");V.render();return}
-      if(t.id==="sw_pl"){const S=sw();if(!armPl){armPl=true;V.render();return}armPl=false;
-        busy="pl";V.render();const old=(W.__VEREIN||{}).saison||"alt",id="archiv_"+String(old).replace(/[^0-9a-z]/gi,"-");
-        await V.fs().doc("plaene/"+id).set({...(V.plan||{}),archiv:true,saison:old,am:new Date().toISOString()});
-        await V.savePlan({slots:[]});V.log("Saisonwechsel: Trainingszeiten im Platzplan geleert (Kopie: "+id+")");await keep({plDone:true});busy="";say("Der Platzplan ist leer. Die Kopie der alten Saison liegt gesichert in der Datenbank.");V.render();return}
+      if(t.id==="sw_ref"){prepLoaded=false;memLoaded=false;V.render();return}
+      const ct=t.closest("[data-swt]");if(ct){const [id,tid]=ct.dataset.swt.split("|");let m=mem.find((x)=>x.id===id);if(m){const p=planOf(sw(),m),a=p.teams.slice(),i=a.indexOf(tid);if(i>=0)a.splice(i,1);else a.push(tid);await planSet(id,{teams:a,ende:false})}return}
+      const cn=t.closest("[data-nft]");if(cn){const i=nf.teams.indexOf(cn.dataset.nft);if(i>=0)nf.teams.splice(i,1);else nf.teams.push(cn.dataset.nft);cn.classList.toggle("on");return}
+      const rx=t.closest("[data-swx]");if(rx){const a=(sw().neu||[]).slice();a.splice(+rx.dataset.swx,1);await keep({neu:a});V.render();return}
+      if(t.id==="nf_add"){
+        const mail=nf.email.trim().toLowerCase(),art=nf.art||((V.arten().find((a)=>(a.rechte||[]).length)||{}).id)||"";
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){say("Bitte eine gültige E-Mail-Adresse eintragen.","er");return}
+        if(!nf.name.trim()){say("Bitte einen Namen eintragen.","er");return}
+        if(!nf.teams.length){say("Bitte mindestens eine Mannschaft wählen.","er");return}
+        if(mem.some((m)=>m.id===mail)||(sw().neu||[]).some((x)=>x.email===mail)){say("Diese Person gibt es schon. Bitte in der Liste oben ändern.","er");return}
+        await keep({neu:(sw().neu||[]).concat([{email:mail,name:nf.name.trim(),art,teams:nf.teams.slice()}])});nf={email:"",name:"",art:nf.art,teams:[]};V.render();return}
       if(t.id==="sw_go"){const S=sw();if(!armGo){armGo=true;V.render();return}armGo=false;
         const ns=(S.saison||nextSeason((W.__VEREIN||{}).saison)||"").trim();if(!ns){say("Bitte die neue Saison eintragen.","er");return}
-        busy="go";V.render();await V.saveVerein({saison:ns,sw:{saison:"",ak:{},bar:{},done:{}}});V.log("Saisonwechsel abgeschlossen: Saison "+ns);busy="";msg="Fertig. Die Saison des Vereins ist jetzt "+ns+".";msgK="ok";V.render();return}
-    }catch(x){busy="";say("Das hat nicht geklappt"+(x&&x.code?" ("+x.code+")":"")+". Bitte erneut versuchen.","er");V.render()}};
+        busy="go";V.render();
+        const now=new Date().toISOString(),id="vz"+Date.now().toString(36),active=ts().map((x)=>x.id);
+        /* Trainer: Rechte umstellen, neue anlegen, aufhörende entfernen */
+        for(const m of mem){if(m.rolle!=="team")continue;const p=S.pl[m.id];if(!p)continue;
+          if(p.ende){await V.fs().doc("mitglieder/"+m.id).delete();continue}
+          const zu=(m.zu||[]).map((z)=>(z.alle||z.bereich)?z:{...z,teams:p.teams.slice()}).filter((z)=>z.alle||z.bereich||(z.teams||[]).length);
+          const ex=V.expandZu(zu);{const {id:_i,...mm}=m;await V.fs().doc("mitglieder/"+m.id).set({...mm,zu,tr:ex.tr,g:ex.g,am:now})}}
+        for(const x of (S.neu||[])){const zu=[{art:x.art,teams:x.teams.slice()}],ex=V.expandZu(zu);await V.fs().doc("mitglieder/"+x.email).set({email:x.email,name:x.name,rolle:"team",zu,tr:ex.tr,g:ex.g,kader:{},am:now})}
+        /* Platzplan */
+        if(S.plReset!==false){const old=(W.__VEREIN||{}).saison||"alt",aid="archiv_"+String(old).replace(/[^0-9a-z]/gi,"-");
+          await V.fs().doc("plaene/"+aid).set({...(V.plan||{}),archiv:true,saison:old,am:now});await V.savePlan({slots:[]})}
+        /* Verein: Saison, Altersklassen, Archivierung; der Vollzug wird zuletzt vermerkt */
+        const teams=V.teams().map((x)=>{if(x.aktiv===false)return x;const na=S.ak[x.id]!==undefined?S.ak[x.id]:nextAk(x.ak);return{...x,ak:na||x.ak,...(S.bar[x.id]?{aktiv:false}:{})}});
+        const run=active.filter((i)=>!S.bar[i]);
+        await V.saveVerein({saison:ns,teams,sw:{vollzug:{id,saison:ns,at:now,teams:run}}});
+        try{await V.syncTeamNames()}catch(x){}
+        V.log("Saisonwechsel vollzogen: Saison "+ns);prep={};prepLoaded=false;mem=[];memLoaded=false;busy="";msg="Der Saisonwechsel ist vollzogen. Die Saison des Vereins ist jetzt "+ns+".";msgK="ok";V.render();return}
+    }catch(x){busy="";armGo=false;say("Das hat nicht geklappt"+(x&&x.code?" ("+x.code+")":"")+". Bitte erneut versuchen.","er");V.render()}};
 }});
+}
+if(W.__V)boot();else{let n=0;const iv=setInterval(()=>{if(W.__V){clearInterval(iv);boot()}else if(++n>100)clearInterval(iv)},100)}
+})();
+
+/* ===== Verein: Anleitungen als PDF (Karte in den Vereins-Einstellungen, kein eigener Menüpunkt) ===== */
+(function(){
+"use strict";
+const W=window;
+function boot(){
+const V=W.__V,D=W.__ANL;if(!V||!V.tabs||!D)return;
+const E=V.E,st=V.tabs.find((t)=>t.id==="vsettings");if(!st||st.__anl)return;
+st.__anl=1;const old=st.render;
+st.render=function(el){old.apply(this,arguments);
+  if(!el||el.querySelector("#anlcard"))return;
+  const c=document.createElement("div");c.className="card vc";c.id="anlcard";
+  c.innerHTML='<h3>Anleitungen (PDF)</h3><div class="note" style="margin-bottom:8px">Eine Anleitung pro Rolle in einfachen Worten, zum Herunterladen oder Weitergeben. Stand: '+E(D.stand)+'.</div><div class="vrow" style="gap:8px;flex-wrap:wrap">'+D.rollen.map((r)=>'<a class="btn" href="anleitungen/'+r.id+'.pdf" target="_blank" rel="noopener" download>'+E(r.name)+'</a>').join("")+'</div>';
+  el.appendChild(c)};
 }
 if(W.__V)boot();else{let n=0;const iv=setInterval(()=>{if(W.__V){clearInterval(iv);boot()}else if(++n>100)clearInterval(iv)},100)}
 })();
