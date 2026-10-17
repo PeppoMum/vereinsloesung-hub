@@ -98,7 +98,7 @@ async function signOutClean(){try{await auth.signOut()}catch(e){}await wipeLocal
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.async=false;s.onload=res;s.onerror=()=>rej(new Error("Konnte "+src+" nicht laden"));document.head.appendChild(s)})}
 const CSS='#u13login{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--bg,#f4f5f7);color:var(--tx,#1c1f24);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:auto}'
 +'#u13login .lc{width:100%;max-width:400px;background:var(--card,#fff);border:1px solid var(--ln,#e5e7eb);border-radius:16px;padding:22px 20px;box-shadow:0 8px 30px rgba(0,0,0,.08)}'
-+'#u13login h1{font-size:20px;margin:0 0 2px}#u13login .sb{color:var(--mu,#6b7280);font-size:13px;margin:0 0 16px}'
++'#u13login h1{font-size:20px;margin:0 0 2px}#u13login .sb{display:block;height:auto;max-height:none;overflow:visible;border-radius:0;background:none;border:0;padding:0;color:var(--mu,#6b7280);font-size:13px;line-height:1.45;margin:0 0 16px}'
 +'#u13login input{width:100%;box-sizing:border-box;margin:0 0 10px;padding:10px 12px;font:inherit;color:var(--tx,#1c1f24);background:var(--card,#fff);border:1px solid var(--ln,#d0d5dd);border-radius:10px}'
 +'#u13login button{width:100%;box-sizing:border-box;padding:10px 12px;margin:0 0 8px;font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--ln,#d0d5dd);background:var(--card,#fff);color:var(--tx,#1c1f24);cursor:pointer}'
 +'#u13login button.pr{background:var(--ac,#2563eb);border-color:var(--ac,#2563eb);color:#fff}#u13login button:disabled{opacity:.55;cursor:default}'
@@ -185,8 +185,9 @@ function modeOf(rights){return rights.indexOf("bearbeiten")>=0?"voll":rights.ind
 const lowC=(s)=>String(s||"").trim().toLowerCase();
 /* Einladung per Link: angemeldete, noch nicht freigegebene Person schickt Name, Rolle(n) und Mannschaft(en) als Anfrage */
 async function showInvite(em,tk){
-  let inv=null,own=null;
-  try{const s=await fs.doc("einladungen/"+tk).get();inv=s.exists?s.data():null}catch(e){}
+  let inv=null,own=null;const FREI=!tk;
+  if(FREI)inv={rollen:ARTEN_STD.filter((a)=>a.id!=="platzwart").map((a)=>({id:a.id,name:a.name})),teams:[]};
+  else try{const s=await fs.doc("einladungen/"+tk).get();inv=s.exists?s.data():null}catch(e){}
   try{const s=await fs.doc("anfragen/"+em).get();own=s.exists?s.data():null}catch(e){}
   const done=(t,h,more)=>{const o=overlay('<div class="ms ok" style="font-size:15px">'+t+'</div><p class="sb">'+h+'</p>'+(more||"")+'<button id="u13so">Abmelden</button>');o.querySelector("#u13so").onclick=()=>signOutClean();return o};
   if(!inv){
@@ -195,25 +196,26 @@ async function showInvite(em,tk){
   return new Promise(()=>{
     const form=(pre)=>{
       pre=pre||{};const rs=(pre.rollen||[]),ts=(pre.teams||[]);
-      const o=overlay('<div class="ms" style="font-size:16px;font-weight:600;color:inherit">Willkommen im Verein</div><p class="sb">Angemeldet als <b>'+E(em)+'</b>. Bitte kurz ausfüllen. Die Jugendleitung bestätigt deine Angaben, danach hast du Zugriff.'+(own&&own.status==="offen"?" Du hast schon eine Anfrage gesendet, hier kannst du sie ändern.":"")+'</p>'
-        +'<div class="ivh">Dein Name</div><input id="ivn" maxlength="60" placeholder="Vor- und Nachname" autocomplete="name" value="'+E(pre.name||(auth.currentUser&&auth.currentUser.displayName)||"")+'">'
-        +'<div class="ivh">Deine Rolle (mehrere möglich)</div>'+(inv.rollen||[]).map((r)=>'<label class="ivc"><input type="checkbox" data-r="'+E(r.id)+'"'+(rs.indexOf(r.id)>=0?" checked":"")+'>'+E(r.name)+'</label>').join("")
+      const o=overlay('<div class="ms" style="font-size:16px;font-weight:600;color:inherit">Willkommen im Verein</div><p class="sb">Angemeldet als <b>'+E(em)+'</b>. '+(FREI?'Du bist noch nicht freigegeben. Sag uns kurz, wer du bist und wofür du Zugang brauchst. ':'Bitte kurz ausfüllen. ')+'Die Jugendleitung bestätigt deine Angaben, danach hast du Zugriff.'+(own&&own.status==="offen"?" Du hast schon eine Anfrage gesendet, hier kannst du sie ändern.":"")+'</p>'
+        +'<div class="ivh">Dein Name (Pflicht)</div><input id="ivn" maxlength="60" placeholder="Vor- und Nachname" autocomplete="name" value="'+E(pre.name||(auth.currentUser&&auth.currentUser.displayName)||"")+'">'
+        +'<div class="ivh">Deine Rolle (mehrere möglich)</div>'+(inv.rollen||[]).filter((r)=>r.id!=="jugendleiter").concat([{id:"jugendleiter",name:"Jugendleiter"}]).map((r)=>'<label class="ivc"><input type="checkbox" data-r="'+E(r.id)+'"'+(rs.indexOf(r.id)>=0?" checked":"")+'>'+E(r.name)+'</label>').join("")
         +'<label class="ivc"><input type="checkbox" id="ivs"'+(pre.sonst?" checked":"")+'>Sonstiges</label><input id="ivst" maxlength="80" placeholder="Welche Aufgabe genau?" value="'+E(pre.sonst||"")+'"'+(pre.sonst?"":" hidden")+'>'
-        +'<div class="ivh">Für welche Mannschaft(en)?</div>'+(inv.teams||[]).map((t)=>'<label class="ivc"><input type="checkbox" data-t="'+E(t.id)+'"'+(ts.indexOf(t.id)>=0?" checked":"")+'>'+E(t.name)+(t.ak?' <span class="sb" style="margin:0">'+E(t.ak)+'</span>':"")+'</label>').join("")
+        +'<div class="ivh">Für welche Mannschaft(en)?</div>'+(FREI?'<input id="ivwo" maxlength="80" placeholder="Zum Beispiel U13 oder U19" value="'+E(pre.wo||"")+'">':"")+(inv.teams||[]).map((t)=>'<label class="ivc"><input type="checkbox" data-t="'+E(t.id)+'"'+(ts.indexOf(t.id)>=0?" checked":"")+'>'+E(t.name)+(t.ak?' <span class="sb" style="margin:0">'+E(t.ak)+'</span>':"")+'</label>').join("")
         +'<div class="ms" id="ivm"></div><button class="pr" id="ivgo">Anfrage senden</button><button id="u13so">Abmelden</button>');
       const m=o.querySelector("#ivm");
       o.querySelector("#ivs").onchange=(e)=>{const i=o.querySelector("#ivst");i.hidden=!e.target.checked;if(!i.hidden)i.focus()};
       o.querySelector("#u13so").onclick=()=>signOutClean();
       o.querySelector("#ivgo").onclick=async()=>{
-        const name=o.querySelector("#ivn").value.trim(),rollen=[...o.querySelectorAll("[data-r]:checked")].map((x)=>x.dataset.r),teams=[...o.querySelectorAll("[data-t]:checked")].map((x)=>x.dataset.t),sonst=o.querySelector("#ivs").checked?o.querySelector("#ivst").value.trim():"";
+        const name=o.querySelector("#ivn").value.trim(),rollen=[...o.querySelectorAll("[data-r]:checked")].map((x)=>x.dataset.r),teams=[...o.querySelectorAll("[data-t]:checked")].map((x)=>x.dataset.t),wo=FREI?o.querySelector("#ivwo").value.trim():"",sonst=o.querySelector("#ivs").checked?o.querySelector("#ivst").value.trim():"";
         const er=(t)=>{m.className="ms er";m.textContent=t};
         if(!name){er("Bitte deinen Namen eintragen.");return}
         if(!rollen.length&&!sonst){er("Bitte mindestens eine Rolle wählen (oder bei „Sonstiges“ die Aufgabe nennen).");return}
-        if(!teams.length){er("Bitte mindestens eine Mannschaft wählen.");return}
+        if(FREI?!wo&&!rollen.every((r)=>r==="jugendleiter"):!teams.length&&!rollen.every((r)=>r==="jugendleiter")){er("Bitte die Mannschaft angeben, für die du Zugang brauchst.");return}
         const b=o.querySelector("#ivgo");b.disabled=true;m.className="ms";m.textContent="";
         try{
-          await fs.doc("anfragen/"+em).set({name,rollen,sonst,teams,s:tk,at:new Date().toISOString(),status:"offen"});
-          own={name,rollen,sonst,teams,status:"offen"};
+          const dd={name,rollen,sonst,teams,at:new Date().toISOString(),status:"offen"};if(FREI)dd.wo=wo;else dd.s=tk;
+          await fs.doc("anfragen/"+em).set(dd);
+          own={name,rollen,sonst,teams,wo,status:"offen"};
           const d=done("Danke, deine Anfrage ist angekommen.","Die Jugendleitung prüft sie und gibt dich frei. Danach öffnest du die App einfach ganz normal.",'<button id="ivre">Meine Angaben ändern</button>');
           d.querySelector("#ivre").onclick=()=>form(own);
         }catch(e){b.disabled=false;er("Das hat nicht geklappt. Bitte erneut versuchen. Falls es wieder nicht geht, ist der Link vielleicht abgelaufen.")}};
@@ -268,7 +270,7 @@ async function clubInit(u){
     fixed=cache.fixed;me=cache.me;V=cache.V;owner=!!cache.owner;frei=!!cache.frei;
   }
   if(!V){
-    if(!fixed&&!me&&!offline&&!window.__DEMO&&einKey()){await showInvite(em,einKey());return null}
+    if(!fixed&&!me&&!offline&&!window.__DEMO){await showInvite(em,einKey());return null}
     if(!fixed){showInfo(me?"Der Verein ist noch nicht eingerichtet.":"Dieses Konto ist nicht freigegeben.","Angemeldet als <b>"+E(em)+"</b>. "+(me?"Bitte den Besitzer der App fragen.":"Zugriff haben nur Personen, die der Verein freigegeben hat."));return null}
     V=await showClubSetup(em);hideOverlay();
   }
@@ -278,7 +280,7 @@ async function clubInit(u){
     o.querySelector("#u13ow").onclick=async()=>{try{await fs.doc("ownercheck/frei").delete();location.reload()}catch(e){o.querySelector("#u13ow").textContent="Hat nicht geklappt – erneut versuchen"}};
     return null}
   const rolle=fixed?"admin":(me&&me.rolle);
-  if((!rolle||ROLLEN_V.indexOf(rolle)<0)&&!offline&&!window.__DEMO&&einKey()){await showInvite(em,einKey());return null}
+  if((!rolle||ROLLEN_V.indexOf(rolle)<0)&&!offline&&!window.__DEMO){await showInvite(em,einKey());return null}
   if(!rolle||ROLLEN_V.indexOf(rolle)<0){showInfo("Dieses Konto ist nicht freigegeben.","Angemeldet als <b>"+E(em)+"</b>. Zugriff haben nur Personen, die der Verein freigegeben hat.");return null}
   einClear();
   me=me||{email:em,rolle:rolle,zu:[],tr:{},g:[],kader:{}};
