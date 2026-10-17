@@ -4694,7 +4694,7 @@ function applyPrefs(p){if(window.__VIEWER||window.__RO)return;const c=cfg(),S=p|
   if(S.acc&&typeof S.acc==="object"&&JSON.stringify(S.acc)!==JSON.stringify(acc)){acc=S.acc;ls("u13acc",JSON.stringify(acc));inject()}
   if(S.gl&&GLS[S.gl]&&S.gl!==gl){gl=S.gl;ls("u13gl",gl);inject()}sync()}
 function fromConfig(){if(window.__VIEWER||window.__RO)return;if(!pf)applyPrefs(null);else sync();const ro=window.__ROLE==="lesen";["dzapp","dzlnk","dzacc","dzgl"].forEach((i)=>{const e=document.getElementById(i);if(e&&i==="dzlnk")e.disabled=ro})}
-const savePrefs=()=>{if(typeof save==="function"&&window.__ROLE!=="lesen"&&window.__ROLE!=="scout")try{save("prefs",window.__ACCT||"main",{design:cur,acc,gl,...(window.__gcP?{gc:window.__gcP}:{}),...(window.__vnP?{vn:window.__vnP}:{}),...(window.__ghP?{gh:window.__ghP}:{})})}catch(e){}};
+const savePrefs=()=>{if(typeof save==="function"&&window.__ROLE!=="lesen"&&window.__ROLE!=="scout")try{save("prefs",window.__ACCT||"main",{design:cur,acc,gl,...(window.__gcP?{gc:window.__gcP}:{}),...(window.__vnP?{vn:window.__vnP}:{}),...(window.__ghP?{gh:window.__ghP}:{}),...(window.__ewP?{ew:window.__ewP}:{})})}catch(e){}};
 set(cur,true);
 const nav=document.querySelector("nav");if(nav)new MutationObserver(wrap).observe(nav,{childList:true,subtree:true,characterData:true});
 document.addEventListener("change",(e)=>{const t=e.target;if(!t||!t.id)return;
@@ -4703,7 +4703,7 @@ document.addEventListener("change",(e)=>{const t=e.target;if(!t||!t.id)return;
   if(t.id==="dzacc"){acc={...acc,[cur]:t.value==="std"?"":t.value};ls("u13acc",JSON.stringify(acc));inject();savePrefs()}
   if(t.id==="dzgl"){gl=t.value;ls("u13gl",gl);inject();savePrefs()}});
 window.__dz={icon,names:NAMES,get:()=>cur,set,sync:fromConfig,linkDefault,wrap,accOf:(des)=>acc[des]||"",glOf:()=>gl,view:(a,g)=>{ovr={a:a||"",g:g||"std"};inject()}};
-window.__dzSync=fromConfig;window.__dzSavePrefs=savePrefs;window.__dzPrefs=(p)=>{pf=p;pfSeen=true;applyPrefs(p);window.__gcP=(p&&p.gc)||window.__gcP||null;window.__vnP=(p&&p.vn)||window.__vnP||null;window.__ghP=(p&&p.gh)||window.__ghP||null;window.__gcOnPrefs&&window.__gcOnPrefs();window.__vnOnPrefs&&window.__vnOnPrefs();window.__ghOnPrefs&&window.__ghOnPrefs()};
+window.__dzSync=fromConfig;window.__dzSavePrefs=savePrefs;window.__dzPrefs=(p)=>{pf=p;pfSeen=true;applyPrefs(p);window.__gcP=(p&&p.gc)||window.__gcP||null;window.__vnP=(p&&p.vn)||window.__vnP||null;window.__ghP=(p&&p.gh)||window.__ghP||null;window.__gcOnPrefs&&window.__gcOnPrefs();window.__vnOnPrefs&&window.__vnOnPrefs();window.__ewP=(p&&p.ew)||window.__ewP||null;window.__ewLoaded=true;window.__ghOnPrefs&&window.__ghOnPrefs();window.__ewOnPrefs&&window.__ewOnPrefs()};
 
 /* ---------- A4-Export: Design wählbar ---------- */
 function xdes(){const v=ls("u13xdes")||mem.x;return v==="glas"||v==="ruhig"||v==="kobalt"?v:"kobalt"}
@@ -6839,7 +6839,7 @@ V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
     +'<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px;margin-top:8px"><label>Bezeichnung (nur für dich)<input id="dl_n" maxlength="40" placeholder="z. B. Vorstand Vorführung" style="min-width:200px"></label><label>Stellt diese Rolle dar<select id="dl_r">'+ropt("trainer")+'</select></label><button class="btn" id="dl_add" type="button">Link anlegen</button></div><div class="vmsg" id="dl_m"></div></div>'}
   {const dz=W.__dz,cur=dz?dz.get():"ruhig",ACCN=(()=>{const e=document.getElementById("dzacc");return e?Array.from(e.options).map((o)=>[o.value,o.textContent]):[["","Standard"]]})(),GLN=(()=>{const e=document.getElementById("dzgl");return e?Array.from(e.options).map((o)=>[o.value,o.textContent]):[["std","Standard"]]})(),ac=(document.getElementById("dzacc")||{}).value||"",gl=(document.getElementById("dzgl")||{}).value||"std",th=(document.getElementById("th")||{}).value||"";
     const op=(L,v)=>L.map((x)=>'<option value="'+E(x[0])+'"'+(x[0]===v?" selected":"")+'>'+E(x[1])+'</option>').join("");
-    h+='<div class="card vc"><h3>Design und Darstellung</h3><div class="note" style="margin-bottom:8px">Gilt für dein Konto auf allen Seiten – du musst dafür in keine Mannschaft wechseln.</div><div class="vrow"><label>Design<select id="vdz_app">'+op([["ruhig","Klar & ruhig"],["glas","Liquid Glass"],["kobalt","Vereinsfarben"]],cur)+'</select></label><label>Farbe<select id="vdz_acc">'+op(ACCN,ac)+'</select></label><label>Glas-Transparenz<select id="vdz_gl"'+(cur==="glas"?"":" disabled")+'>'+op(GLN,gl)+'</select></label><label>Darstellung<select id="vdz_th">'+op([["","Automatisch"],["light","Hell"],["dark","Dunkel"]],th)+'</select></label></div></div>'}
+    h+='<div class="card vc"><h3>Design und Darstellung</h3><div class="note" style="margin-bottom:8px">Gilt für dein Konto auf allen Seiten – du musst dafür in keine Mannschaft wechseln.</div><div style="margin-bottom:8px"><button class="btn" id="ewagain" type="button">Einführung noch einmal ansehen</button></div><div class="vrow"><label>Design<select id="vdz_app">'+op([["ruhig","Klar & ruhig"],["glas","Liquid Glass"],["kobalt","Vereinsfarben"]],cur)+'</select></label><label>Farbe<select id="vdz_acc">'+op(ACCN,ac)+'</select></label><label>Glas-Transparenz<select id="vdz_gl"'+(cur==="glas"?"":" disabled")+'>'+op(GLN,gl)+'</select></label><label>Darstellung<select id="vdz_th">'+op([["","Automatisch"],["light","Hell"],["dark","Dunkel"]],th)+'</select></label></div></div>'}
   if(V.isAdmin())h+='<div class="card vc"><h3>Links veröffentlichen</h3><div class="note" style="margin-bottom:8px">Für die Spielerlinks und die Links einer einzelnen Mannschaft. Wähle die Mannschaft, deren Links du jetzt sofort aktualisieren willst.</div><div class="vrow"><label>Links für Mannschaft<select id="vlk_t">'+V.teams().filter((t)=>t.aktiv!==false).map((t)=>'<option value="'+E(t.id)+'"'+(t.id===W.__TID?" selected":"")+'>'+E(t.name+(t.ak?" ("+t.ak+")":""))+'</option>').join("")+'</select></label></div><div id="vlkx"></div><div class="vrow" style="margin-top:10px;border-top:1px solid var(--ln);padding-top:10px"><button class="btn" id="vlk_all" type="button" style="min-height:44px">Alle Mannschaften nacheinander aktualisieren</button><span class="note" style="flex:1;min-width:200px">Die App wechselt dazu automatisch von Mannschaft zu Mannschaft und veröffentlicht deren Links. Das dauert etwa eine halbe Minute pro Mannschaft – die Seite bitte offen lassen.</span></div><div class="vmsg" id="vlk_am"></div></div>';
   if(V.isAdmin()){const arts=V.arten().filter((x)=>x.id!=="platzwart"),tms=V.teams().filter((t)=>t.aktiv!==false);
     h+='<div class="card vc"><h3>Ansicht als Rolle (Vorschau)</h3><div class="note" style="margin-bottom:8px">Zeigt dir die App so, wie sie die gewählte Rolle sieht – zum Testen, für Vorführungen oder einen Pitch. Du bleibst dabei Administrator; oben im Menü beendest du die Vorschau mit einem Klick. Verschickbare Links für einzelne Rollen kommen in einer späteren Stufe (der bestehende „Demo“-Link je Mannschaft zeigt schon Zufallsdaten ohne Anmeldung).</div>'
@@ -7037,6 +7037,86 @@ const css=document.createElement("style");css.textContent='.vf{display:flex;gap:
 document.head.appendChild(css);
 if(W.__CLUB)init2();else document.addEventListener("u13club",init2,{once:true});
 function init2(){setTimeout(()=>{mirrorStart();try{mountEmb()}catch(e){}try{if(isFach()&&!sessionStorage.getItem("u13fachopen")){sessionStorage.setItem("u13fachopen","1");V.open("fach")}}catch(e){}},1500)}
+}
+if(W.__V)boot();else{let n=0;const iv=setInterval(()=>{if(W.__V){clearInterval(iv);boot()}else if(++n>100)clearInterval(iv)},100)}
+})();
+
+/* ===== Verein: Einführung für neue Personen (einmal pro Konto, jederzeit wieder aufrufbar) ===== */
+(function(){
+"use strict";
+const W=window;
+function boot(){
+const V=W.__V;if(!V)return;
+const E=V.E;
+const em=()=>String((W.__VME||{}).email||"").toLowerCase();
+const lsKey=()=>"u13ew:"+em();
+const seenLocal=()=>{try{return !!localStorage.getItem(lsKey())}catch(e){return false}};
+let open=false,step=0,shown=false;
+const first=()=>{const n=String((W.__VME||{}).name||"").trim();return n?n.split(/\s+/)[0]:""};
+function roleText(){
+  const m=V.me(),r=V.rolle();
+  if(r==="admin")return"Administrator";if(r==="jugendleiter")return"Jugendleiter";if(r==="platzwart")return"Platzwart";
+  const zu=(m.zu||[]).map((z)=>{const nm=V.artName(z.art),t=z.alle?"alle Mannschaften":z.bereich?"Bereich":((z.teams||[]).map((t)=>V.tshort(t)).join(", "));return nm+(t?" ("+t+")":"")});
+  return zu.join(", ")||"Mitglied"}
+function can(){
+  const L=[],tm=V.teams(),has=(x)=>V.isAll()||tm.some((t)=>V.has(t.id,x)),r=V.rolle();
+  if(r==="admin")L.push("Alles im Verein einrichten: Personen und Rechte, Mannschaften, Platz- und Kabinenplan, Einstellungen.");
+  else if(r==="jugendleiter")L.push("Alle Mannschaften sehen und bearbeiten, Personen freigeben, den Platz- und Kabinenplan pflegen.");
+  else{
+    if(has("bearbeiten"))L.push("Deine Mannschaft pflegen: Training, Spiele, Anwesenheit und Spieler eintragen.");
+    else if(has("sehen"))L.push("Die Daten deiner Mannschaft ansehen (nur lesen).");
+    if(has("notizen"))L.push("Notizen der Trainer lesen.");
+    if(has("kader")||has("kaderbearb"))L.push("Kader und Scouting ansehen"+(has("kaderbearb")?" und bearbeiten":"")+".");
+    if(has("hinweise"))L.push("Hinweise an die Mannschaften schreiben.");
+    if(has("tw"))L.push("Torwart-Notizen schreiben und lesen.");
+    if(has("ath"))L.push("Athletik-Notizen schreiben.");
+    if(r==="platzwart")L.push("Die Kabinenbelegung ändern.");
+    if(V.hasG("plan")&&r!=="platzwart")L.push("Den Platz- und Kabinenplan ansehen"+(V.canPlan()?" und pflegen":"")+".");
+  }
+  if(!L.length)L.push("Deine Rechte legt die Jugendleitung fest. Wenn dir etwas fehlt, melde dich bei ihr.");
+  return L}
+const steps=()=>{
+  const nm=first(),multi=V.teams().filter((t)=>t.aktiv!==false).length>1;
+  const S=[];
+  S.push({t:"Willkommen"+(nm?", "+nm:"")+"!",h:'<p>Schön, dass du da bist. In drei kurzen Schritten siehst du, was du hier tun kannst und wie du dich zurechtfindest. Das dauert eine Minute.</p><p class="ewr">Deine Rolle: <b>'+E(roleText())+'</b></p>'});
+  S.push({t:"Das kannst du tun",h:'<ul>'+can().map((x)=>'<li>'+E(x)+'</li>').join("")+'</ul><p class="ewn">Was du nicht siehst, ist für deine Rolle nicht vorgesehen.</p>'});
+  S.push({t:"So findest du dich zurecht",h:'<ul><li><b>Menü oben:</b> Dort wechselst du zwischen den Bereichen, zum Beispiel Übersicht, Mannschaft oder Platzplan. Am Handy steht hinter den drei Punkten der Rest.</li>'+(multi?'<li><b>Mannschaft wechseln:</b> Tippe oben auf den Namen der Mannschaft, zum Beispiel „U13“.</li>':'')+'<li><b>Hell oder Dunkel:</b> Das kannst du oben einstellen. „Auto“ richtet sich nach deinem Gerät.</li><li><b>Am Handy wie eine App:</b> Öffne das Teilen-Menü des Browsers und wähle „Zum Home-Bildschirm“.</li></ul>'});
+  S.push({t:"Dein Design",h:'<p>Wähle, wie die App aussehen soll. Du kannst das später jederzeit unter „Einstellungen“ ändern.</p><div class="ewd">'+[["kobalt","Vereinsfarben"],["ruhig","Klar & ruhig"],["glas","Liquid Glass"]].map((d)=>'<button type="button" data-ewd="'+d[0]+'"'+(W.__dz&&W.__dz.get()===d[0]?' class="on"':"")+'>'+E(d[1])+'</button>').join("")+'</div>'});
+  return S}
+function css(){if(document.getElementById("ewcss"))return;const c=document.createElement("style");c.id="ewcss";c.textContent='#ew{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#ew[hidden]{display:none}'
+ +'#ew .ewc{width:100%;max-width:440px;max-height:calc(100dvh - 32px);overflow:auto;background:var(--cs,var(--card));color:var(--tx);border:1px solid var(--ln);border-radius:22px;padding:22px 20px 16px;box-shadow:0 24px 70px rgba(0,0,0,.4)}'
+ +'#ew h2{margin:0 0 10px;font-size:22px;line-height:1.2}#ew p,#ew li{font-size:15px;line-height:1.5;margin:0 0 10px}#ew ul{margin:0 0 6px;padding-left:20px}#ew li{margin-bottom:8px}#ew .ewr{padding:10px 12px;border-radius:12px;background:var(--acs);color:var(--tx)}#ew .ewn{color:var(--mu);font-size:13px}'
+ +'#ew .ewd{display:grid;gap:8px}#ew .ewd button{font:inherit;font-weight:600;padding:12px;border-radius:12px;border:1px solid var(--ln);background:var(--card);color:var(--tx);cursor:pointer;text-align:left}#ew .ewd button.on{border:2px solid var(--ac);background:var(--acs);color:var(--ac)}'
+ +'#ew .ewdots{display:flex;gap:6px;justify-content:center;margin:12px 0 10px}#ew .ewdots i{width:8px;height:8px;border-radius:50%;background:var(--ln)}#ew .ewdots i.on{background:var(--ac)}'
+ +'#ew .ewb{display:flex;gap:8px;align-items:center}#ew .ewb .sp{flex:1}#ew .ewb button{font:inherit;font-weight:600;padding:11px 16px;border-radius:12px;border:1px solid var(--ln);background:var(--card);color:var(--tx);cursor:pointer;min-height:44px}#ew .ewb button.pr{background:var(--ac);border-color:var(--ac);color:#fff}#ew .ewb button.sk{border:0;background:none;color:var(--mu);font-weight:500;padding-left:4px}';
+ document.head.appendChild(c)}
+function done(){
+  open=false;const o=document.getElementById("ew");if(o)o.hidden=true;
+  try{localStorage.setItem(lsKey(),"1")}catch(e){}
+  W.__ewP=1;try{W.__dzSavePrefs&&W.__dzSavePrefs()}catch(e){}}
+function render(){
+  css();let o=document.getElementById("ew");if(!o){o=document.createElement("div");o.id="ew";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label","Einführung");document.body.appendChild(o);
+    o.onclick=(e)=>{const t=e.target;
+      if(t.dataset&&t.dataset.ewd){if(W.__dz){W.__dz.set(t.dataset.ewd);try{W.__dzSavePrefs&&W.__dzSavePrefs()}catch(x){}}o.querySelectorAll("[data-ewd]").forEach((b)=>b.classList.toggle("on",b===t));return}
+      if(t.id==="ewn"){const n=steps().length;if(step<n-1){step++;render()}else done();return}
+      if(t.id==="ewp"){if(step>0){step--;render()}return}
+      if(t.id==="ews")done()};
+    o.addEventListener("keydown",(e)=>{if(e.key==="Escape")done()})}
+  const S=steps(),s=S[Math.min(step,S.length-1)],last=step>=S.length-1;
+  o.hidden=false;
+  o.innerHTML='<div class="ewc"><h2>'+E(s.t)+'</h2>'+s.h+'<div class="ewdots">'+S.map((x,i)=>'<i class="'+(i===step?"on":"")+'"></i>').join("")+'</div><div class="ewb">'+(step>0?'<button id="ewp" type="button">Zurück</button>':'<button id="ews" class="sk" type="button">Überspringen</button>')+'<span class="sp"></span><button id="ewn" class="pr" type="button">'+(last?"Los geht’s":"Weiter")+'</button></div></div>';
+  const b=o.querySelector("#ewn");if(b)b.focus()}
+V.einfuehrung=()=>{open=true;step=0;render()};
+function check(){
+  if(shown||open||!W.__ewLoaded)return;
+  if(W.__VIEWER||W.__RO||W.__DEMO||(W.__NOLANDING&&!W.__EWTEST))return;
+  if(W.__ewP||seenLocal())return;
+  if(!em())return;
+  shown=true;setTimeout(()=>{if(!W.__ewP&&!seenLocal())V.einfuehrung()},900)}
+W.__ewOnPrefs=check;
+document.addEventListener("click",(e)=>{if(e.target&&(e.target.id==="ewagain"||e.target.id==="ewagain2"))V.einfuehrung()});
+setInterval(()=>{const c=document.getElementById("dzcard");if(c&&!document.getElementById("ewagain2")){const b=document.createElement("button");b.id="ewagain2";b.type="button";b.className="btn";b.style.marginTop="10px";b.textContent="Einführung noch einmal ansehen";c.appendChild(b)}},1500);
+if(W.__CLUB)setTimeout(check,1500);else document.addEventListener("u13club",()=>setTimeout(check,1500),{once:true});
 }
 if(W.__V)boot();else{let n=0;const iv=setInterval(()=>{if(W.__V){clearInterval(iv);boot()}else if(++n>100)clearInterval(iv)},100)}
 })();
