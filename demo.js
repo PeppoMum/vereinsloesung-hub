@@ -60,6 +60,9 @@ TEAMS.forEach(([tid,name],ti)=>{
     ids.forEach((id,j)=>{const r=R();sp[id]=past&&r<.7?{status:"k",minuten:Math.round(30*(1+R()))}:{status:past?"t":"n",minuten:0}});
     const to=past?pick([0,1,2,3,4]):null,gg=past?pick([0,1,2,3]):null;if(past)gl.push([d,to,gg]);
     put(tid+"__games/g"+(i+1),{id:"g"+(i+1),nr:i+1,datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:i%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:past?sp:{}})});
+  /* weitere gespielte Spiele, damit jede Mannschaft 9 Ergebnisse für die Formkurve hat */
+  for(let k=0;gl.length<9;k++){let d=addD(TODAY,-61-7*k);while(dow(d)<6)d=addD(d,1);const to=pick([0,1,2,3,4]),gg=pick([0,1,2,3]),sp={};ids.forEach((id)=>{sp[id]={status:R()<.7?"k":"t",minuten:30}});gl.push([d,to,gg]);
+    put(tid+"__games/gv"+k,{id:"gv"+k,nr:20+k,art:"Meisterschaft",datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:k%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:sp})}
   /* Termine bis Ende Dezember (Auswertungen zählen trotzdem nur bis heute) */
   {const END=TODAY.slice(0,4)+"-12-31";let n=0,gi=8;
    for(let d=addD(TODAY,1);d<=END;d=addD(d,1)){const w=dow(d);
@@ -122,11 +125,6 @@ TEAMS.forEach(([tid,name],ti)=>{
         else if(k===2&&tid==="d1"){g.fd=f.id;f.d=addD(g.datum,1);f.z="11:00"}   /* verlegt: App fragt */
         else if(k===3&&tid==="d1"){const o=NAMES.find((n)=>n!==g.gegner&&n!==NAMES[0]&&n!==own);f.heim=h?own:o;f.gast=h?o:own}  /* gleicher Tag, anderer Gegner: App fragt */}
       put(tid+"__games/"+g.id,g);sp.push(f)});
-    if(liga){   /* weitere gespielte Ligaspiele (nur FUSSBALL.DE), damit jede Mannschaft mind. 9 Spiele für die Formtabelle hat */
-      const have=sp.filter((x)=>x.d<TODAY).length;
-      for(let k=0;have+k<9;k++){const d=addD(TODAY,-61-7*k),h=k%2===0,o=NAMES[(k+1)%NAMES.length]===own?NAMES[1]:NAMES[(k+1)%NAMES.length],a=(k*5+tid.charCodeAt(0))%5,b=(k*3+tid.charCodeAt(1))%4;
-        sp.push({id:"DG"+tid+"v"+k,d,z:"10:30",wett:AK[0],alt:AK[1],heim:h?own:o,gast:h?o:own,st:"",ht:h?a:b,gt:h?b:a,ort:"Sportanlage Musterstadt, Beispielweg 1, 12345 Musterstadt",ortUrl:"",h});
-        const FF=(store.get(tid+"__config/main")||{}).spielformen||[{}];put(tid+"__games/gv"+k,{id:"gv"+k,nr:0,datum:d,dauer:60,form:FF[0].id,gewichtet:true,spielerzahl:FF[0].spieler||7,gegner:o,ha:h?"H":"A",tore:a,gt:b,wertung:true,spieler:{},fd:"DG"+tid+"v"+k})}}
     if(tid==="d1"){const last=fut[fut.length-1],d=addD(last?last.datum:TODAY,14);sp.push({id:"DG"+tid+"neu",d,z:"10:30",wett:"Kreisliga B D-Junioren",alt:"D-Junioren",heim:NAMES[3],gast:own,st:"",ht:null,gt:null,ort:"Sportplatz Testfeld, Probeweg 2",ortUrl:"",h:false});
       sp.push({id:"DG"+tid+"fr",d:addD(d,7),z:"11:00",wett:"Freundschaftsspiele",alt:"D-Junioren",heim:own,gast:NAMES[6],st:"",ht:null,gt:null,ort:"",ortUrl:"",h:true})}
     sp.sort((a,b)=>(a.d+a.z).localeCompare(b.d+b.z));
@@ -191,10 +189,10 @@ window.firebase={initializeApp(){},auth:Object.assign(()=>auth,{GoogleAuthProvid
 
 /* ---------- Hinweisleiste oben ---------- */
 const bar=()=>{if(document.getElementById("u13demo"))return;
-  const st=document.createElement("style");st.textContent="#u13demo{position:sticky;top:0;z-index:9000;background:#7c3aed;color:#fff;font:13px/1.4 system-ui,sans-serif;padding:6px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;text-align:center}#u13demo b{font-weight:700}#u13demo a{color:#fff;text-decoration:underline;cursor:pointer}";document.head.appendChild(st);
+  const st=document.createElement("style");st.textContent="#u13demo{position:relative;z-index:9000;background:#7c3aed;color:#fff;font:13px/1.4 system-ui,sans-serif;padding:6px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;text-align:center}#u13demo b{font-weight:700}#u13demo a{color:#fff;text-decoration:underline;cursor:pointer}";document.head.appendChild(st);
   const d=document.createElement("div");d.id="u13demo";d.innerHTML="<span><b>Demo</b> · Ansicht als <b>"+P.n.replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</b> · alle Namen und Daten sind erfunden, nichts wird gespeichert</span>";
   document.body.insertBefore(d,document.body.firstChild);
-  const fitD=()=>document.documentElement.style.setProperty("--demoh",(d.offsetHeight||0)+"px");fitD();window.addEventListener("resize",fitD);setTimeout(fitD,300);setTimeout(fitD,1500)};
+  const fitD=()=>document.documentElement.style.setProperty("--demoh","0px");fitD();window.addEventListener("resize",fitD);setTimeout(fitD,300);setTimeout(fitD,1500)};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bar);else bar();
 setInterval(bar,1500);
 })();
