@@ -341,7 +341,7 @@ nav button .em{display:inline-flex;justify-content:center;align-items:center}
 <div class="card" id="dzcard" style="margin-bottom:12px"><h3>Design</h3><div class="bar" style="margin:0"><label>Design der App <select id="dzapp"><option value="ruhig">Klar &amp; ruhig</option><option value="glas">Liquid Glass</option><option value="kobalt">Vereinsfarben</option></select></label><label>Farbe <select id="dzacc"></select></label><label>Glas-Transparenz <select id="dzgl"></select></label></div><p class="note" style="margin:8px 0 0">Das Design der App gilt für alle Trainer und Geräte. Für jeden externen Link lässt sich das Design unter „Hinweise &amp; Links“ einzeln ändern. Das Design der A4-Exporte wählst du direkt bei den Export-Knöpfen.</p></div>
 </div>
 <div class="etp" id="etp-l" hidden>
-<div class="card" id="lkh" style="margin-bottom:12px"><h3>Hinweise in Spielerlinks</h3><p class="note" style="margin-top:0">Farbiger Hinweis oben im Link („Gesamter Link“: in beiden Reitern und im Terminplan-Link) oder nur in den Terminplänen. Ohne Datum bleibt er sichtbar, bis du ihn entfernst. Wirkt in den Links bei der nächsten Aktualisierung (alle 6 Stunden).</p><div id="hnl"></div>
+<div class="card" id="lkh" style="margin-bottom:12px"><h3>Hinweise in Spielerlinks</h3><p class="note" style="margin-top:0">Farbiger Hinweis oben im Link („Gesamter Link“: in beiden Reitern und im Teamlink) oder nur in den Terminplänen. Ohne Datum bleibt er sichtbar, bis du ihn entfernst. Wirkt in den Links bei der nächsten Aktualisierung (alle 6 Stunden).</p><div id="hnl"></div>
 <div class="bar" style="margin:12px 0 0;align-items:flex-start"><label class="note" style="flex:1;min-width:240px">Hinweis<br><textarea id="hnt" rows="2" style="width:100%" placeholder="z. B. Training fällt am Freitag aus"></textarea></label><label class="note">Farbe<br><select id="hnf"><option value="blau">Blau – Info</option><option value="gelb">Gelb – Achtung</option><option value="rot">Rot – Wichtig</option><option value="gruen">Grün – Positiv</option></select></label><label class="note">Anzeigen bei<br><select id="hnw"><option value="alle">Gesamter Link</option><option value="plan">Nur Terminpläne</option></select></label></div>
 <div class="bar" style="margin:8px 0 0"><label class="note">Sichtbar ab (optional)<br><input type="date" id="hnv"></label><label class="note">Sichtbar bis (optional)<br><input type="date" id="hnb"></label></div>
 <div id="hnpw" style="display:none;margin:10px 0 0"><div class="note" style="margin-bottom:4px">Nur in diesen Monaten (leer = in allen)</div><div class="chips" id="hnmo" style="flex-wrap:wrap"></div><label class="note" style="display:block;margin-top:8px">Und/oder nur in diesen Kalenderwochen (z. B. 41 oder 43–45, 48)<br><input id="hnkw" style="width:220px" autocomplete="off" placeholder="leer = in allen"></label><p class="note" id="hnph" style="margin:6px 0 0">Der Hinweis erscheint nur, wenn der angezeigte Monat bzw. die angezeigte Woche dazu passt. Beispiel: „November“ → im Novemberplan und in allen Wochen, die in den November fallen.</p></div>
@@ -354,7 +354,7 @@ nav button .em{display:inline-flex;justify-content:center;align-items:center}
 <div class="tw"><table id="lkt"></table></div>
 </div>
 <div class="card" id="lkco" style="margin-top:12px"><h3>Trainer-Links (Co-Trainer)</h3><p class="note" style="margin-top:0">Für Trainer und Verantwortliche aus den Stammdaten (außer dem Besitzer). Sie sehen und bearbeiten alles, aber nicht die Einstellungen. <b>Wichtig:</b> Bearbeiten geht nur mit Claude-Konto, und die Person muss unter „Teilen“ der Seite als Mitwirkende eingeladen sein; der Link allein reicht nicht. Ein ausgeschalteter Link sperrt den Zugang über die App sofort (ohne „Aktualisieren“).</p><div class="tw"><table id="lkct"></table></div></div>
-<div class="card" id="lkx" style="margin-top:12px"><h3>Externe Links (nur ansehen)</h3><p class="note" style="margin-top:0">Für Personen außerhalb des Teams. „Vollansicht“ und „Struktur“ zeigen die komplette App (ohne Änderungen). <b>„Nur Terminpläne“</b> zeigt ausschließlich Monats- und Wochenplan und lässt sich ohne Anmeldung öffnen (der A4-Download steht nur den Trainern zur Verfügung) – Spielerprofile, Notizen und To-Dos sind darin nicht enthalten. <b>„Demo“</b> zeigt die ganze App samt A4-Export-Knöpfen mit komplett zufällig erzeugten Daten (Lorem ipsum) – ohne Anmeldung, nichts davon ist echt. Ein-/Ausschalten gilt nach wenigen Sekunden, neue Daten werden etwa alle 6 Stunden übernommen. <span id="lkxadm" class="note" hidden><b>Vollansicht, Struktur und Demo kann nur der Administrator anlegen</b> (Verein → Einstellungen).</span></p><div class="tw"><table id="lkxt"></table></div></div>
+<div class="card" id="lkx" style="margin-top:12px"><h3>Externe Links (nur ansehen)</h3><p class="note" style="margin-top:0">Für Personen außerhalb des Teams. „Vollansicht“ und „Struktur“ zeigen die komplette App (ohne Änderungen). <b>„Teamlink“</b> zeigt ausschließlich den Terminplan (Monats- und Wochenplan) und lässt sich ohne Anmeldung öffnen (der A4-Download steht nur den Trainern zur Verfügung) – Spielerprofile, Notizen und To-Dos sind darin nicht enthalten. <b>„Demo“</b> zeigt die ganze App samt A4-Export-Knöpfen mit komplett zufällig erzeugten Daten (Lorem ipsum) – ohne Anmeldung, nichts davon ist echt. Ein-/Ausschalten gilt nach wenigen Sekunden, neue Daten werden etwa alle 6 Stunden übernommen. <span id="lkxadm" class="note" hidden><b>Vollansicht, Struktur und Demo kann nur der Administrator anlegen</b> (Verein → Einstellungen).</span></p><div class="tw"><table id="lkxt"></table></div></div>
 
 </div>
 <div class="etp" id="etp-s" hidden>
@@ -2051,7 +2051,7 @@ function demoSettings(){
   const lkct=document.getElementById("lkct");
   if(lkct)lkct.innerHTML='<tr><th style="text-align:left">Trainer</th><th>Aktiv</th><th style="text-align:left">Link</th><th style="text-align:left">Stand</th></tr>'+((D0.config&&D0.config.staff)||[]).filter((s)=>!s.owner).map((s,i)=>'<tr><td style="text-align:left">'+esc(s.name)+'</td><td><input type="checkbox" checked disabled></td><td style="text-align:left">'+inp("trainer"+(i+1))+'</td><td style="text-align:left"><span class="pill">Demo</span></td></tr>').join("");
   const lkxt=document.getElementById("lkxt");
-  if(lkxt)lkxt.innerHTML='<tr><th style="text-align:left">Link</th><th>Aktiv</th><th style="text-align:left">Adresse</th><th style="text-align:left">Stand</th></tr>'+[["Vollansicht","voll"],["Struktur (anonym)","anon"],["Nur Terminpläne","plan"],["Demo","demo"]].map((r)=>'<tr><td style="text-align:left"><b>'+r[0]+'</b></td><td><input type="checkbox" '+(r[1]==="voll"?"":"checked ")+'disabled></td><td style="text-align:left">'+inp(r[1])+'</td><td style="text-align:left"><span class="pill">Demo</span></td></tr>').join("");
+  if(lkxt)lkxt.innerHTML='<tr><th style="text-align:left">Link</th><th>Aktiv</th><th style="text-align:left">Adresse</th><th style="text-align:left">Stand</th></tr>'+[["Vollansicht","voll"],["Struktur (anonym)","anon"],["Teamlink","plan"],["Demo","demo"]].map((r)=>'<tr><td style="text-align:left"><b>'+r[0]+'</b></td><td><input type="checkbox" '+(r[1]==="voll"?"":"checked ")+'disabled></td><td style="text-align:left">'+inp(r[1])+'</td><td style="text-align:left"><span class="pill">Demo</span></td></tr>').join("");
   const lkm=document.getElementById("lkm");if(lkm)lkm.textContent="Demo: Alle Links hier sind Platzhalter und funktionieren nicht.";
 }
 /* Demo-Kaderplanung: komplett erfundene Daten, nichts aus dem echten Kader */
@@ -2181,7 +2181,7 @@ async function kzRemove(pid){const l=L[pid]||{};if(!l.alias)return;await window.
 /* ---------- Standard-Passwort und automatische Kurzlinks ----------
    Standard-Passwort: ein Passwort für alle Spielerlinks der Mannschaft (Trainer ändern es hier; jeder Link kann ein eigenes bekommen, Familien können es selbst ändern).
    Es liegt NICHT im Programmtext, sondern nur in der Datenbank (Sammlung scoutkz, Dokument std: nur Trainer mit Schreibrecht).
-   Automatisch: sobald ein Spielerlink aktiv ist, entsteht der Kurzlink  <Mannschaft><Vorname><Name>  (z. B. d1loganfrost), für den Terminplan  <Mannschaft>terminplaene. */
+   Automatisch: sobald ein Spielerlink aktiv ist, entsteht der Kurzlink  <Mannschaft><Vorname><Name>  (z. B. d1loganfrost), für den Teamlink  <Mannschaft>team. */
 const kzStd={pw:"",auto:true,loaded:false};
 const kzSlug=(s)=>String(s||"").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
 const kzPrefix=()=>kzSlug(window.__TID||mann()||"u13");
@@ -2205,7 +2205,7 @@ function kzAutoKick(){
     for(const p of todo){const l=L[p.id]||{};if(!l.key||!l.aktiv||l.alias)continue;
       const alias=await kzFreeAlias(kzPrefix()+kzSlug(p.vorname)+kzSlug(p.name));
       await kzSet(p.id,alias,l.key,l.aktiv,false);L[p.id]={...(L[p.id]||{}),alias};n++}
-    const x2=L.xplan||{};if(plan&&x2.key&&x2.aktiv&&!x2.alias){await kzSet("xplan",await kzFreeAlias(kzPrefix()+"terminplaene"),x2.key,x2.aktiv,true);n++}
+    const x2=L.xplan||{};if(plan&&x2.key&&x2.aktiv&&!x2.alias){await kzSet("xplan",await kzFreeAlias(kzPrefix()+"team"),x2.key,x2.aktiv,true);n++}
     const m=T("lkm");if(m&&n){m.className="note";m.textContent=n+(n===1?" Kurzlink":" Kurzlinks")+" automatisch angelegt."}
   }catch(e){kzAutoNext=Date.now()+30000;try{console.warn("Kurzlink-Automatik:",e&&(e.code||e.message))}catch(_){}}
   finally{kzAutoBusy=false;renderLinks();setTimeout(kzAutoKick,1500)}})()}
@@ -2216,7 +2216,7 @@ function renderStd(){
   if(!kzCanW()||!kzStd.loaded){el.innerHTML="";return}
   if(document.activeElement&&document.activeElement.id==="kzstdin")return;
   const h='<div class="card" id="kzstdc" style="margin:10px 0"><h4 style="margin:0 0 6px">Kurzlinks</h4>'
-   +'<label class="note" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="kzauto" '+(kzStd.auto!==false?"checked":"")+'> <span>Kurzlinks automatisch anlegen: Spieler <b>'+esc(kzPrefix())+'vornamename</b> (z. B. '+esc(kzPrefix())+'loganfrost), Terminplan <b>'+esc(kzPrefix())+'terminplaene</b>. Jeder Spielerlink bekommt sein eigenes, zufälliges Passwort (steht in der Tabelle, Familien können es im Link selbst ändern).</span></label>'
+   +'<label class="note" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="kzauto" '+(kzStd.auto!==false?"checked":"")+'> <span>Kurzlinks automatisch anlegen: Spieler <b>'+esc(kzPrefix())+'vornamename</b> (z. B. '+esc(kzPrefix())+'loganfrost), Teamlink <b>'+esc(kzPrefix())+'team</b>. Jeder Spielerlink bekommt sein eigenes, zufälliges Passwort (steht in der Tabelle, Familien können es im Link selbst ändern).</span></label>'
    +'<div class="bar" style="margin:8px 0 0"><button class="btn" id="kzindiv" title="Jeder Spielerlink bekommt ein neues, eigenes Passwort">Allen Spielerlinks neue, eigene Passwörter geben</button></div><div class="note" id="kzstdm"></div></div>';
   if(el.__h!==h){el.__h=h;el.innerHTML=h}}
 async function kzApplyStd(pw,all){
@@ -2301,7 +2301,7 @@ async function lkHealth(){
     if(!(await test(l.key,SNAP.p[p.id])))E.push("Link von "+nm(p)+" lässt sich nicht öffnen (Inhalt beschädigt).")}
   if(nOn.length)E.push((nOn.length===1?"Der Link von ":nOn.length+" Spielerlinks (")+nOn.slice(0,4).join(", ")+(nOn.length>4?" u. a.":"")+(nOn.length===1?" ist aktiv, aber noch nicht online":") sind aktiv, aber noch nicht online")+" – sie zeigen „Link ungültig“.");
   for(const k of ["full","anon","plan","demo"]){const l=L["x"+k]||{};if(!l.aktiv||!l.key)continue;
-    const nmx={full:"Vollansicht",anon:"Anonyme Ansicht",plan:"Terminplan",demo:"Demo"}[k],want=await sha8(l.key),pub=(SNAP.xk||{})[k];
+    const nmx={full:"Vollansicht",anon:"Anonyme Ansicht",plan:"Teamlink",demo:"Demo"}[k],want=await sha8(l.key),pub=(SNAP.xk||{})[k];
     if(!pub||pub!==want||!(SNAP.x||{})[k]){xMiss++;E.push("Link „"+nmx+"“ ist aktiv, aber noch nicht online.");continue}
     if(!(await test(l.key,SNAP.x[k])))E.push("Link „"+nmx+"“ lässt sich nicht öffnen (Inhalt beschädigt).")}
   if(my!==lkTok)return;
@@ -2344,7 +2344,7 @@ async function renderLinks(){if(window.__DEMO)return;
   const pend=cur.filter((r)=>r.want!==r.pub).length+xr.filter((r)=>r.want!==r.pub).length+orphan,stale=!!SNAP.fp&&SNAP.fp!==fp||(!SNAP.fp&&pubIds.length>0),on=cur.filter((r)=>r.want&&r.want===r.pub).length;
   $("#lks").innerHTML=(SNAP.u?"Letzter Stand online: <b>"+esc(dt(SNAP.u))+"</b> · ":"Noch nichts veröffentlicht · ")+"<b>"+on+"</b> Link(s) online"+(pend||stale?' · <span class="warn">⚠ '+(pend?"Link-Änderungen":"")+(pend&&stale?" und ":"")+(stale?"neuere Daten":"")+(window.__WEB?" noch nicht online – wird automatisch übernommen.":" noch nicht online – bitte „Alle Links aktualisieren“ klicken.")+"</span>":' · <span class="up">alles aktuell</span>');
   const xe=$("#lkxt");const inSet=!!(xe&&xe.closest("#vlkx"));{const ax=$("#lkxadm");if(ax)ax.hidden=!window.__V||inSet}
-  if(xe){const XN={full:["Vollansicht","Alles sichtbar, nur lesend (inkl. Namen, Fotos, Notizen, To-Dos, Kontakte)"],plan:["Nur Terminpläne","Monats- und Wochenplan zum Ansehen, ohne Anmeldung – keine Spielerprofile, Notizen oder To-Dos"],demo:["Demo (Zufallsdaten)","Ganze App mit komplett zufällig erzeugten Daten (Namen, Beteiligung, Ergebnisse, Lorem-ipsum-Notizen) – ohne Konto, nur lesend, nichts davon echt"],anon:["Struktur (anonym)","Spieler 1…n mit Rückennummer, ohne Fotos, Geburtstage, Kontakte, Notizen, To-Dos und interne Termine"]};
+  if(xe){const XN={full:["Vollansicht","Alles sichtbar, nur lesend (inkl. Namen, Fotos, Notizen, To-Dos, Kontakte)"],plan:["Teamlink","Terminplan (Monat und Woche) der Mannschaft zum Ansehen, ohne Anmeldung – keine Spielerprofile, Notizen oder To-Dos"],demo:["Demo (Zufallsdaten)","Ganze App mit komplett zufällig erzeugten Daten (Namen, Beteiligung, Ergebnisse, Lorem-ipsum-Notizen) – ohne Konto, nur lesend, nichts davon echt"],anon:["Struktur (anonym)","Spieler 1…n mit Rückennummer, ohne Fotos, Geburtstage, Kontakte, Notizen, To-Dos und interne Termine"]};
     if(!(document.activeElement&&document.activeElement.matches&&document.activeElement.matches("[data-xln],[data-kzin]")))xe.innerHTML='<tr><th style="text-align:left">Link</th><th>Aktiv</th><th>Design</th><th style="text-align:left">Adresse</th><th></th><th style="text-align:left">Stand</th></tr>'+xr.filter((r)=>!window.__V||(inSet?r.k!=="plan":r.k==="plan")).map((r)=>{const st=r.want&&r.want===r.pub?'<span class="pill ok">online</span>':r.want?'<span class="pill busy">geht beim Aktualisieren online</span>':r.pub?'<span class="pill busy">wird beim Aktualisieren abgeschaltet</span>':'<span class="pill">aus</span>';
       return'<tr data-x="'+r.k+'"><td style="text-align:left"><b>'+XN[r.k][0]+'</b><div class="note" style="white-space:normal;max-width:260px">'+XN[r.k][1]+'</div></td><td><input type="checkbox" data-xak '+(r.l.aktiv?"checked":"")+'></td><td>'+dzSel(r.l)+'</td><td style="text-align:left">'+(r.l.key?'<input readonly data-xln value="'+esc(linkOf(r.k,r.l.key))+'" style="width:100%;min-width:230px">'+kzCell("x"+r.k):'<span class="note">noch kein Link</span>')+'</td><td style="white-space:nowrap">'+(r.l.key?'<button class="btn" data-xcp>Kopieren</button> <button class="btn'+(armed==="x"+r.k?" arm":"")+'" data-xnw title="Der bisherige Link wird ungültig">'+(armed==="x"+r.k?"Wirklich neu?":"Neu erzeugen")+"</button>":"")+'</td><td style="text-align:left">'+st+"</td></tr>"}).join("");
   }
@@ -5642,8 +5642,8 @@ V.id=(p)=>(p||"x")+Date.now().toString(36)+Math.random().toString(36).slice(2,5)
 /* ---------- Kennzahlen dieser Mannschaft veröffentlichen (damit Übersicht und sportlicher Leiter sie lesen können) ---------- */
 let lastEdit=null,lastHash="",lastPub=0,prevAt=null;
 /* Formkurve: Ergebnisse der letzten 5 gespielten Spiele, das neueste zuerst (S = Sieg, U = Unentschieden, N = Niederlage) */
-function formOf(sp){const td=V.today();return (sp||[]).filter((g)=>g.datum&&g.datum<=td&&typeof g.tore==="number"&&typeof g.gt==="number").sort((a,b)=>b.datum.localeCompare(a.datum)).slice(0,5).map((g)=>g.tore>g.gt?"S":g.tore<g.gt?"N":"U").join("")}
-V.formHtml=(f)=>{f=String(f||"");if(!f)return"";const nm={S:"Sieg",U:"Unentschieden",N:"Niederlage"};return'<div class="vfm" title="Letzte Spiele, links das neueste"><span class="note">Form</span>'+f.split("").map((c,i)=>'<i class="'+c+(i===0?" neu":"")+'" title="'+nm[c]+(i===0?" (neuestes Spiel)":"")+'">'+c+'</i>').join("")+'</div>'};
+function formOf(sp){const td=V.today();return (sp||[]).filter((g)=>g.datum&&g.datum<=td&&typeof g.tore==="number"&&typeof g.gt==="number"&&/meister/i.test(g.art||"")).sort((a,b)=>b.datum.localeCompare(a.datum)).slice(0,5).map((g)=>g.tore>g.gt?"S":g.tore<g.gt?"N":"U").join("")}
+V.formHtml=(f)=>{f=String(f||"");if(!f)return"";const nm={S:"Sieg",U:"Unentschieden",N:"Niederlage"};return'<div class="vfm" title="Letzte Meisterschaftsspiele, links das neueste"><span class="note">Form</span>'+f.split("").map((c,i)=>'<i class="'+c+(i===0?" neu":"")+'" title="'+nm[c]+(i===0?" (neuestes Spiel)":"")+'">'+c+'</i>').join("")+'</div>'};
 function statDoc(){
   const P=D.spieler.filter((p)=>p.aktiv!==false&&p.name);
   const S=U13.saison({spieler:P,spiele:D.spiele,trainings:D.trainings,einstellungen:D.config||{zaehlendeAbwesenheiten:{e:true,u:true,v:false,t:false}}}),T=S.team,td=V.today();
@@ -5718,7 +5718,7 @@ function css(){if(q("#vcss"))return;const s=document.createElement("style");s.id
 V.css=css;
 const ini=(n)=>{n=String(n||"Verein").trim();const w=n.split(/\s+/);return w[0].length<=4?w[0]:w.slice(0,3).map((x)=>x[0]).join("").toUpperCase()};
 const MENU=[
- {id:"uebersicht",label:"Übersicht",tabs:["uebersicht"]},
+ {id:"uebersicht",label:"Übersicht",tabs:["uebersicht"],sup:()=>V.isAll()||V.canPlan()||V.visTeams().length>1},
  {id:"mannschaft",label:"Mannschaft",app:true},
  {id:"fach",label:()=>V.fachLabel?V.fachLabel():"Fachnotizen",tabs:["fach"]},
  {id:"planung",label:"Planung",tabs:["platz","kabinen"]},
@@ -5730,7 +5730,7 @@ const MENU=[
 V.MENU=MENU;
 const tabsOf=(m)=>(m.tabs||[]).map((id)=>V.tabs.find((t)=>t.id===id)).filter((t)=>t&&(!t.show||t.show()));
 const menuOf=(tabId)=>MENU.find((m)=>(m.tabs||[]).indexOf(tabId)>=0);
-const menuVis=()=>MENU.filter((m)=>m.app||tabsOf(m).length);
+const menuVis=()=>MENU.filter((m)=>(m.app||tabsOf(m).length)&&(!m.sup||m.sup()));
 function teamLine(){const t=W.__TEAM||{};return (t.name||"")+(t.ak?" · "+t.ak:"")+((W.__VEREIN&&W.__VEREIN.saison)?" · "+W.__VEREIN.saison:"")}
 function switcherHtml(){
   const all=V.teams(),cur=W.__TID,row=(t,sub)=>'<button type="button" data-sw="'+E(t.id)+'" class="'+(t.id===cur?"on":"")+'"><b>'+E(t.name)+'</b> <span class="note">'+E(t.ak||"")+'</span><span class="sub">'+E(sub||"")+'</span></button>';
@@ -5869,11 +5869,12 @@ V.hin=[];
 const hAct=(x)=>!x.erledigt&&(!x.bis||x.bis>=V.today())&&(!x.ab||x.ab<=V.today());
 let hSel=new Set();
 let hEdit=null;
+V.updHin=()=>{const b=q("#vhin");if(!b)return;let n=(V.hin||[]).filter(hAct).length;try{n+=V.spielHinweise(V.isAdmin()?"*":W.__TID).length}catch(e){}
+  b.hidden=!n;b.textContent=n+(n===1?" Hinweis":" Hinweise")};
 function subHinweise(){
   V.fs().collection(W.__TID+"__vhinweise").onSnapshot((s)=>{
     V.hin=s.docs.map((d)=>({id:d.id,...d.data()})).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
-    const n=V.hin.filter(hAct).length,b=q("#vhin");
-    if(b){b.hidden=!n;b.textContent=n+(n===1?" Hinweis":" Hinweise")+" vom Verein"}
+    V.updHin();
     if(V.cur==="uebersicht")V.render()
   },()=>{});
 }
@@ -5885,22 +5886,29 @@ V.subPlan=subPlan;
 /* Spiele an Wochentagen (aus der Kabinenbelegung der nächsten 14 Tage): Hinweis für Mannschaften, die an dem Tag spielen oder trainieren */
 V.gd={};
 function subGames(){const T=V.today(),fs=V.fs();let c=fs.collection("kabinen");try{c=c.where("datum",">=",T).where("datum","<=",V.add(T,14))}catch(e){}
-  try{c.onSnapshot((s)=>{V.gd={};s.docs.forEach((d)=>{V.gd[d.id]=(d.data().eintraege)||[]});if(V.cur==="uebersicht"&&!V.typing())V.render()},()=>{})}catch(e){}}
+  try{c.onSnapshot((s)=>{V.gd={};s.docs.forEach((d)=>{V.gd[d.id]=(d.data().eintraege)||[]});try{V.updHin()}catch(e){}if(V.cur==="uebersicht"&&!V.typing())V.render()},()=>{})}catch(e){}}
 V.ghKey=(tid,d)=>tid+"|"+d;
 V.ghHidden=(tid,d)=>{const m=window.__ghP||{};return !!m[V.ghKey(tid,d)]};
 V.ghHide=(tid,d)=>{const T=V.today(),m={};Object.keys(window.__ghP||{}).forEach((k)=>{if(k.split("|")[1]>=T)m[k]=1});m[V.ghKey(tid,d)]=1;window.__ghP=m;try{window.__dzSavePrefs&&window.__dzSavePrefs()}catch(e){}};
 /* Hinweis nur am Tag selbst und am Tag davor. Administratoren sehen ihn vereinsweit (tid "*"), unabhängig von der gewählten Mannschaft. Ausblenden wird pro Konto gemerkt. */
 V.spielHinweise=(tid)=>{const out=[],T=V.today(),adm=tid==="*";
-  Object.keys(V.gd||{}).sort().forEach((d)=>{if(d<T||d>V.add(T,1)||V.dow(d)>5)return;
+  const kb=(k)=>k===undefined||k===null||k===""?"":"Kabine "+k;
+  /* Kabine des Gegners: der Gast-Eintrag zum Heimspiel (gleiche Anstoßzeit, Name des Gegners passt) */
+  const gegner=(g,x)=>{const c=g.filter((y)=>y.art==="Gast"&&y!==x&&kb(y.kabine));if(!c.length)return"";const nm=(y)=>String(y.fremd||(y.tid?V.tname(y.tid):"")).toLowerCase();
+    const best=c.find((y)=>(!x.von||y.von===x.von)&&nm(y)&&String(x.txt||"").toLowerCase().indexOf(nm(y))>=0)||c.find((y)=>!x.von||y.von===x.von)||c[0];return kb(best.kabine)};
+  Object.keys(V.gd||{}).sort().forEach((d)=>{if(d<T||d>V.add(T,1))return;
     const g=(V.gd[d]||[]).filter((x)=>(x.art==="Heim"||x.art==="Gast")&&!x.removed);if(!g.length)return;
-    const plays=!adm&&g.some((x)=>x.tid===tid),trains=!adm&&typeof V.slotsOn==="function"&&V.slotsOn(d).some((x)=>x.tid===tid&&x.art!=="Spiel");
+    const plays=!adm&&g.some((x)=>x.tid===tid),wk=V.dow(d)>5;if(wk&&!plays)return;
+    const trains=!adm&&!wk&&typeof V.slotsOn==="function"&&V.slotsOn(d).some((x)=>x.tid===tid&&x.art!=="Spiel");
     if(!adm&&!plays&&!trains)return;
     if(V.ghHidden(tid,d))return;
-    const heim=g.filter((x)=>x.art==="Heim").map((x)=>V.tname(x.tid)+(x.txt?" "+x.txt:"")).join(", "),gast=g.filter((x)=>x.art==="Gast").map((x)=>V.tname(x.tid)+(x.txt?" "+x.txt:"")).join(", ");
+    const heimE=g.filter((x)=>x.art==="Heim"),
+      kab=(x)=>{const a=kb(x.kabine),b=gegner(g,x);if(!a&&!b)return"";return adm?" – "+[a?"Heim: "+a:"",b?"Gast: "+b:""].filter(Boolean).join(", "):" – "+[a?"deine Kabine: "+a:"",b?"Gegner: "+b:""].filter(Boolean).join(", ")},
+      heim=heimE.map((x)=>V.tname(x.tid)+(x.txt?" "+x.txt:"")+((adm||x.tid===tid)?kab(x):"")).join(", "),gast=g.filter((x)=>x.art==="Gast"&&x.tid).map((x)=>V.tname(x.tid)+(x.txt?" "+x.txt:"")).join(", ");
     const wann=d===T?"Heute":"Morgen";
     out.push({d,tid,txt:wann+" ("+V.fd(d)+") "+(heim?"gibt es ein Heimspiel ("+heim+")":"spielt eine Mannschaft bei uns")+(gast?"; auswärts: "+gast:"")+". "+(plays?"Deine Mannschaft spielt an diesem Tag. ":"")+(trains?"Dein Training an diesem Tag kann dadurch verlegt sein. ":"")+"Bitte in Platz- und Kabinenbelegung nachsehen."})});
   return out};
-window.__ghOnPrefs=()=>{if(V.cur==="uebersicht"&&!(V.typing&&V.typing()))V.render()};
+window.__ghOnPrefs=()=>{try{V.updHin()}catch(e){}if(V.cur==="uebersicht"&&!(V.typing&&V.typing()))V.render()};
 V.savePlan=async(patch)=>{V.plan=Object.assign({},V.plan,patch);await V.fs().doc("plaene/platz").set(V.plan)};
 /* Teamnamen für den Platzwart-Link (er darf „verein“ nicht lesen) im Plan mitführen */
 V.syncTeamNames=async()=>{const t=V.teams().map((x)=>({id:x.id,name:x.name,ak:x.ak||"",aktiv:x.aktiv!==false,...(x.farbe?{farbe:x.farbe}:{})}));await V.savePlan({teams:t})};
@@ -6035,13 +6043,15 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   const need=act.filter((t)=>{const s=V.st[t.id];if(s&&s.st==="basis")return false;return !s||V.pflege(s).art||(s.fbet>0&&s.fbet<=2)});
   const hinT=(V.isAll()?V.teams().filter((t)=>t.aktiv!==false):V.teams().filter((t)=>t.aktiv!==false&&V.has(t.id,"hinweise")));
   if(V.isAll()&&!anfU){try{anfU=V.fs().collection("anfragen").onSnapshot((x)=>{const n=x.docs.filter((d)=>(d.data()||{}).status==="offen").length;if(n!==V.anfN){V.anfN=n;if(V.cur==="uebersicht"&&!V.typing())V.render()}},()=>{});hSub.push(()=>{if(anfU){try{anfU()}catch(e){}anfU=null}})}catch(e){}}
-  let h='<h2>Übersicht</h2><p class="sub note">'+((V.isAll()||fid==="alle"&&vis.length>1)?"Die Mannschaften auf einen Blick.":"Deine Mannschaft"+(act.length>1?"en":"")+" auf einen Blick.")+'</p>';
+  const lite=!(V.isAll()||V.canPlan()||vis.length>1);
+  let h=lite?'<h2>Hinweise</h2><p class="sub note">Wichtiges für deine Mannschaft.</p>':'<h2>Übersicht</h2><p class="sub note">'+((V.isAll()||fid==="alle"&&vis.length>1)?"Die Mannschaften auf einen Blick.":"Deine Mannschaft"+(act.length>1?"en":"")+" auf einen Blick.")+'</p>';
   if(V.isAll()&&V.anfN>0)h+='<div class="card vc" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="flex:1;min-width:180px">'+V.anfN+(V.anfN===1?" neue Anfrage":" neue Anfragen")+' von eingeladenen Personen</b><button class="btn" data-goanf="1" style="background:var(--ac);color:#fff;border-color:var(--ac)">Ansehen</button></div>';
   if(filters.length>1)h+='<div class="vf" role="tablist">'+filters.map((x)=>'<button type="button" data-f="'+E(x.id)+'" class="'+(x.id===fid?"on":"")+'">'+E(x.n)+'</button>').join("")+'</div>';
   if(open.length&&V.has(W.__TID,"sehen"))h+='<div class="card vc" style="border-color:var(--y);background:var(--ys)"><b>Hinweise für '+E(V.tname(W.__TID))+'</b>'+open.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+E(x.text)+' <span class="note">· '+E(x.von||"")+' · '+E(String(x.at||"").slice(0,10).split("-").reverse().join("."))+'</span></span>'+(V.canWrite()&&x.ack!==false?'<button class="btn" data-ok="'+E(x.id)+'">Erledigt</button>':"")+(x.bis?' <span class="note">bis '+E(V.fdl(x.bis).slice(0,6))+'</span>':"")+'</div>').join("")+'</div>';
   {const adm=V.isAdmin(),gts=adm?["*"]:Array.from(new Set((V.isAll()?[]:mineIds).concat([W.__TID]))).filter((id)=>V.has(id,"sehen")||V.isAll()),gh=[];gts.forEach((id)=>V.spielHinweise(id).forEach((x)=>gh.push(x)));
-   if(gh.length)h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Spiele an Wochentagen</b>'+gh.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+(!adm&&gts.length>1?'<b>'+E(V.tname(x.tid))+':</b> ':"")+E(x.txt)+'</span><button class="btn" data-gh="'+E(x.tid+"|"+x.d)+'">Ausblenden</button></div>').join("")+'</div>'}
+   if(gh.length)h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Spieltag-Hinweis</b>'+gh.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+(!adm&&gts.length>1?'<b>'+E(V.tname(x.tid))+':</b> ':"")+E(x.txt)+'</span><button class="btn" data-gh="'+E(x.tid+"|"+x.d)+'">Ausblenden</button></div>').join("")+'</div>'}
   if(V.canWrite()&&ow.art&&own!==undefined&&!(own&&own.st==="basis"))h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Erinnerung</b><div class="note" style="color:inherit">Die Daten von '+E(V.tname(W.__TID))+' wurden zuletzt '+E(V.pflegeTxt(ow))+' gepflegt. Bitte Anwesenheit und Spielzeit nachtragen.</div></div>';
+  const cut=h.length;
   if(act.length>1||have.length)h+='<div class="kpis"><div class="card kpi"><b>'+act.length+'</b><span>aktive Mannschaften</span></div><div class="card kpi"><b>'+have.reduce((a,s)=>a+(s.n||0),0)+'</b><span>Spieler insgesamt</span></div><div class="card kpi"><b>'+pcx(avg((s)=>s.bet))+'</b><span>Ø Training</span></div><div class="card kpi c'+(need.length?2:4)+'"><b>'+need.length+'</b><span>brauchen Aufmerksamkeit</span></div></div>';
   if(W.__FD&&W.__FD.weekHtml)h+=W.__FD.weekHtml(act);
   h+='<div class="vtg">'+act.map((t)=>{
@@ -6068,6 +6078,7 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   }
   const L=U13.grTexte("t"),L2=U13.grTexte("s");
   h+='<p class="note" style="margin-top:10px">Training = Beteiligung im Durchschnitt. Farben: rot '+E(L[0])+' · orange '+E(L[1])+' · gelb '+E(L[2])+' · grün '+E(L[3])+'. Mannschaften, die lange nicht gepflegt wurden, erscheinen ausgegraut (Einstellung unter „Mannschaften“).</p>';
+  if(lite){h=h.slice(0,cut);if(h.indexOf('class="card vc"')<0)h+='<div class="card vc note">Im Moment gibt es keine Hinweise.</div>'}
   el.innerHTML=h;
   {const gb=el.querySelector("[data-goanf]");if(gb)gb.onclick=()=>V.go("personen")}
   const send=async(tid,text,art,o)=>{const m=q("#slm",el);o=o||{};try{await V.fs().doc(tid+"__vhinweise/"+V.id("h")).set({text,von:(W.__VME&&(W.__VME.name||W.__VME.email))||"",at:new Date().toISOString(),erledigt:false,art:art||"hinweis",ack:art==="erinnerung"?true:!!o.ack,...(o.bis?{bis:o.bis}:{}),...(o.ab?{ab:o.ab}:{})});V.log("Hinweis an "+V.tshort(tid),tid);if(m){m.className="vmsg ok";m.textContent="Gesendet an "+V.tshort(tid)+"."}return true}catch(e){if(m){m.className="vmsg er";m.textContent="Das hat nicht geklappt."}return false}};
@@ -6847,7 +6858,7 @@ V.tab({id:"vsettings",label:"Einstellungen",show:()=>V.isAll(),render(el){
   h+='<div class="card vc"><h3>Verein</h3><div class="vrow"><label>Name des Vereins<input id="sv_n" maxlength="50" style="width:260px" value="'+E(v.name||"")+'"></label><label>Saison<input id="sv_s" maxlength="12" style="width:110px" placeholder="2026/27" value="'+E(v.saison||"")+'"></label><button class="btn" id="sv_save" type="button" style="align-self:flex-end;background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button></div></div>';
   if(!kcD)kcD=(W.__kcAll?W.__kcAll():[]).map((b)=>({...b,fuer:{...(b.fuer||{alle:true})}}));
   {const tms=V.teams().filter((t)=>t.aktiv!==false);
-   h+='<div class="card vc"><h3>Kontakte in der Fußzeile</h3><div class="note" style="margin-bottom:8px">Jeder Block erscheint in der Fußzeile von Wochenplan, Terminplan-Link und Spielerlinks – bei „Gilt für“ legst du fest, bei welchen Mannschaften. So kann es zum Beispiel einen Sportlichen Leiter für Minis bis U13 und einen anderen für U14 bis U19 geben. Eine Zeile pro Angabe. Trainer und Co-Trainer trägt jede Mannschaft selbst in ihren Einstellungen ein.</div>';
+   h+='<div class="card vc"><h3>Kontakte in der Fußzeile</h3><div class="note" style="margin-bottom:8px">Jeder Block erscheint in der Fußzeile von Wochenplan, Teamlink und Spielerlinks – bei „Gilt für“ legst du fest, bei welchen Mannschaften. So kann es zum Beispiel einen Sportlichen Leiter für Minis bis U13 und einen anderen für U14 bis U19 geben. Eine Zeile pro Angabe. Trainer und Co-Trainer trägt jede Mannschaft selbst in ihren Einstellungen ein.</div>';
    h+=kcD.map((b,i)=>{const f=b.fuer||{alle:true};return '<div class="card" style="margin-bottom:10px"><div class="vrow" style="margin:0 0 6px"><input data-kct="'+i+'" value="'+E(b.titel||"")+'" placeholder="Überschrift, z. B. Sportlicher Leiter U14–U19" style="width:300px;font-weight:600"><span style="flex:1"></span><button class="btn" data-kcx="'+i+'">Block entfernen</button></div><textarea data-kcz="'+i+'" style="min-height:70px;width:100%" placeholder="Name, Telefon, E-Mail …">'+E(b.zeilen||"")+'</textarea><div class="vrow" style="margin:8px 0 0"><span class="note">Gilt für:</span><span class="vch'+(f.alle?" on":"")+'" data-kca="'+i+'" role="button" tabindex="0">Alle Mannschaften</span>'+tms.map((t)=>'<span class="vch'+(!f.alle&&(f.teams||[]).indexOf(t.id)>=0?" on":"")+'" data-kcf="'+i+'|'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join("")+'</div></div>'}).join("")||'<div class="note" style="margin-bottom:8px">Noch keine Kontakte eingetragen.</div>';
    h+='<div class="vrow"><span class="note">Block hinzufügen:</span><button class="btn" data-kcn="Verein">＋ Verein</button><button class="btn" data-kcn="Jugendleiter">＋ Jugendleiter</button><button class="btn" data-kcn="Sportlicher Leiter">＋ Sportlicher Leiter</button><button class="btn" data-kcn="">＋ Weiterer Block</button><span style="flex:1"></span><button class="btn" id="kc_save" style="background:var(--ac);color:#fff;border-color:var(--ac)">Kontakte speichern</button></div></div>'}
   h+='<div class="card vc"><h3>Vereinslogo</h3><div class="vrow" style="align-items:center"><img id="sv_img" alt="Vereinslogo" src="'+E(logo)+'" style="width:96px;height:96px;object-fit:contain;border:1px solid var(--ln);border-radius:12px;background:#fff;padding:4px"><div><div class="note" style="margin-bottom:8px">Das Logo erscheint oben im Menü, in den Mannschaften, in den Exporten (PDF/PNG) und in den Spielerlinks. Am besten ein quadratisches oder rundes Bild mit hellem oder durchsichtigem Hintergrund.</div><button class="btn" id="sv_up" type="button">Neues Logo hochladen</button> <button class="btn" id="sv_std" type="button">Mitgeliefertes Logo (TuS) verwenden</button><input type="file" id="sv_file" accept="image/*" hidden></div></div></div>';
