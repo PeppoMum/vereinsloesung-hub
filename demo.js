@@ -42,8 +42,8 @@ const MON=addD(TODAY,1-dow(TODAY));
 const FN="Max Leon Finn Noah Paul Ben Luca Elias Jonas Felix Tim Malte Emil Anton Jan Moritz Lukas Kilian Carl Ole Mats Hugo Levi Niklas".split(" ");
 const LN="Muster Beispiel Probe Demo Test Platzhalter Exempel Sample Vorlage Modell Schema Entwurf Beleg Kopie Attrappe Nachbau Muster-Meier Probst Beispieler".split(" ");
 const CL="SV Musterstadt|FC Beispieldorf|TuS Platzhausen|SC Testfeld|Spvgg Demotal|BV Probeheim|VfL Zufallsburg|SG Loremberg|DJK Ipsumhagen|FSV Sampledorf|TSV Fiktivstadt|RW Exempelau".split("|");
-const TEAMS=[["g1","G1","U7"],["f1","F1","U9"],["f2","F2","U9"],["e1","E1","U11"],["e2","E2","U11"],["d1","D1","U13"],["d2","D2","U13"],["c1","C1","U15"],["b1","B1","U17"],["a1","A1","U19"]];
-const FORM={g1:["4gg4",4],f1:["5gg5",5],f2:["5gg5",5],e1:["7gg7",7],e2:["7gg7",7],d1:["9gg9",9],d2:["9gg9",9],c1:["11gg11",11],b1:["11gg11",11],a1:["11gg11",11]};
+const TEAMS=[["m1","Minis","U6"],["g1","G1","U7"],["f2","F2","U8"],["f1","F1","U9"],["e2","E2","U10"],["e1","E1","U11"],["d2","D2","U12"],["d1","D1","U13"],["c2","C2","U14"],["c1","C1","U15"],["b1","B1","U17"],["a1","A1","U19"]];
+const FORM={m1:["3gg3",3],g1:["4gg4",4],f1:["5gg5",5],f2:["5gg5",5],e1:["7gg7",7],e2:["7gg7",7],d1:["9gg9",9],d2:["9gg9",9],c1:["11gg11",11],c2:["9gg9",9],b1:["11gg11",11],a1:["11gg11",11]};
 
 const store=new Map();
 const put=(p,d)=>store.set(p,JSON.parse(JSON.stringify(d)));
@@ -58,10 +58,10 @@ TEAMS.forEach(([tid,name],ti)=>{
   const gl=[];
   [-54,-40,-26,-12,-5,4,11,25].forEach((off,i)=>{let d=addD(TODAY,off);while(dow(d)<6)d=addD(d,1);const past=d<TODAY,sp={};
     ids.forEach((id,j)=>{const r=R();sp[id]=past&&r<.7?{status:"k",minuten:Math.round(30*(1+R()))}:{status:past?"t":"n",minuten:0}});
-    const to=past?pick([0,1,2,3,4]):null,gg=past?pick([0,1,2,3]):null;if(past)gl.push([d,to,gg]);
+    const noRes=/^[fg]/.test(tid),to=past&&!noRes?pick([0,1,2,3,4]):null,gg=past&&!noRes?pick([0,1,2,3]):null;if(past&&!noRes)gl.push([d,to,gg]);   /* F- und G-Jugend: Spiele ohne Wertung, keine Ergebnisse */
     put(tid+"__games/g"+(i+1),{id:"g"+(i+1),nr:i+1,datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:i%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:past?sp:{}})});
   /* weitere gespielte Spiele, damit jede Mannschaft 9 Ergebnisse für die Formkurve hat */
-  for(let k=0;gl.length<9;k++){let d=addD(TODAY,-61-7*k);while(dow(d)<6)d=addD(d,1);const to=pick([0,1,2,3,4]),gg=pick([0,1,2,3]),sp={};ids.forEach((id)=>{sp[id]={status:R()<.7?"k":"t",minuten:30}});gl.push([d,to,gg]);
+  for(let k=0;!/^[fg]/.test(tid)&&gl.length<9;k++){let d=addD(TODAY,-61-7*k);while(dow(d)<6)d=addD(d,1);const to=pick([0,1,2,3,4]),gg=pick([0,1,2,3]),sp={};ids.forEach((id)=>{sp[id]={status:R()<.7?"k":"t",minuten:30}});gl.push([d,to,gg]);
     put(tid+"__games/gv"+k,{id:"gv"+k,nr:20+k,art:"Meisterschaft",datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:k%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:sp})}
   /* Termine bis Ende Dezember (Auswertungen zählen trotzdem nur bis heute) */
   {const END=TODAY.slice(0,4)+"-12-31";let n=0,gi=8;
@@ -112,8 +112,8 @@ TEAMS.forEach(([tid,name],ti)=>{
   const gamesOf=(tid)=>[...store.entries()].filter(([k])=>k.indexOf(tid+"__games/")===0).map(([,v])=>v).sort((a,b)=>a.datum.localeCompare(b.datum));
   TEAMS.forEach(([tid])=>gamesOf(tid).forEach((g,i)=>{g.nr=i+1;put(tid+"__games/"+g.id,g)}));   /* Spielnummern fortlaufend nach Datum */
   const idx={v:1,stand:new Date(Date.now()-2*36e5).toISOString(),aktiv:true,teams:{}};
-  [["a1",true,2],["b1",true,1],["c1",true,6],["d1",true,3],["d2",true,5],["e1",true,4],["e2",true,7],["f1",false,0],["f2",false,0],["g1",false,0]].forEach(([tid,liga,platz])=>{   /* Tabellen für alle Mannschaften bis einschließlich U10 (und D1/D2) */
-    const AK={a:["Bezirksliga A-Junioren","A-Junioren"],b:["Kreisliga A B-Junioren","B-Junioren"],c:["Kreisliga B C-Junioren","C-Junioren"],d:["Kreisliga B D-Junioren","D-Junioren"],e:["Kreisliga C E-Junioren","E-Junioren"],f:["Spielfest","F-Junioren"],g:["Spielfest","Bambini"]}[tid[0]];
+  [["a1",true,2],["b1",true,1],["c1",true,6],["c2",true,3],["d1",true,3],["d2",true,5],["e1",true,4],["e2",true,7],["f1",false,0],["f2",false,0],["g1",false,0],["m1",false,0]].forEach(([tid,liga,platz])=>{   /* Tabellen für alle Mannschaften bis einschließlich U10 (und D1/D2) */
+    const AK={a:["Bezirksliga A-Junioren","A-Junioren"],b:["Kreisliga A B-Junioren","B-Junioren"],c:["Kreisliga B C-Junioren","C-Junioren"],m:["Spielfest","Bambini"],d:["Kreisliga B D-Junioren","D-Junioren"],e:["Kreisliga C E-Junioren","E-Junioren"],f:["Spielfest","F-Junioren"],g:["Spielfest","Bambini"]}[tid[0]];
     const cfg=store.get(tid+"__config/main");
     cfg.fd={team:"https://www.fussball.de/mannschaft/demo/-/saison/2627/team-id/"+fdid(tid)+"#!/",liga:liga?"https://www.fussball.de/spieltagsuebersicht/demo/-/staffel/DEMOSTAFFEL#!/":""};put(tid+"__config/main",cfg);
     const own="TuS Musterstadt "+tid.toUpperCase(),gs=gamesOf(tid),sp=[],fut=gs.filter((g)=>g.datum>=TODAY);
@@ -144,7 +144,7 @@ TEAMS.forEach(([tid,name],ti)=>{
 }
 
 /* ---------- Verein, Rollen, Personen ---------- */
-put("verein/main",{name:"TuS Musterstadt (Demo)",saison:"2026/27",teams:TEAMS.map(([id,name,ak])=>({id,name,ak,aktiv:true})),arten:ARTEN,bereiche:[{id:"mini",name:"Minis bis U13",teams:["g1","f1","f2","e1","e2","d1","d2"]},{id:"gross",name:"U14 bis U19",teams:["c1","b1","a1"]}],settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},kontakteVerein:[]});
+put("verein/main",{name:"TuS Musterstadt (Demo)",saison:"2026/27",teams:TEAMS.map(([id,name,ak])=>({id,name,ak,aktiv:true})),arten:ARTEN,bereiche:[{id:"mini",name:"Minis bis U13",teams:["m1","g1","f1","f2","e1","e2","d1","d2"]},{id:"gross",name:"U14 bis U19",teams:["c2","c1","b1","a1"]}],settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},kontakteVerein:[]});
 const memDoc=(email,name,art,teams)=>{const a=ARTEN.find((x)=>x.id===art),all=TEAMS.map((t)=>t[0]),tl=teams==="*"?all:teams,tr={};tl.forEach((t)=>{tr[t]=a.rechte.slice()});return{email,name,rolle:"team",zu:[{art,teams:teams==="*"?[]:tl,...(teams==="*"?{alle:true}:{})}],tr,g:a.gl.slice(),kader:{}}};
 if(P.rolle==="admin"||P.rolle==="jugendleiter"||P.rolle==="platzwart")put("mitglieder/"+EMAIL,{email:EMAIL,name:"Demo-Person",rolle:P.rolle,zu:[],tr:{},g:P.rolle==="platzwart"?[]:["plan","kurz"],kader:{}});
 else put("mitglieder/"+EMAIL,memDoc(EMAIL,"Demo-Person",P.art,P.teams));
@@ -155,9 +155,9 @@ put("mitglieder/ina.demo@beispiel.test",{email:"ina.demo@beispiel.test",name:"In
 const PL=[{id:"p1",name:"Kunstrasen",typ:"platz",viertel:true},{id:"p2",name:"Rasenplatz",typ:"platz",viertel:true},{id:"h1",name:"Sporthalle",typ:"halle",felder:3}];
 const slots=[];let sn=0;
 const sl=(tid,platz,tag,von,bis,teil)=>slots.push({id:"s"+(++sn),tid,art:"Training",platz,tag,von,bis,teil:teil||[1,2,3,4],pid:"sommer"});
-[["g1",1,"16:00","17:00",[1]],["f1",1,"16:00","17:00",[2]],["f2",1,"16:00","17:00",[3,4]],["e1",1,"17:00","18:30",[1,2]],["e2",1,"17:00","18:30",[3,4]],["d1",2,"17:30","19:00",[1,2]],["d2",2,"17:30","19:00",[3,4]],["c1",1,"18:30","20:00",[1,2,3,4]],["b1",2,"19:00","20:30",[1,2]],["a1",2,"19:00","20:30",[3,4]]].forEach(([t,p,v,b,te],i)=>{[1,3].forEach((tg)=>sl(t,"p"+p,tg+(i%2),v,b,te))});
+[["m1",1,"15:30","16:30",[1]],["g1",1,"16:00","17:00",[1]],["c2",1,"18:30","20:00",[1,2,3,4]],["f1",1,"16:00","17:00",[2]],["f2",1,"16:00","17:00",[3,4]],["e1",1,"17:00","18:30",[1,2]],["e2",1,"17:00","18:30",[3,4]],["d1",2,"17:30","19:00",[1,2]],["d2",2,"17:30","19:00",[3,4]],["c1",1,"18:30","20:00",[1,2,3,4]],["b1",2,"19:00","20:30",[1,2]],["a1",2,"19:00","20:30",[3,4]]].forEach(([t,p,v,b,te],i)=>{[1,3].forEach((tg)=>sl(t,"p"+p,tg+(i%2),v,b,te))});
 sl("g1","h1",5,"16:00","17:30",[1]);sl("f1","h1",5,"16:00","17:30",[2]);sl("f2","h1",5,"16:00","17:30",[3]);sl("e1","h1",5,"17:30","19:00",[1,2,3]);
-put("plaene/platz",{plaetze:PL,kabinen:["0","1","2","3","4"],extern:[],stdKabine:{g1:"1",f1:"1",f2:"2",e1:"2",e2:"3",d1:"3",d2:"4",c1:"4",b1:"0",a1:"0"},stdKabineTag:{},slots,plans:[{id:"sommer",name:"Sommerplan"},{id:"winter",name:"Winterplan"}],aktiv:"sommer",aus:[]});
+put("plaene/platz",{plaetze:PL,kabinen:["0","1","2","3","4"],extern:[],stdKabine:{m1:"1",c2:"4",g1:"1",f1:"1",f2:"2",e1:"2",e2:"3",d1:"3",d2:"4",c1:"4",b1:"0",a1:"0"},stdKabineTag:{},slots,plans:[{id:"sommer",name:"Sommerplan"},{id:"winter",name:"Winterplan"}],aktiv:"sommer",aus:[]});
 /* Zwei Spiele an Wochentagen (heute bzw. morgen), damit der Hinweis in der Demo zu sehen ist */
 let hd=TODAY;if(dow(hd)>5)hd=addD(hd,8-dow(hd));
 put("kabinen/"+hd,{datum:hd,eintraege:[{id:"k1",kabine:"1",art:"Heim",tid:"d1",von:"18:00",bis:"20:15",txt:"gegen "+CL[0]},{id:"k2",kabine:"2",art:"Gast",fremd:CL[0],von:"18:00",bis:"20:15",txt:"bei D1"}]});
