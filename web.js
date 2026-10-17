@@ -19,10 +19,14 @@ window.__KAB=!!KABKEY;
 const TQ=(new URLSearchParams(location.search).get("t")||"").toLowerCase().replace(/[^a-z0-9]/g,"");
 const skt=()=>String(window.__SCOUTKEY||"").split("-")[0].toLowerCase().replace(/[^a-z0-9]/g,"");
 window.__TID="";
-const GLOB=new Set(["verein","mitglieder","plaene","kabinen","kablinks","kabzugang","protokoll","pub","aliasin","aliasauth","ownercheck","prefs"]);
+const GLOB=new Set(["verein","mitglieder","plaene","kabinen","kablinks","kabzugang","protokoll","pub","aliasin","aliasauth","ownercheck","prefs","einladungen","anfragen"]);
 const T=(p)=>{const i=p.indexOf("/"),c=i<0?p:p.slice(0,i);return GLOB.has(c)?p:window.__TID+"__"+p};
 window.__T=T;
 const isKurz=/^#k\/[A-Za-z0-9_-]{4,40}$/.test(H);
+const EINKEY=/^#ein\/[A-Za-z0-9_-]{16,}$/.test(H)?H.slice(5):"";
+if(EINKEY){try{localStorage.setItem("vein",EINKEY+"|"+Date.now())}catch(e){}}
+const einKey=()=>{if(EINKEY)return EINKEY;try{const v=(localStorage.getItem("vein")||"").split("|");return v[0]&&Date.now()-(+v[1]||0)<3*864e5?v[0]:""}catch(e){return ""}};
+const einClear=()=>{try{localStorage.removeItem("vein")}catch(e){}};
 const isViewerHash=(/^#[A-Za-z0-9]+\.[A-Za-z0-9_-]{16,}$/.test(H)&&!/^#co[A-Za-z0-9]+\./.test(H)&&!isScout&&!KABKEY)||isKurz;
 const cfgOk=()=>!!(CFG.apiKey&&CFG.projectId&&CFG.authDomain&&!/DEIN|EINTRAGEN|XXXX/i.test(CFG.apiKey+CFG.projectId));
 const E=(s)=>String(s==null?"":s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -101,6 +105,7 @@ const CSS='#u13login{position:fixed;inset:0;z-index:9999;display:flex;align-item
 +'#u13login .ln{background:none;border:0;color:var(--ac,#2563eb);font-weight:500;padding:4px 0;margin:0;width:auto;display:inline-block}'
 +'#u13login .ms{min-height:20px;font-size:13px;margin:4px 0 10px}#u13login .ms.er{color:var(--r,#d64545)}#u13login .ms.ok{color:var(--g,#22a06b)}'
 +'#u13login .or{display:flex;align-items:center;gap:10px;color:var(--mu,#6b7280);font-size:12px;margin:10px 0}#u13login .or:before,#u13login .or:after{content:"";flex:1;border-top:1px solid var(--ln,#e5e7eb)}'
++'#u13login .ivc{display:flex;align-items:center;gap:10px;padding:8px 2px;font-size:15px;cursor:pointer}#u13login .ivc input{width:auto;margin:0;flex:none}#u13login .ivh{font-weight:600;margin:12px 0 4px}'
 +'#u13out{margin-left:10px;font:inherit;font-size:13px;padding:3px 9px;border-radius:8px;border:1px solid var(--ln,#e5e7eb);background:var(--card,#fff);color:var(--tx,#1c1f24);cursor:pointer;vertical-align:middle}';
 const ERR={"auth/invalid-credential":"E-Mail oder Passwort stimmt nicht.","auth/wrong-password":"E-Mail oder Passwort stimmt nicht.","auth/user-not-found":"E-Mail oder Passwort stimmt nicht.","auth/invalid-email":"Diese E-Mail-Adresse ist ungültig.","auth/email-already-in-use":"Zu dieser E-Mail gibt es schon ein Konto. Bitte anmelden.","auth/weak-password":"Das Passwort ist zu schwach (mindestens 10 Zeichen, am besten mehrere Wörter).","auth/too-many-requests":"Zu viele Versuche. Bitte kurz warten und erneut versuchen.","auth/network-request-failed":"Keine Verbindung zum Server.","auth/popup-closed-by-user":"Die Anmeldung wurde abgebrochen.","auth/cancelled-popup-request":"Die Anmeldung wurde abgebrochen.","auth/unauthorized-domain":"Diese Internetadresse ist in Firebase noch nicht freigegeben (Authentication → Einstellungen → Autorisierte Domains).","auth/operation-not-allowed":"Diese Anmeldeart ist in Firebase noch nicht eingeschaltet.","auth/missing-password":"Bitte ein Passwort eingeben.","auth/missing-email":"Bitte eine E-Mail-Adresse eingeben."};
 const errTxt=(e)=>ERR[e&&e.code]||("Das hat nicht geklappt"+(e&&(e.code||e.message)?" ("+(e.code||e.message)+")":"")+".");
@@ -178,6 +183,44 @@ function rightsIn(me,rolle,tid){
 /* Betriebsart der bisherigen Mannschafts-App: voll (bearbeiten), lesen (nur ansehen), scout (nur Kader & Scouting) */
 function modeOf(rights){return rights.indexOf("bearbeiten")>=0?"voll":rights.indexOf("sehen")>=0?"lesen":(rights.indexOf("kader")>=0||rights.indexOf("kaderbearb")>=0)?"scout":null}
 const lowC=(s)=>String(s||"").trim().toLowerCase();
+/* Einladung per Link: angemeldete, noch nicht freigegebene Person schickt Name, Rolle(n) und Mannschaft(en) als Anfrage */
+async function showInvite(em,tk){
+  let inv=null,own=null;
+  try{const s=await fs.doc("einladungen/"+tk).get();inv=s.exists?s.data():null}catch(e){}
+  try{const s=await fs.doc("anfragen/"+em).get();own=s.exists?s.data():null}catch(e){}
+  const done=(t,h,more)=>{const o=overlay('<div class="ms ok" style="font-size:15px">'+t+'</div><p class="sb">'+h+'</p>'+(more||"")+'<button id="u13so">Abmelden</button>');o.querySelector("#u13so").onclick=()=>signOutClean();return o};
+  if(!inv){
+    if(own&&own.status==="offen"){done("Deine Anfrage wartet auf Bestätigung.","Angemeldet als <b>"+E(em)+"</b>. Sobald die Jugendleitung dich freigegeben hat, kannst du die App ganz normal öffnen.");return}
+    showInfo("Dieser Einladungslink gilt nicht mehr.","Angemeldet als <b>"+E(em)+"</b>. Der Link ist abgelaufen oder wurde beendet. Bitte die Jugendleitung um einen neuen Link.");return}
+  return new Promise(()=>{
+    const form=(pre)=>{
+      pre=pre||{};const rs=(pre.rollen||[]),ts=(pre.teams||[]);
+      const o=overlay('<div class="ms" style="font-size:16px;font-weight:600;color:inherit">Willkommen im Verein</div><p class="sb">Angemeldet als <b>'+E(em)+'</b>. Bitte kurz ausfüllen. Die Jugendleitung bestätigt deine Angaben, danach hast du Zugriff.'+(own&&own.status==="offen"?" Du hast schon eine Anfrage gesendet, hier kannst du sie ändern.":"")+'</p>'
+        +'<div class="ivh">Dein Name</div><input id="ivn" maxlength="60" placeholder="Vor- und Nachname" autocomplete="name" value="'+E(pre.name||(auth.currentUser&&auth.currentUser.displayName)||"")+'">'
+        +'<div class="ivh">Deine Rolle (mehrere möglich)</div>'+(inv.rollen||[]).map((r)=>'<label class="ivc"><input type="checkbox" data-r="'+E(r.id)+'"'+(rs.indexOf(r.id)>=0?" checked":"")+'>'+E(r.name)+'</label>').join("")
+        +'<label class="ivc"><input type="checkbox" id="ivs"'+(pre.sonst?" checked":"")+'>Sonstiges</label><input id="ivst" maxlength="80" placeholder="Welche Aufgabe genau?" value="'+E(pre.sonst||"")+'"'+(pre.sonst?"":" hidden")+'>'
+        +'<div class="ivh">Für welche Mannschaft(en)?</div>'+(inv.teams||[]).map((t)=>'<label class="ivc"><input type="checkbox" data-t="'+E(t.id)+'"'+(ts.indexOf(t.id)>=0?" checked":"")+'>'+E(t.name)+(t.ak?' <span class="sb" style="margin:0">'+E(t.ak)+'</span>':"")+'</label>').join("")
+        +'<div class="ms" id="ivm"></div><button class="pr" id="ivgo">Anfrage senden</button><button id="u13so">Abmelden</button>');
+      const m=o.querySelector("#ivm");
+      o.querySelector("#ivs").onchange=(e)=>{const i=o.querySelector("#ivst");i.hidden=!e.target.checked;if(!i.hidden)i.focus()};
+      o.querySelector("#u13so").onclick=()=>signOutClean();
+      o.querySelector("#ivgo").onclick=async()=>{
+        const name=o.querySelector("#ivn").value.trim(),rollen=[...o.querySelectorAll("[data-r]:checked")].map((x)=>x.dataset.r),teams=[...o.querySelectorAll("[data-t]:checked")].map((x)=>x.dataset.t),sonst=o.querySelector("#ivs").checked?o.querySelector("#ivst").value.trim():"";
+        const er=(t)=>{m.className="ms er";m.textContent=t};
+        if(!name){er("Bitte deinen Namen eintragen.");return}
+        if(!rollen.length&&!sonst){er("Bitte mindestens eine Rolle wählen (oder bei „Sonstiges“ die Aufgabe nennen).");return}
+        if(!teams.length){er("Bitte mindestens eine Mannschaft wählen.");return}
+        const b=o.querySelector("#ivgo");b.disabled=true;m.className="ms";m.textContent="";
+        try{
+          await fs.doc("anfragen/"+em).set({name,rollen,sonst,teams,s:tk,at:new Date().toISOString(),status:"offen"});
+          own={name,rollen,sonst,teams,status:"offen"};
+          const d=done("Danke, deine Anfrage ist angekommen.","Die Jugendleitung prüft sie und gibt dich frei. Danach öffnest du die App einfach ganz normal.",'<button id="ivre">Meine Angaben ändern</button>');
+          d.querySelector("#ivre").onclick=()=>form(own);
+        }catch(e){b.disabled=false;er("Das hat nicht geklappt. Bitte erneut versuchen. Falls es wieder nicht geht, ist der Link vielleicht abgelaufen.")}};
+    };
+    form(own&&own.status==="offen"?own:null);
+  });
+}
 function showInfo(title,html,btn){
   const o=overlay('<div class="ms er" style="font-size:15px">'+E(title)+'</div><p class="sb">'+html+'</p><button id="u13so">'+(btn||"Abmelden")+'</button>');
   o.querySelector("#u13so").onclick=()=>signOutClean();
@@ -225,6 +268,7 @@ async function clubInit(u){
     fixed=cache.fixed;me=cache.me;V=cache.V;owner=!!cache.owner;frei=!!cache.frei;
   }
   if(!V){
+    if(!fixed&&!me&&!offline&&!window.__DEMO&&einKey()){await showInvite(em,einKey());return null}
     if(!fixed){showInfo(me?"Der Verein ist noch nicht eingerichtet.":"Dieses Konto ist nicht freigegeben.","Angemeldet als <b>"+E(em)+"</b>. "+(me?"Bitte den Besitzer der App fragen.":"Zugriff haben nur Personen, die der Verein freigegeben hat."));return null}
     V=await showClubSetup(em);hideOverlay();
   }
@@ -234,7 +278,9 @@ async function clubInit(u){
     o.querySelector("#u13ow").onclick=async()=>{try{await fs.doc("ownercheck/frei").delete();location.reload()}catch(e){o.querySelector("#u13ow").textContent="Hat nicht geklappt – erneut versuchen"}};
     return null}
   const rolle=fixed?"admin":(me&&me.rolle);
+  if((!rolle||ROLLEN_V.indexOf(rolle)<0)&&!offline&&!window.__DEMO&&einKey()){await showInvite(em,einKey());return null}
   if(!rolle||ROLLEN_V.indexOf(rolle)<0){showInfo("Dieses Konto ist nicht freigegeben.","Angemeldet als <b>"+E(em)+"</b>. Zugriff haben nur Personen, die der Verein freigegeben hat.");return null}
+  einClear();
   me=me||{email:em,rolle:rolle,zu:[],tr:{},g:[],kader:{}};
   if(fixed&&me.rolle!=="admin")me={...me,rolle:"admin"};
   if(!SHARED)try{localStorage.setItem("u13v:"+em,JSON.stringify({fixed:!!fixed,me,V,owner,frei}))}catch(e){}

@@ -5493,7 +5493,80 @@ document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.close
   if(a==="slnew"){e.preventDefault();window.slOpenNew()}else if(a==="slo"||a==="sls"){e.preventDefault();window.slOpenFrom(b.dataset.id)}});
 })();
 </script>
-<script>/* ===== Verein: Leiste, Vereinsbereich (Übersicht, Sportlicher Leiter, Mannschaften), Kennzahlen je Mannschaft =====
+<script>/* ===== QR-Code-Erzeuger (eigene kleine Umsetzung nach ISO 18004: Byte-Modus, Stufe L oder M, Version 1–10) ===== */
+(function(W){
+"use strict";
+const EXP=new Array(512),LOG=new Array(256);
+{let x=1;for(let i=0;i<255;i++){EXP[i]=x;LOG[x]=i;x<<=1;if(x&256)x^=0x11d}for(let i=255;i<512;i++)EXP[i]=EXP[i-255]}
+const mul=(a,b)=>a&&b?EXP[LOG[a]+LOG[b]]:0;
+function gen(n){let g=[1];for(let i=0;i<n;i++){const h=new Array(g.length+1).fill(0);for(let j=0;j<g.length;j++){h[j]^=g[j];h[j+1]^=mul(g[j],EXP[i])}g=h}return g}
+function ecc(data,n){const g=gen(n),r=new Array(n).fill(0);data.forEach((b)=>{const f=b^r[0];r.shift();r.push(0);for(let i=0;i<n;i++)r[i]^=mul(g[i+1],f)});return r}
+/* je Version: [EC-Wörter je Block, Blöcke Gruppe 1, Daten je Block G1, Blöcke G2, Daten je Block G2] */
+const TAB={
+ L:[null,[7,1,19,0,0],[10,1,34,0,0],[15,1,55,0,0],[20,1,80,0,0],[26,1,108,0,0],[18,2,68,0,0],[20,2,78,0,0],[24,2,97,0,0],[30,2,116,0,0],[18,2,68,2,69]],
+ M:[null,[10,1,16,0,0],[16,1,28,0,0],[26,1,44,0,0],[18,2,32,0,0],[24,2,43,0,0],[16,4,27,0,0],[18,4,31,0,0],[22,2,38,2,39],[22,3,36,2,37],[26,4,43,1,44]]
+};
+const ALIGN=[null,[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]];
+const FMT={L:1,M:0};
+const utf8=(s)=>{const o=[];const e=unescape(encodeURIComponent(s));for(let i=0;i<e.length;i++)o.push(e.charCodeAt(i));return o};
+function build(text,lvl){
+  lvl=lvl==="L"?"L":"M";
+  const bytes=utf8(text);let ver=0;
+  for(let v=1;v<=10;v++){const t=TAB[lvl][v],cap=t[1]*t[2]+t[3]*t[4];if(4+(v<10?8:16)+8*bytes.length<=cap*8){ver=v;break}}
+  if(!ver)return null;
+  const t=TAB[lvl][ver],cap=t[1]*t[2]+t[3]*t[4];
+  const bits=[];const put=(v,n)=>{for(let i=n-1;i>=0;i--)bits.push((v>>>i)&1)};
+  put(4,4);put(bytes.length,ver<10?8:16);bytes.forEach((b)=>put(b,8));
+  const tot=cap*8;put(0,Math.min(4,tot-bits.length));while(bits.length%8)bits.push(0);
+  const data=[];for(let i=0;i<bits.length;i+=8){let b=0;for(let j=0;j<8;j++)b=(b<<1)|bits[i+j];data.push(b)}
+  for(let p=0xEC;data.length<cap;p^=0xEC^0x11)data.push(p);
+  /* Blöcke und Fehlerkorrektur */
+  const blocks=[];let pos=0;
+  for(let g=0;g<2;g++){const n=g?t[3]:t[1],len=g?t[4]:t[2];for(let i=0;i<n;i++){const d=data.slice(pos,pos+len);pos+=len;blocks.push({d,e:ecc(d,t[0])})}}
+  const cw=[];const maxD=Math.max.apply(null,blocks.map((b)=>b.d.length));
+  for(let i=0;i<maxD;i++)blocks.forEach((b)=>{if(i<b.d.length)cw.push(b.d[i])});
+  for(let i=0;i<t[0];i++)blocks.forEach((b)=>cw.push(b.e[i]));
+  /* Raster */
+  const size=17+4*ver,M=[],F=[];for(let y=0;y<size;y++){M.push(new Array(size).fill(false));F.push(new Array(size).fill(false))}
+  const set=(x,y,v)=>{if(x>=0&&y>=0&&x<size&&y<size){M[y][x]=!!v;F[y][x]=true}};
+  for(let i=0;i<size;i++){set(6,i,i%2===0);set(i,6,i%2===0)}
+  const finder=(cx,cy)=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=Math.max(Math.abs(dx),Math.abs(dy));set(cx+dx,cy+dy,d!==2&&d!==4)}};
+  finder(3,3);finder(size-4,3);finder(3,size-4);
+  const ap=ALIGN[ver];
+  ap.forEach((cy,i)=>ap.forEach((cx,j)=>{if((i===0&&j===0)||(i===0&&j===ap.length-1)||(i===ap.length-1&&j===0))return;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(cx+dx,cy+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1)}));
+  const fmt=(mask)=>{const d=(FMT[lvl]<<3)|mask;let r=d;for(let i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);const b=((d<<10)|r)^0x5412,bit=(i)=>((b>>>i)&1)===1;
+    for(let i=0;i<=5;i++)set(8,i,bit(i));set(8,7,bit(6));set(8,8,bit(7));set(7,8,bit(8));for(let i=9;i<15;i++)set(14-i,8,bit(i));
+    for(let i=0;i<8;i++)set(size-1-i,8,bit(i));for(let i=8;i<15;i++)set(8,size-15+i,bit(i));set(8,size-8,true)};
+  fmt(0);
+  if(ver>=7){let r=ver;for(let i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);const b=(ver<<12)|r;for(let i=0;i<18;i++){const bit=((b>>>i)&1)===1,a=size-11+i%3,c=Math.floor(i/3);set(a,c,bit);set(c,a,bit)}}
+  /* Daten einsetzen */
+  {let i=0;const nb=cw.length*8;for(let right=size-1;right>=1;right-=2){if(right===6)right=5;for(let vert=0;vert<size;vert++)for(let j=0;j<2;j++){const x=right-j,up=((right+1)&2)===0,y=up?size-1-vert:vert;if(!F[y][x]&&i<nb){M[y][x]=((cw[i>>>3]>>>(7-(i&7)))&1)===1;i++}}}}
+  const cond=[(x,y)=>(x+y)%2===0,(x,y)=>y%2===0,(x,y)=>x%3===0,(x,y)=>(x+y)%3===0,(x,y)=>(Math.floor(x/3)+Math.floor(y/2))%2===0,(x,y)=>x*y%2+x*y%3===0,(x,y)=>(x*y%2+x*y%3)%2===0,(x,y)=>((x+y)%2+x*y%3)%2===0];
+  const apply=(m)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(!F[y][x]&&cond[m](x,y))M[y][x]=!M[y][x]};
+  const penalty=()=>{let p=0;
+    for(let k=0;k<2;k++){for(let a=0;a<size;a++){let run=1;for(let b=1;b<size;b++){const c=k?M[b][a]:M[a][b],d=k?M[b-1][a]:M[a][b-1];if(c===d){run++;if(run===5)p+=3;else if(run>5)p++}else run=1}}}
+    for(let y=0;y<size-1;y++)for(let x=0;x<size-1;x++){const c=M[y][x];if(c===M[y][x+1]&&c===M[y+1][x]&&c===M[y+1][x+1])p+=3}
+    const pat=[1,0,1,1,1,0,1];
+    for(let k=0;k<2;k++)for(let a=0;a<size;a++)for(let b=0;b<=size-7;b++){let ok=true;for(let i=0;i<7;i++){const c=k?M[b+i][a]:M[a][b+i];if((c?1:0)!==pat[i]){ok=false;break}}
+      if(!ok)continue;const L=(i)=>{if(i<0||i>=size)return false;return !(k?M[i][a]:M[a][i])};let l=true,r=true;for(let i=1;i<=4;i++){if(!L(b-i))l=false;if(!L(b+6+i))r=false}if(l||r)p+=40}
+    let dark=0;for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(M[y][x])dark++;
+    p+=10*(Math.ceil(Math.abs(dark*20-size*size*10)/(size*size))-1);return p};
+  let best=0,bp=1e9;
+  for(let m=0;m<8;m++){apply(m);fmt(m);const p=penalty();if(p<bp){bp=p;best=m}apply(m)}
+  apply(best);fmt(best);
+  return{size,mods:M,ver};
+}
+function svg(text,o){
+  o=o||{};const q=build(String(text),o.ecl||"M");if(!q)return "";
+  const mg=o.margin==null?4:o.margin,n=q.size+2*mg;let d="";
+  for(let y=0;y<q.size;y++){let x=0;while(x<q.size){if(q.mods[y][x]){let e=x;while(e<q.size&&q.mods[y][e])e++;d+="M"+(x+mg)+" "+(y+mg)+"h"+(e-x)+"v1h-"+(e-x)+"z";x=e}else x++}}
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+n+" "+n+'" shape-rendering="crispEdges" role="img" aria-label="QR-Code"><rect width="'+n+'" height="'+n+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>';
+}
+W.__QR={build,svg};
+if(typeof module!=="undefined"&&module.exports)module.exports=W.__QR;
+})(typeof window!=="undefined"?window:globalThis);
+
+/* ===== Verein: Leiste, Vereinsbereich (Übersicht, Sportlicher Leiter, Mannschaften), Kennzahlen je Mannschaft =====
    Läuft nur in der Web-Version nach der Anmeldung (web.js setzt window.__CLUB und löst „u13club“ aus). Gemeinsame Daten stehen in
    verein/main, plaene/platz, kabinen/<Datum>, mitglieder/<E-Mail>; je Mannschaft gibt es zusätzlich <Mannschaft>__vstat/main (Kennzahlen) und <Mannschaft>__vhinweise. */
 (function(){
@@ -5638,7 +5711,7 @@ const CSS='html.vclub,html.vclub body{height:auto;min-height:100%}#vnav{position
 +'@media(max-width:760px){#vnav .vpill button.mobx,nav button.mobx{display:none!important}#vnav .vbrand>span:last-child{display:none}#vnav .vbrand{padding:5px 8px 5px 6px}#vnav .vpill{overflow:visible!important}#vnav .vpill button{padding:7px 8px!important;font-size:13px!important}#vnav .vpill button.on{max-width:120px;overflow:hidden;text-overflow:ellipsis}#vnav .vpill #vmore{padding:5px 10px!important;font-size:18px!important}#vnav .vpill{max-width:100%;box-sizing:border-box}#vnav{grid-template-columns:minmax(0,1fr)!important}#vnav .vpill,#vnav .vr{grid-column:1!important;justify-self:stretch!important}#vnav .vpill{justify-content:space-between}@media(max-width:380px){#vnav .vpill button.on{max-width:92px!important}#vnav .vpill button{padding:7px 5px!important}#vnav .vbrand{padding:5px 4px 5px 4px!important}}html.mobnav nav button[data-s="h"]{position:static!important;box-shadow:none!important}html.mobnav nav button[data-s="h"]:not(.on){background:none!important}html.mobnav nav{width:auto!important;max-width:none!important;left:8px!important;right:8px!important;bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;border-radius:26px!important;padding:6px 4px!important}html.mobnav nav button{font-size:10.5px!important;flex:1 1 0!important;min-width:0!important;padding-left:2px!important;padding-right:2px!important}.mobsheet{position:fixed;z-index:400;left:12px;right:12px;background:var(--card);border:1px solid var(--ln);border-radius:20px;padding:10px;display:grid;gap:6px;box-shadow:0 12px 40px rgba(0,0,0,.35);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);max-height:70vh;overflow-y:auto}.mobsheet[hidden]{display:none}.mobsheet button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid var(--ln);background:var(--card);color:var(--tx);font:inherit;font-size:15px;border-radius:14px;padding:8px 10px;cursor:pointer;text-align:center}.mobsheet button.on{background:var(--acs);color:var(--ac);font-weight:600;border-color:var(--ac)}#mobsheetB{bottom:calc(84px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(2,minmax(0,1fr));overflow-x:hidden;padding:12px;gap:8px}#mobsheetB button{justify-content:flex-start;min-height:52px;padding:10px 14px;font-size:16px}#mobsheetT{top:calc(var(--vnh,56px) + 6px);grid-template-columns:1fr}}'
 +'#vnav #vacc{display:none}@media(max-width:760px){#vnav .vr{display:flex!important;flex-wrap:nowrap;align-items:center;gap:6px;width:auto}#vnav .vr #vrole,#vnav .vr #vth{display:none!important}#vnav .vr #vsync{font-size:0!important;padding:6px 10px!important}#vnav .vr #vsync::before{content:"●";font-size:15px}#vnav .vr #vsync.err{color:var(--r,#c0392b)}#vnav .vr #vsync.ok{color:var(--g,#1b7a3a)}#vnav #vacc{display:inline-flex;order:3}#vnav .vr #vteamb{order:1}#vnav .vr #vsync{order:2;padding:4px 8px!important}html.vclub .top .logo,html.vclub .top #logox,html.vclub .top #th,html.vclub .top #st,html.vclub .top #tzl{display:none!important}html.vclub .top b{font-size:18px!important}}'
 +'.rolpick{display:none}@media(max-width:700px){.rolpick{display:block;margin:0 0 10px}.rpc{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.rpc .btn.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}#rolt .rc{display:none}#rolt[data-rs="0"] .rc[data-rc="0"]{display:table-cell}#rolt[data-rs="1"] .rc[data-rc="1"]{display:table-cell}#rolt[data-rs="2"] .rc[data-rc="2"]{display:table-cell}#rolt[data-rs="3"] .rc[data-rc="3"]{display:table-cell}#rolt[data-rs="4"] .rc[data-rc="4"]{display:table-cell}#rolt[data-rs="5"] .rc[data-rc="5"]{display:table-cell}#rolt[data-rs="6"] .rc[data-rc="6"]{display:table-cell}#rolt[data-rs="7"] .rc[data-rc="7"]{display:table-cell}#rolt[data-rs="8"] .rc[data-rc="8"]{display:table-cell}#rolt[data-rs="9"] .rc[data-rc="9"]{display:table-cell}#rolt[data-rs="10"] .rc[data-rc="10"]{display:table-cell}#rolt[data-rs="11"] .rc[data-rc="11"]{display:table-cell}#rolt[data-rs="12"] .rc[data-rc="12"]{display:table-cell}#rolt[data-rs="13"] .rc[data-rc="13"]{display:table-cell}#rolt[data-rs="14"] .rc[data-rc="14"]{display:table-cell}#rolt[data-rs="15"] .rc[data-rc="15"]{display:table-cell}#rolt[data-rs="16"] .rc[data-rc="16"]{display:table-cell}#rolt[data-rs="17"] .rc[data-rc="17"]{display:table-cell}#rolt[data-rs="18"] .rc[data-rc="18"]{display:table-cell}#rolt[data-rs="19"] .rc[data-rc="19"]{display:table-cell}#rolt{width:100%}#rolt td.rc,#rolt th.rc{text-align:center;width:90px}}'
-+'@media(max-width:760px){#vnav .vr{gap:8px!important}#vnav .vr>*{height:34px!important;box-sizing:border-box!important;border-radius:17px!important;font-size:13px!important;line-height:1!important}#vnav .vr #vteamb,#vnav #vacc{display:inline-flex!important;align-items:center;padding:0 14px!important;background:transparent!important;border:1px solid var(--ln)!important;color:var(--tx)!important;box-shadow:none!important}#vnav .vr #vteamb{margin-right:auto}#vnav .vr #vsync{background:none!important;border:0!important;box-shadow:none!important;padding:0 2px!important;min-width:0!important;display:inline-flex;align-items:center}#vnav .vr #vsync::before{font-size:12px!important}}'
++'@media(max-width:760px){#vnav .vr{gap:8px!important}#vnav .vr>*{height:34px!important;box-sizing:border-box!important;border-radius:17px!important;font-size:13px!important;line-height:1!important}#vnav .vr #vteamb,#vnav #vacc{display:inline-flex!important;align-items:center;padding:0 14px!important;background:transparent!important;border:1px solid var(--ln)!important;color:var(--tx)!important;box-shadow:none!important}#vnav .vr #vteamb{margin-right:auto}#vnav .vr #vteamb[hidden],#vnav #vacc[hidden]{display:none!important}#vnav .vr #vsync{background:none!important;border:0!important;box-shadow:none!important;padding:0 2px!important;min-width:0!important;display:inline-flex;align-items:center}#vnav .vr #vsync::before{font-size:12px!important}}'
 +'@media(max-width:760px){#vnav{padding:8px 12px}#vnav .vr{margin-left:0;width:100%}#vp{bottom:0}#vbody{padding:14px 12px 90px}#vbody .card.vc,#vbody .vc{padding:12px 10px}#vbody .vrow .vseg{width:100%;display:flex}#vbody .vrow .vseg .btn{flex:1}}';
 function css(){if(q("#vcss"))return;const s=document.createElement("style");s.id="vcss";s.textContent=CSS;document.head.appendChild(s)}
 V.css=css;
@@ -5901,7 +5974,7 @@ const BCOL=["var(--grs)","var(--r)","var(--o)","var(--y)","var(--g)"];
 /* ---------- Übersicht (mit Filtern), Hinweise, Handlungsbedarf ---------- */
 let ufilt="";
 try{ufilt=localStorage.getItem("u13uf")||""}catch(e){}
-let hSub=[];
+let hSub=[],anfU=null;
 
 V.openKader=()=>{V.close();const b=document.querySelector('nav button[data-s="k"]');if(b){b.click();try{window.scrollTo(0,0)}catch(e){}}refreshNav()};
 const kadTeams=()=>V.teams().filter((t)=>t.aktiv!==false&&(V.has(t.id,"kader")||V.has(t.id,"kaderbearb")));
@@ -5960,7 +6033,9 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   const avg=(f)=>{const v=have.filter((s)=>s.st!=="basis").map(f).filter((x)=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
   const need=act.filter((t)=>{const s=V.st[t.id];if(s&&s.st==="basis")return false;return !s||V.pflege(s).art||(s.fbet>0&&s.fbet<=2)});
   const hinT=(V.isAll()?V.teams().filter((t)=>t.aktiv!==false):V.teams().filter((t)=>t.aktiv!==false&&V.has(t.id,"hinweise")));
+  if(V.isAll()&&!anfU){try{anfU=V.fs().collection("anfragen").onSnapshot((x)=>{const n=x.docs.filter((d)=>(d.data()||{}).status==="offen").length;if(n!==V.anfN){V.anfN=n;if(V.cur==="uebersicht"&&!V.typing())V.render()}},()=>{});hSub.push(()=>{if(anfU){try{anfU()}catch(e){}anfU=null}})}catch(e){}}
   let h='<h2>Übersicht</h2><p class="sub note">'+((V.isAll()||fid==="alle"&&vis.length>1)?"Die Mannschaften auf einen Blick.":"Deine Mannschaft"+(act.length>1?"en":"")+" auf einen Blick.")+'</p>';
+  if(V.isAll()&&V.anfN>0)h+='<div class="card vc" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="flex:1;min-width:180px">'+V.anfN+(V.anfN===1?" neue Anfrage":" neue Anfragen")+' von eingeladenen Personen</b><button class="btn" data-goanf="1" style="background:var(--ac);color:#fff;border-color:var(--ac)">Ansehen</button></div>';
   if(filters.length>1)h+='<div class="vf" role="tablist">'+filters.map((x)=>'<button type="button" data-f="'+E(x.id)+'" class="'+(x.id===fid?"on":"")+'">'+E(x.n)+'</button>').join("")+'</div>';
   if(open.length&&V.has(W.__TID,"sehen"))h+='<div class="card vc" style="border-color:var(--y);background:var(--ys)"><b>Hinweise für '+E(V.tname(W.__TID))+'</b>'+open.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+E(x.text)+' <span class="note">· '+E(x.von||"")+' · '+E(String(x.at||"").slice(0,10).split("-").reverse().join("."))+'</span></span>'+(V.canWrite()&&x.ack!==false?'<button class="btn" data-ok="'+E(x.id)+'">Erledigt</button>':"")+(x.bis?' <span class="note">bis '+E(V.fdl(x.bis).slice(0,6))+'</span>':"")+'</div>').join("")+'</div>';
   {const adm=V.isAdmin(),gts=adm?["*"]:Array.from(new Set((V.isAll()?[]:mineIds).concat([W.__TID]))).filter((id)=>V.has(id,"sehen")||V.isAll()),gh=[];gts.forEach((id)=>V.spielHinweise(id).forEach((x)=>gh.push(x)));
@@ -5993,6 +6068,7 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   const L=U13.grTexte("t"),L2=U13.grTexte("s");
   h+='<p class="note" style="margin-top:10px">Training = Beteiligung im Durchschnitt. Farben: rot '+E(L[0])+' · orange '+E(L[1])+' · gelb '+E(L[2])+' · grün '+E(L[3])+'. Mannschaften, die lange nicht gepflegt wurden, erscheinen ausgegraut (Einstellung unter „Mannschaften“).</p>';
   el.innerHTML=h;
+  {const gb=el.querySelector("[data-goanf]");if(gb)gb.onclick=()=>V.go("personen")}
   const send=async(tid,text,art,o)=>{const m=q("#slm",el);o=o||{};try{await V.fs().doc(tid+"__vhinweise/"+V.id("h")).set({text,von:(W.__VME&&(W.__VME.name||W.__VME.email))||"",at:new Date().toISOString(),erledigt:false,art:art||"hinweis",ack:art==="erinnerung"?true:!!o.ack,...(o.bis?{bis:o.bis}:{}),...(o.ab?{ab:o.ab}:{})});V.log("Hinweis an "+V.tshort(tid),tid);if(m){m.className="vmsg ok";m.textContent="Gesendet an "+V.tshort(tid)+"."}return true}catch(e){if(m){m.className="vmsg er";m.textContent="Das hat nicht geklappt."}return false}};
   el.onclick=async(e)=>{
     const fb=e.target.closest("[data-f]");if(fb){ufilt=fb.dataset.f;try{localStorage.setItem("u13uf",ufilt)}catch(x){}V.render();return}
@@ -6566,15 +6642,40 @@ V.resync=async()=>{
       const ex=V.expandZu(m.zu||[]);if(JSON.stringify(ex.tr)===JSON.stringify(m.tr||{})&&JSON.stringify(ex.g)===JSON.stringify(m.g||[]))continue;
       await V.fs().doc("mitglieder/"+d.id).set({...m,tr:ex.tr,g:ex.g,am:new Date().toISOString()})}}catch(e){}
 };
+/* ---------- Einladung per Link und Anfragen neuer Personen ---------- */
+let invs=null,anfs=null,iUnsub=null,aUnsub=null,invDays="7",qrOpen=null;
+const rnd=(n)=>{const A="abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=new Uint8Array(n);(W.crypto||W.msCrypto).getRandomValues(b);return Array.from(b,(x)=>A[x%A.length]).join("")};
+const invLink=(id)=>(W.__WEB_BASE0||(location.origin+location.pathname))+"#ein/"+id;
+const invLive=(i)=>i.aktiv!==false&&(!i.bis||i.bis>Date.now());
+const dShort=(iso)=>iso?V.fdl(String(iso).slice(0,10)):"";
+function einCard(){
+  const open=(anfs||[]).filter((a)=>a.status==="offen").sort((x,y)=>String(x.at||"").localeCompare(String(y.at||"")));
+  let c='<div class="card vc" id="eincard"><div class="vhd"><h3>Neue Personen einladen</h3></div><p class="note" style="margin:0 0 8px">Du erstellst einen Link oder QR-Code und schickst ihn der Person. Sie meldet sich damit an und trägt Name, Rolle und Mannschaft ein. Du bestätigst hier, danach hat sie Zugriff. Der Link gilt nur so lange, wie du einstellst.</p>';
+  if(open.length){c+='<h4 style="margin:10px 0 6px">Offene Anfragen ('+open.length+')</h4>'+open.map((a)=>{
+    const ro=(a.rollen||[]).map((r)=>V.artName(r)).concat(a.sonst?["Sonstiges: "+a.sonst]:[]).join(", ")||"–",te=(a.teams||[]).map((t)=>V.tshort(t)).join(", ")||"–";
+    return '<div class="vrow ianf" style="align-items:flex-start;border-top:1px solid var(--ln);padding-top:8px"><div style="flex:1;min-width:200px"><b>'+E(a.name||"–")+'</b> <span class="note">'+E(a.id)+'</span><div class="note">Rolle: '+E(ro)+' · Mannschaft: '+E(te)+(a.at?' · '+E(dShort(a.at)):"")+'</div></div><button class="btn" data-af="'+E(a.id)+'" style="background:var(--ac);color:#fff;border-color:var(--ac)">Prüfen und freigeben</button><button class="btn" data-ad="'+E(a.id)+'">Ablehnen</button></div>'}).join("")}
+  else c+='<div class="note" style="margin:0 0 6px">'+(anfs?"Keine offenen Anfragen.":"Lädt …")+'</div>';
+  c+='<h4 style="margin:14px 0 6px">Einladungslink</h4><div class="vrow"><label>Link gilt<select id="ivd">'+[["1","1 Tag"],["7","7 Tage"],["30","30 Tage"],["s","bis Saisonende"],["0","unbegrenzt"]].map((o)=>'<option value="'+o[0]+'"'+(o[0]===invDays?" selected":"")+'>'+o[1]+'</option>').join("")+'</select></label><button class="btn" id="ivnew" type="button" style="align-self:flex-end">＋ Link erstellen</button></div>';
+  const L=(invs||[]).slice().sort((x,y)=>String(y.am||"").localeCompare(String(x.am||"")));
+  c+=L.map((i)=>{const live=invLive(i),lk=invLink(i.id);
+    return '<div class="vrow ilnk" style="align-items:flex-start;border-top:1px solid var(--ln);padding-top:8px"><div style="flex:1;min-width:200px"><div class="note">'+(live?'<span class="vbad g">gültig</span> ':'<span class="vbad r">abgelaufen</span> ')+(i.bis?(live?"bis ":"seit ")+E(V.fdl(msIso(i.bis))):"unbegrenzt")+' · erstellt '+E(dShort(i.am))+'</div><input readonly data-isel="1" value="'+E(lk)+'" style="width:100%;margin-top:4px" aria-label="Einladungslink"></div>'
+      +(live?'<button class="btn" data-ic="'+E(i.id)+'">Link kopieren</button><button class="btn" data-iq="'+E(i.id)+'">QR-Code</button>':'')+'<button class="btn" data-ix="'+E(i.id)+'">'+(live?"Beenden":"Entfernen")+'</button>'
+      +(live&&qrOpen===i.id?'<div style="flex-basis:100%"><div style="width:220px;max-width:100%;border:1px solid var(--ln);border-radius:12px;overflow:hidden">'+(W.__QR?W.__QR.svg(lk,{ecl:"M"}):"")+'</div><div class="note" style="margin-top:4px">Mit der Handykamera scannen. Der Code führt zum selben Link.</div></div>':"")+'</div>'}).join("");
+  if(invs&&!L.length)c+='<div class="note" style="margin-top:6px">Noch kein Link erstellt.</div>';
+  return c+'<div class="vmsg" id="imsg"></div></div>';
+}
 const emptyZu=()=>({art:(V.arten()[0]||{}).id||"",teams:[],bereich:"",alle:false});
-V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUnsub){try{mUnsub()}catch(e){}mUnsub=null;mem=null}},render(el){
+V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUnsub){try{mUnsub()}catch(e){}mUnsub=null;mem=null}if(iUnsub){try{iUnsub()}catch(e){}iUnsub=null;invs=null}if(aUnsub){try{aUnsub()}catch(e){}aUnsub=null;anfs=null}},render(el){
   if(!mUnsub){mUnsub=V.fs().collection("mitglieder").onSnapshot((s)=>{mem=s.docs.map((d)=>({id:d.id,...d.data()})).sort((a,b)=>a.id<b.id?-1:1);if(V.cur==="personen"&&!V.typing())V.render()},()=>{mem=[]})}
+  if(!iUnsub){iUnsub=V.fs().collection("einladungen").onSnapshot((x)=>{invs=x.docs.map((d)=>({id:d.id,...d.data()}));if(V.cur==="personen"&&!V.typing())V.render()},()=>{invs=[]})}
+  if(!aUnsub){aUnsub=V.fs().collection("anfragen").onSnapshot((x)=>{anfs=x.docs.map((d)=>({id:d.id,...d.data()}));if(V.cur==="personen"&&!V.typing())V.render()},()=>{anfs=[]})}
   if(V.typing())return;
   const teams=V.teams().filter((t)=>t.aktiv!==false),arten=V.arten(),bs=V.bereiche(),adm=V.isAdmin();
   if(adm&&!arten.some((x)=>x.id==="platzwart")&&!W.__pwMig){W.__pwMig=1;V.saveVerein({arten:arten.concat([{id:"platzwart",name:"Platzwart",rechte:[],gl:["plan"]}])}).then(()=>V.render()).catch(()=>{})}
   let h='<h2>Personen &amp; Rechte</h2><p class="sub note">Zwei Teile: oben die Personen, darunter die Rollen mit ihren Berechtigungen. Wer darf die App öffnen und was darf er in welcher Mannschaft? Die Person meldet sich mit genau dieser E-Mail-Adresse an (Google oder E-Mail). Änderungen gelten beim nächsten Öffnen der App.</p>';
   if(W.__VOWNER){const other=(mem||[]).some((m)=>m.rolle==="admin"&&m.id!==(W.__VME||{}).email);
     h+='<div class="card vc"><h3>Besitzer der App</h3>'+(W.__VFREI?'<p class="note">Du hast deine Besitzerrechte abgegeben und arbeitest jetzt mit der Rolle, die dir ein Administrator gegeben hat.</p><button class="btn" id="obk">Besitzerrechte zurücknehmen</button>':'<p class="note">Du bist der Besitzer. Du bist immer Administrator und kein anderer Administrator kann dir das wegnehmen. Du selbst kannst deine Administratorrechte abgeben, zum Beispiel wenn eine andere Person die Verwaltung übernimmt. Du kannst sie jederzeit wieder zurücknehmen.</p>'+(other?'<button class="btn" id="oabg">Meine Administratorrechte abgeben</button>':'<p class="note"><b>Zum Abgeben braucht es einen zweiten Administrator.</b> Lege ihn unten bei „Person hinzufügen“ mit der Rolle Administrator an.</p>'))+'<div class="vmsg" id="omsg"></div></div>'}
+  h+=einCard();
   h+='<div class="card vc"><div class="vhd"><h3>Personen</h3>'+(pe?'':'<button class="btn" id="pnew" type="button">＋ Person hinzufügen</button>')+'</div><div class="tw"><table class="vt mrow" id="vpt"><thead><tr><th>Person</th><th>Rolle und Zuordnung</th><th>Aktion</th></tr></thead><tbody>';
   h+='<tr><td colspan="3" class="note">Der Besitzer und fest eingetragene Administratoren stehen in den Zugriffsregeln und sind hier nicht aufgeführt. Du kannst weitere Personen zu Administratoren machen (Rolle „Administrator“); den Besitzer kann niemand entfernen.</td></tr>';
   (mem||[]).forEach((m)=>{const ed=mayEdit(m);
@@ -6583,7 +6684,7 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   if(!mem)h+='<tr><td colspan="3" class="note">Lädt …</td></tr>';
   h+='</tbody></table></div><div class="vmsg '+mMsgK+'" id="vmm">'+E(mMsg)+'</div>'+'</div>';
   if(pe){
-    h+='<div class="card vc" id="pcard"><h3>'+(pe.neu?"Person hinzufügen":"Person bearbeiten")+'</h3><div class="vrow"><label>E-Mail-Adresse<input id="pe_e" type="email" autocomplete="off" style="min-width:230px" value="'+E(pe.email)+'"'+(pe.neu?"":" disabled")+'></label><label>Name<input id="pe_n" maxlength="60" style="width:180px" value="'+E(pe.name)+'"></label></div>';
+    h+='<div class="card vc" id="pcard"><h3>'+(pe.neu?"Person hinzufügen":"Person bearbeiten")+'</h3>'+(pe.wunsch?'<div class="note" style="margin:0 0 8px"><b>Wunsch der Person:</b> '+E(pe.wunsch)+'. Du kannst alles ändern, bevor du speicherst.</div>':'')+'<div class="vrow"><label>E-Mail-Adresse<input id="pe_e" type="email" autocomplete="off" style="min-width:230px" value="'+E(pe.email)+'"'+(pe.neu?"":" disabled")+'></label><label>Name<input id="pe_n" maxlength="60" style="width:180px" value="'+E(pe.name)+'"></label></div>';
     const roleSel=(i,glob)=>'<label>Rolle<select data-za="'+i+'">'+(glob?'<optgroup label="Für den ganzen Verein">'+[["admin","Administrator"],["jugendleiter","Jugendleiter"]].filter(()=>adm).map((r)=>'<option value="g:'+r[0]+'"'+(pe.rolle===r[0]?" selected":"")+'>'+r[1]+'</option>').join("")+'</optgroup>':"")+'<optgroup label="In Mannschaften">'+arten.map((a)=>'<option value="a:'+E(a.id)+'"'+(pe.rolle==="team"&&pe.zu[i]&&pe.zu[i].art===a.id?" selected":"")+'>'+E(a.name)+'</option>').join("")+'</optgroup></select></label>';
     if(pe.rolle!=="team")h+='<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px;margin-top:8px">'+roleSel(0,true)+'<span class="note" style="align-self:center">Diese Rolle gilt für den ganzen Verein. Für eine Mannschaftsrolle (zum Beispiel Trainer oder Sportlicher Leiter) oben eine Rolle aus „In Mannschaften“ wählen.</span></div>';
     if(pe.rolle==="team"){
@@ -6652,11 +6753,24 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
       if(pe.rolle==="team"&&pe.zu.some((z)=>!z.alle&&!z.bereich&&!(z.teams||[]).length&&((arten.find((x)=>x.id===z.art)||{}).rechte||[]).length)){pm("Bitte bei jeder Rolle mindestens eine Mannschaft oder einen Bereich wählen.","er");return}
       const ex=pe.rolle==="team"?V.expandZu(pe.zu):{tr:{},g:[]};
       const doc={email:pe.email,name:pe.name,rolle:pe.rolle,zu:pe.rolle==="team"?pe.zu:[],tr:ex.tr,g:ex.g,kader:pe.rolle==="team"?pe.kader:{},am:new Date().toISOString()};
-      try{await V.fs().doc("mitglieder/"+pe.email).set(doc);V.log((pe.neu?"Person hinzugefügt: ":"Person geändert: ")+pe.email);pe=null;msg("Gespeichert. Gilt beim nächsten Öffnen der App durch die Person.");V.render()}catch(x){pm("Das konnte nicht gespeichert werden (fehlende Berechtigung?).","er")}
+      try{await V.fs().doc("mitglieder/"+pe.email).set(doc);V.log((pe.neu?"Person hinzugefügt: ":"Person geändert: ")+pe.email);if(pe.anf){try{await V.fs().doc("anfragen/"+pe.anf).delete()}catch(x){}}pe=null;msg("Gespeichert. Gilt beim nächsten Öffnen der App durch die Person.");V.render()}catch(x){pm("Das konnte nicht gespeichert werden (fehlende Berechtigung?).","er")}
       return}
     if(t.id==="oabg"){if(!t.dataset.arm){t.dataset.arm="1";t.textContent="Wirklich abgeben? Dann hast du keine Administratorrechte mehr";return}try{await V.fs().doc("ownercheck/frei").set({at:new Date().toISOString()});V.log("Besitzer hat Administratorrechte abgegeben");location.reload()}catch(x){const o=q("#omsg",el);if(o){o.textContent="Das hat nicht geklappt.";o.className="vmsg er"}}return}
     if(t.id==="obk"){try{await V.fs().doc("ownercheck/frei").delete();location.reload()}catch(x){const o=q("#omsg",el);if(o){o.textContent="Das hat nicht geklappt.";o.className="vmsg er"}}return}
     const md=t.closest("[data-md]");if(md){if(!md.dataset.arm){md.dataset.arm="1";md.textContent="Wirklich entfernen?";return}try{await V.fs().doc("mitglieder/"+md.dataset.md).delete();V.log("Person entfernt: "+md.dataset.md);msg("Entfernt. Die Person kommt ab sofort nicht mehr hinein.")}catch(x){msg("Das konnte nicht gespeichert werden.","er")}return}
+    if(t.id==="ivnew"){const sel=q("#ivd",el),dv=sel?sel.value:"7";invDays=dv;const bis=dv==="0"?0:dv==="s"?endMs(seasonEnd()):Date.now()+(+dv)*864e5,id=rnd(24);
+      try{await V.fs().doc("einladungen/"+id).set({aktiv:true,bis,rollen:arten.filter((a)=>a.id!=="platzwart").map((a)=>({id:a.id,name:a.name})),teams:teams.map((x)=>({id:x.id,name:x.name,ak:x.ak||""})),von:(W.__VME&&W.__VME.email)||"",am:new Date().toISOString()});V.log("Einladungslink erstellt");qrOpen=id;const m=q("#imsg",el);if(m){m.textContent="Link erstellt. Kopiere ihn oder zeige den QR-Code.";m.className="vmsg ok"}}
+      catch(x){const m=q("#imsg",el);if(m){m.textContent="Der Link konnte nicht erstellt werden (fehlende Berechtigung?).";m.className="vmsg er"}}return}
+    const ic=t.closest("[data-ic]");if(ic){const lk=invLink(ic.dataset.ic),m=q("#imsg",el),inp=ic.closest(".ilnk").querySelector("[data-isel]");
+      const ok=()=>{if(m){m.textContent="Link kopiert.";m.className="vmsg ok"}},sel=()=>{if(inp){inp.focus();inp.select()}if(m){m.textContent="Bitte den markierten Link selbst kopieren.";m.className="vmsg"}};
+      try{navigator.clipboard.writeText(lk).then(ok,sel)}catch(x){sel()}return}
+    const iq=t.closest("[data-iq]");if(iq){qrOpen=qrOpen===iq.dataset.iq?null:iq.dataset.iq;V.render();return}
+    if(t.dataset&&t.dataset.isel){t.select();return}
+    const ix=t.closest("[data-ix]");if(ix){if(!ix.dataset.arm){ix.dataset.arm="1";ix.textContent="Wirklich?";return}try{await V.fs().doc("einladungen/"+ix.dataset.ix).delete();V.log("Einladungslink beendet")}catch(x){}return}
+    const af=t.closest("[data-af]");if(af){const a=(anfs||[]).find((x)=>x.id===af.dataset.af);if(a){const known=(a.rollen||[]).filter((r)=>arten.some((x)=>x.id===r)),tl=(a.teams||[]).slice();
+      const wu=[((a.rollen||[]).map((r)=>V.artName(r)).concat(a.sonst?["Sonstiges: "+a.sonst]:[])).join(", ")||"keine Angabe","Mannschaft: "+((a.teams||[]).map((t)=>V.tshort(t)).join(", ")||"–")].join(" · ");
+      pe={neu:true,email:a.id,name:a.name||"",rolle:"team",zu:known.length?known.map((r)=>({art:r,teams:tl.slice(),bereich:"",alle:false})):[{...emptyZu(),teams:tl.slice()}],kader:{},anf:a.id,wunsch:wu};V.render();try{q("#pcard",el).scrollIntoView({block:"nearest"})}catch(x){}}return}
+    const aa=t.closest("[data-ad]");if(aa){if(!aa.dataset.arm){aa.dataset.arm="1";aa.textContent="Wirklich ablehnen?";return}try{await V.fs().doc("anfragen/"+aa.dataset.ad).delete();V.log("Anfrage abgelehnt: "+aa.dataset.ad)}catch(x){}return}
     const rp=t.closest("[data-rp]");if(rp){rSel=+rp.dataset.rp;const tb=q("#rolt",el);if(tb)tb.setAttribute("data-rs",rSel);el.querySelectorAll("[data-rp]").forEach((x)=>x.classList.toggle("on",x===rp));return}
     if(t.id==="anewb"){const r=q("#anewrow",el);if(r){r.hidden=false;const i=q("#anew",el);if(i)i.focus()}return}
     if(t.id==="areset"){if(!t.dataset.arm){t.dataset.arm="1";t.textContent="Wirklich zurücksetzen?";return}if(await saveArten(JSON.parse(JSON.stringify(W.__ARTEN_STD||[])),"Rollen auf Standard zurückgesetzt"))V.render();return}
