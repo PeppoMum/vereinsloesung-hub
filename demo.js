@@ -108,12 +108,13 @@ TEAMS.forEach(([tid,name],ti)=>{
   const fdid=(t)=>"DEMO"+t.toUpperCase()+"00000000000000000000";
   const gamesOf=(tid)=>[...store.entries()].filter(([k])=>k.indexOf(tid+"__games/")===0).map(([,v])=>v).sort((a,b)=>a.datum.localeCompare(b.datum));
   const idx={v:1,stand:new Date(Date.now()-2*36e5).toISOString(),aktiv:true,teams:{}};
-  [["d1",true,3],["d2",true,5],["g1",false,0]].forEach(([tid,liga,platz])=>{
+  [["d1",true,3],["d2",true,5],["g1",true,2],["f1",true,4],["f2",true,1],["e1",false,0]].forEach(([tid,liga,platz])=>{   /* Tabellen für alle Mannschaften bis einschließlich U10 (und D1/D2) */
+    const AK=tid[0]==="g"?["Bambini-Staffel","Bambini"]:tid[0]==="f"?["Kreisliga F-Junioren","F-Junioren"]:["Kreisliga B D-Junioren","D-Junioren"];
     const cfg=store.get(tid+"__config/main");
     cfg.fd={team:"https://www.fussball.de/mannschaft/demo/-/saison/2627/team-id/"+fdid(tid)+"#!/",liga:liga?"https://www.fussball.de/spieltagsuebersicht/demo/-/staffel/DEMOSTAFFEL#!/":""};put(tid+"__config/main",cfg);
     const own="TuS Musterstadt "+tid.toUpperCase(),gs=gamesOf(tid),sp=[],fut=gs.filter((g)=>g.datum>=TODAY);
     gs.forEach((g,i)=>{
-      const past=g.datum<TODAY,h=g.ha==="H",f={id:"DG"+tid+i,d:g.datum,z:"10:30",wett:liga?"Kreisliga B D-Junioren":"Spielfest",alt:"D-Junioren",heim:h?own:g.gegner,gast:h?g.gegner:own,st:"",ht:null,gt:null,ort:"Sportanlage Musterstadt, Beispielweg 1, 12345 Musterstadt",ortUrl:"",h};
+      const past=g.datum<TODAY,h=g.ha==="H",f={id:"DG"+tid+i,d:g.datum,z:"10:30",wett:liga?AK[0]:"Spielfest",alt:AK[1],heim:h?own:g.gegner,gast:h?g.gegner:own,st:"",ht:null,gt:null,ort:"Sportanlage Musterstadt, Beispielweg 1, 12345 Musterstadt",ortUrl:"",h};
       if(past){f.ht=h?g.tore:g.gt;f.gt=h?g.gt:g.tore;g.fd=f.id}
       else{const k=fut.indexOf(g);
         if(k===0){g.fd=f.id;f.z="11:00"}                 /* verknüpft, Anstoß wird still ergänzt */
@@ -121,12 +122,17 @@ TEAMS.forEach(([tid,name],ti)=>{
         else if(k===2&&tid==="d1"){g.fd=f.id;f.d=addD(g.datum,1);f.z="11:00"}   /* verlegt: App fragt */
         else if(k===3&&tid==="d1"){const o=NAMES.find((n)=>n!==g.gegner&&n!==NAMES[0]&&n!==own);f.heim=h?own:o;f.gast=h?o:own}  /* gleicher Tag, anderer Gegner: App fragt */}
       put(tid+"__games/"+g.id,g);sp.push(f)});
+    if(liga){   /* weitere gespielte Ligaspiele (nur FUSSBALL.DE), damit jede Mannschaft mind. 9 Spiele für die Formtabelle hat */
+      const have=sp.filter((x)=>x.d<TODAY).length;
+      for(let k=0;have+k<9;k++){const d=addD(TODAY,-61-7*k),h=k%2===0,o=NAMES[(k+1)%NAMES.length]===own?NAMES[1]:NAMES[(k+1)%NAMES.length],a=(k*5+tid.charCodeAt(0))%5,b=(k*3+tid.charCodeAt(1))%4;
+        sp.push({id:"DG"+tid+"v"+k,d,z:"10:30",wett:AK[0],alt:AK[1],heim:h?own:o,gast:h?o:own,st:"",ht:h?a:b,gt:h?b:a,ort:"Sportanlage Musterstadt, Beispielweg 1, 12345 Musterstadt",ortUrl:"",h});
+        const FF=(store.get(tid+"__config/main")||{}).spielformen||[{}];put(tid+"__games/gv"+k,{id:"gv"+k,nr:0,datum:d,dauer:60,form:FF[0].id,gewichtet:true,spielerzahl:FF[0].spieler||7,gegner:o,ha:h?"H":"A",tore:a,gt:b,wertung:true,spieler:{},fd:"DG"+tid+"v"+k})}}
     if(tid==="d1"){const last=fut[fut.length-1],d=addD(last?last.datum:TODAY,14);sp.push({id:"DG"+tid+"neu",d,z:"10:30",wett:"Kreisliga B D-Junioren",alt:"D-Junioren",heim:NAMES[3],gast:own,st:"",ht:null,gt:null,ort:"Sportplatz Testfeld, Probeweg 2",ortUrl:"",h:false});
       sp.push({id:"DG"+tid+"fr",d:addD(d,7),z:"11:00",wett:"Freundschaftsspiele",alt:"D-Junioren",heim:own,gast:NAMES[6],st:"",ht:null,gt:null,ort:"",ortUrl:"",h:true})}
     sp.sort((a,b)=>(a.d+a.z).localeCompare(b.d+b.z));
     const opps=NAMES.filter((n)=>n!==NAMES[0]).slice(0,7),tab=[own].concat(opps).map((t,i)=>({team:t,sp:6,s:0,u:0,n:0,tore:"",diff:0,pkt:0,auf:false,ab:false}));
     const order=tab.slice(1);order.splice(platz-1,0,tab[0]);
-    const T=liga?order.map((r,i)=>{const w=Math.max(0,6-i),u=i%3===0?1:0,l=6-w-u;return{p:i+1,team:r.team,sp:6,s:w,u,n:Math.max(0,l),tore:(w*2+u+3)+":"+(l*2+u+2),diff:(w*2+u+3)-(l*2+u+2),pkt:w*3+u,auf:i===0,ab:i===order.length-1}}):[];
+    const T=liga?order.map((r,i)=>{const N=9,w=Math.max(0,N-3-i),u=i%3===0?1:0,l=N-w-u;return{p:i+1,team:r.team,sp:N,s:w,u,n:Math.max(0,l),tore:(w*2+u+3)+":"+(l*2+u+2),diff:(w*2+u+3)-(l*2+u+2),pkt:w*3+u,auf:i===0,ab:i===order.length-1}}):[];
     put("fussball/"+fdid(tid),{v:1,id:fdid(tid),tids:[tid],abgeholt:idx.stand,geaendert:idx.stand,fehler:null,eigen:own,spiele:sp,tabelle:T,tabelleStand:idx.stand,hash:"demo"+tid});
     idx.teams[fdid(tid)]={tids:[tid],ok:true,fehler:null,abgeholt:idx.stand,geaendert:idx.stand,nSpiele:sp.length,nTabelle:T.length,eigen:own}});
   put("fussball/_index",idx);
@@ -187,7 +193,8 @@ window.firebase={initializeApp(){},auth:Object.assign(()=>auth,{GoogleAuthProvid
 const bar=()=>{if(document.getElementById("u13demo"))return;
   const st=document.createElement("style");st.textContent="#u13demo{position:sticky;top:0;z-index:9000;background:#7c3aed;color:#fff;font:13px/1.4 system-ui,sans-serif;padding:6px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;text-align:center}#u13demo b{font-weight:700}#u13demo a{color:#fff;text-decoration:underline;cursor:pointer}";document.head.appendChild(st);
   const d=document.createElement("div");d.id="u13demo";d.innerHTML="<span><b>Demo</b> · Ansicht als <b>"+P.n.replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</b> · alle Namen und Daten sind erfunden, nichts wird gespeichert</span>";
-  document.body.insertBefore(d,document.body.firstChild)};
+  document.body.insertBefore(d,document.body.firstChild);
+  const fitD=()=>document.documentElement.style.setProperty("--demoh",(d.offsetHeight||0)+"px");fitD();window.addEventListener("resize",fitD);setTimeout(fitD,300);setTimeout(fitD,1500)};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bar);else bar();
 setInterval(bar,1500);
 })();
