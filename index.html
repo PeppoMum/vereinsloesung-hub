@@ -7143,6 +7143,63 @@ if(W.__CLUB)setTimeout(check,1500);else document.addEventListener("u13club",()=>
 if(W.__V)boot();else{let n=0;const iv=setInterval(()=>{if(W.__V){clearInterval(iv);boot()}else if(++n>100)clearInterval(iv)},100)}
 })();
 
+/* ===== Verein: Saisonwechsel-Assistent (Administrator und Jugendleiter) =====
+   Führt durch die Schritte über alle Mannschaften. Der Wechsel innerhalb einer Mannschaft (Archiv, Spieler übernehmen) bleibt in der Mannschaft selbst. */
+(function(){
+"use strict";
+const W=window;
+function boot(){
+const V=W.__V;if(!V||!V.tab)return;
+const E=V.E,q=(s,r)=>(r||document).querySelector(s);
+const nextSeason=(s)=>{const m=/^(\d{4})\s*\/\s*(\d{2,4})$/.exec(String(s||"").trim());if(!m)return"";const a=+m[1]+1,b=String(a+1).slice(-2);return a+"/"+b};
+const nextAk=(ak)=>{const m=/^U(\d{1,2})$/i.exec(String(ak||"").trim());if(!m)return String(ak||"");return +m[1]>=19?"":"U"+(+m[1]+1)};
+const sw=()=>({saison:"",ak:{},bar:{},done:{},...((W.__VEREIN||{}).sw||{})});
+let busy="",msg="",msgK="ok",armPl=false,armGo=false;
+const keep=async(patch)=>{const s={...sw(),...patch};await V.saveVerein({sw:s});return s};
+const mt=V.MENU&&V.MENU.find((m)=>m.id==="teams");if(mt&&mt.tabs.indexOf("saison")<0)mt.tabs.push("saison");
+V.tab({id:"saison",label:"Saisonwechsel",show:()=>V.isAll(),render(el){
+  if(V.typing())return;
+  const cur=(W.__VEREIN||{}).saison||"",s=sw(),neu=s.saison||nextSeason(cur)||"",ts=V.teams().filter((t)=>t.aktiv!==false);
+  const adm=V.isAdmin();
+  const open=ts.filter((t)=>!s.done[t.id]).length;
+  let h='<h2>Saisonwechsel</h2><p class="sub note">Aktuelle Saison: <b>'+E(cur||"–")+'</b>. Dieser Assistent führt dich in vier Schritten durch den Wechsel für den ganzen Verein. Du kannst jederzeit unterbrechen, der Stand wird gespeichert.</p>';
+  h+='<div class="card vc"><h3>1. Neue Saison</h3><div class="note" style="margin-bottom:8px">Lege vor dem Wechsel eine Sicherung an: In jeder Mannschaft unter „Einstellungen → Sicherung“ (Administrator). Der Saisonwechsel in einer Mannschaft legt sie außerdem selbst an.</div><div class="vrow"><label>Neue Saison<input id="sw_s" maxlength="12" style="width:110px" value="'+E(neu)+'"></label></div></div>';
+  h+='<div class="card vc"><h3>2. Altersklassen</h3><div class="note" style="margin-bottom:8px">Ein Jahr weiter: Die Altersklassen werden um eine Stufe erhöht (U13 wird U14). Du kannst jede ändern. Mannschaften, die nicht mehr besetzt sind, werden archiviert; ihre Daten bleiben erhalten.</div>'
+    +ts.map((t)=>{const na=s.ak[t.id]!==undefined?s.ak[t.id]:nextAk(t.ak),ar=s.bar[t.id]!==undefined?!!s.bar[t.id]:!nextAk(t.ak)&&/^U\d+/i.test(t.ak||"");
+      return'<div class="vrow" style="align-items:center;border-top:1px solid var(--ln);padding-top:8px;gap:10px"><b style="min-width:64px">'+E(t.name)+'</b><span class="note" style="min-width:54px">'+E(t.ak||"–")+' →</span><input data-swa="'+E(t.id)+'" maxlength="12" style="width:84px" aria-label="Neue Altersklasse von '+E(t.name)+'" value="'+E(na)+'"><label style="display:flex;flex-direction:row;align-items:center;gap:6px;margin:0"><input type="checkbox" data-swb="'+E(t.id)+'"'+(ar?" checked":"")+'> archivieren</label></div>'}).join("")
+    +'<div class="vrow" style="margin-top:10px"><button class="btn" id="sw_ak" type="button"'+(busy?" disabled":"")+'>Altersklassen übernehmen</button>'+(s.akDone?'<span class="vbad g">erledigt</span>':"")+'</div></div>';
+  h+='<div class="card vc"><h3>3. Platzplan</h3><div class="note" style="margin-bottom:8px">Die Trainingszeiten im Platzplan gelten meist nur für eine Saison. Der bisherige Plan wird zuerst als Kopie gesichert, danach leer gestartet. Du trägst die neuen Zeiten selbst ein. Kabinen und Plätze selbst bleiben bestehen.</div><div class="vrow"><button class="btn" id="sw_pl" type="button"'+(busy?" disabled":"")+'>'+(armPl?"Wirklich? Trainingszeiten leeren":"Trainingszeiten leeren")+'</button>'+(s.plDone?'<span class="vbad g">erledigt</span>':'<span class="note">'+(((V.plan||{}).slots||[]).length)+' Einträge im Plan</span>')+'</div></div>';
+  h+='<div class="card vc"><h3>4. Die Mannschaften</h3><div class="note" style="margin-bottom:8px">In jeder Mannschaft gibt es unter „Einstellungen → Sicherung → Saisonwechsel“ den eigentlichen Wechsel: Archiv anlegen, Spieler mit Zusage übernehmen, Spielerlinks neu erzeugen. Er steht dem Administrator zur Verfügung. Hake ab, was erledigt ist.</div>'
+    +ts.map((t)=>'<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px"><label style="display:flex;flex-direction:row;gap:8px;align-items:center;flex:1;min-width:150px;margin:0"><input type="checkbox" data-swd="'+E(t.id)+'"'+(s.done[t.id]?" checked":"")+'> <b>'+E(t.name)+'</b> <span class="note">'+E(t.ak||"")+'</span></label>'+(adm?'<button class="btn" data-swo="'+E(t.id)+'" type="button">Mannschaft öffnen</button>':"")+'</div>').join("")+'</div>';
+  h+='<div class="card vc" style="border:2px solid var(--ac)"><h3>Abschluss</h3><div class="note" style="margin-bottom:8px">Setzt die Saison des Vereins auf <b>'+E(neu||"–")+'</b>.'+(open?" Bei "+open+(open===1?" Mannschaft":" Mannschaften")+" ist der Wechsel noch nicht abgehakt.":" Alles abgehakt.")+'</div><div class="vrow"><button class="btn" id="sw_go" type="button" style="background:var(--ac);color:#fff;border-color:var(--ac)"'+(busy||!neu?" disabled":"")+'>'+(armGo?"Wirklich abschließen?":"Saisonwechsel abschließen")+'</button></div></div>';
+  h+='<div class="vmsg '+msgK+'" id="swm">'+E(msg)+'</div>';
+  el.innerHTML=h;
+  const say=(t,k)=>{msg=t;msgK=k||"ok";const m=q("#swm",el);if(m){m.textContent=t;m.className="vmsg "+msgK}};
+  el.onchange=async(e)=>{const t=e.target,d=t.dataset||{};
+    try{
+      if(t.id==="sw_s"){await keep({saison:t.value.trim()});return}
+      if(d.swa){const ak={...sw().ak,[d.swa]:t.value.trim()};await keep({ak});return}
+      if(d.swb){const bar={...sw().bar,[d.swb]:t.checked};await keep({bar});return}
+      if(d.swd){const done={...sw().done,[d.swd]:t.checked};await keep({done});V.render();return}
+    }catch(x){say("Das konnte nicht gespeichert werden.","er")}};
+  el.onclick=async(e)=>{const t=e.target,b=t.closest("[data-swo]");
+    if(b){V.setTeam(b.dataset.swo);return}
+    try{
+      if(t.id==="sw_ak"){busy="ak";V.render();const S=sw(),teams=V.teams().map((x)=>{if(x.aktiv===false)return x;const ar=S.bar[x.id]!==undefined?!!S.bar[x.id]:!nextAk(x.ak)&&/^U\d+/i.test(x.ak||"");const na=S.ak[x.id]!==undefined?S.ak[x.id]:nextAk(x.ak);return{...x,ak:na||x.ak,...(ar?{aktiv:false}:{})}});
+        await V.saveVerein({teams});try{await V.syncTeamNames()}catch(x){}V.log("Saisonwechsel: Altersklassen übernommen");await keep({akDone:true,ak:{},bar:{}});busy="";say("Altersklassen übernommen.");V.render();return}
+      if(t.id==="sw_pl"){const S=sw();if(!armPl){armPl=true;V.render();return}armPl=false;
+        busy="pl";V.render();const old=(W.__VEREIN||{}).saison||"alt",id="archiv_"+String(old).replace(/[^0-9a-z]/gi,"-");
+        await V.fs().doc("plaene/"+id).set({...(V.plan||{}),archiv:true,saison:old,am:new Date().toISOString()});
+        await V.savePlan({slots:[]});V.log("Saisonwechsel: Trainingszeiten im Platzplan geleert (Kopie: "+id+")");await keep({plDone:true});busy="";say("Der Platzplan ist leer. Die Kopie der alten Saison liegt gesichert in der Datenbank.");V.render();return}
+      if(t.id==="sw_go"){const S=sw();if(!armGo){armGo=true;V.render();return}armGo=false;
+        const ns=(S.saison||nextSeason((W.__VEREIN||{}).saison)||"").trim();if(!ns){say("Bitte die neue Saison eintragen.","er");return}
+        busy="go";V.render();await V.saveVerein({saison:ns,sw:{saison:"",ak:{},bar:{},done:{}}});V.log("Saisonwechsel abgeschlossen: Saison "+ns);busy="";msg="Fertig. Die Saison des Vereins ist jetzt "+ns+".";msgK="ok";V.render();return}
+    }catch(x){busy="";say("Das hat nicht geklappt"+(x&&x.code?" ("+x.code+")":"")+". Bitte erneut versuchen.","er");V.render()}};
+}});
+}
+if(W.__V)boot();else{let n=0;const iv=setInterval(()=>{if(W.__V){clearInterval(iv);boot()}else if(++n>100)clearInterval(iv)},100)}
+})();
+
 /* ===== FUSSBALL.DE in der Vereinslösung =====
    Ein Hilfsprogramm („Abholer“, läuft bei GitHub) holt Spielplan, Ergebnisse und Tabelle von FUSSBALL.DE und legt sie in der Sammlung „fussball“ ab
    (ein Dokument je Mannschaft bei FUSSBALL.DE, dazu „_index“ mit dem Stand). Die App liest diese Daten nur (die Regeln verbieten das Schreiben).
