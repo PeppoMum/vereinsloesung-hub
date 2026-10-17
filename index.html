@@ -4689,7 +4689,7 @@ function sync(){const a=document.getElementById("dzapp"),l=document.getElementBy
   if(gs){if(!gs.options.length)gs.innerHTML=["dicht","std","klar"].map((k)=>'<option value="'+k+'">'+GLS[k].n+"</option>").join("");gs.disabled=cur!=="glas"||window.__ROLE==="lesen";if(document.activeElement!==gs)gs.value=glKey()}}
 const linkDefault=()=>"kobalt";   /* Vereinsfarben sind überall Standard; andere Designs nur je Link wählbar */
 /* Design, Farbe und Glas-Transparenz gelten pro Konto (Sammlung „prefs“), nicht pro Gerät. Ohne eigenen Eintrag gelten ältere Werte aus den Einstellungen. */
-function applyPrefs(p){if(window.__VIEWER||window.__RO)return;const c=cfg(),S=p||{design:c.design||(pfSeen?"kobalt":undefined),acc:c.acc,gl:c.gl};
+function applyPrefs(p){if(window.__VIEWER||window.__RO)return;const c=cfg(),S=p||{design:pfSeen?"kobalt":undefined,acc:c.acc,gl:c.gl};
   if(S.design&&NAMES[S.design]&&S.design!==cur)set(S.design);
   if(S.acc&&typeof S.acc==="object"&&JSON.stringify(S.acc)!==JSON.stringify(acc)){acc=S.acc;ls("u13acc",JSON.stringify(acc));inject()}
   if(S.gl&&GLS[S.gl]&&S.gl!==gl){gl=S.gl;ls("u13gl",gl);inject()}sync()}
