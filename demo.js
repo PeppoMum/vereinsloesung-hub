@@ -58,10 +58,10 @@ TEAMS.forEach(([tid,name],ti)=>{
   const gl=[];
   [-54,-40,-26,-12,-5,4,11,25].forEach((off,i)=>{let d=addD(TODAY,off);while(dow(d)<6)d=addD(d,1);const past=d<TODAY,sp={};
     ids.forEach((id,j)=>{const r=R();sp[id]=past&&r<.7?{status:"k",minuten:Math.round(30*(1+R()))}:{status:past?"t":"n",minuten:0}});
-    const noRes=/^[fg]/.test(tid),to=past&&!noRes?pick([0,1,2,3,4]):null,gg=past&&!noRes?pick([0,1,2,3]):null;if(past&&!noRes)gl.push([d,to,gg]);   /* F- und G-Jugend: Spiele ohne Wertung, keine Ergebnisse */
+    const noRes=/^[fgm]/.test(tid),to=past&&!noRes?pick([0,1,2,3,4]):null,gg=past&&!noRes?pick([0,1,2,3]):null;if(past&&!noRes)gl.push([d,to,gg]);   /* F- und G-Jugend: Spiele ohne Wertung, keine Ergebnisse */
     put(tid+"__games/g"+(i+1),{id:"g"+(i+1),nr:i+1,datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:i%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:past?sp:{}})});
   /* weitere gespielte Spiele, damit jede Mannschaft 9 Ergebnisse für die Formkurve hat */
-  for(let k=0;!/^[fg]/.test(tid)&&gl.length<9;k++){let d=addD(TODAY,-61-7*k);while(dow(d)<6)d=addD(d,1);const to=pick([0,1,2,3,4]),gg=pick([0,1,2,3]),sp={};ids.forEach((id)=>{sp[id]={status:R()<.7?"k":"t",minuten:30}});gl.push([d,to,gg]);
+  for(let k=0;!/^[fgm]/.test(tid)&&gl.length<9;k++){let d=addD(TODAY,-61-7*k);while(dow(d)<6)d=addD(d,1);const to=pick([0,1,2,3,4]),gg=pick([0,1,2,3]),sp={};ids.forEach((id)=>{sp[id]={status:R()<.7?"k":"t",minuten:30}});gl.push([d,to,gg]);
     put(tid+"__games/gv"+k,{id:"gv"+k,nr:20+k,art:"Meisterschaft",datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:k%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:sp})}
   /* Termine bis Ende Dezember (Auswertungen zählen trotzdem nur bis heute) */
   {const END=TODAY.slice(0,4)+"-12-31";let n=0,gi=8;

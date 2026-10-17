@@ -5652,7 +5652,8 @@ function mountNav(){
   dr.onclick=(e)=>{const b=e.target.closest("button[data-sw]");if(b&&b.dataset.sw!==W.__TID){const kk=document.getElementById("k");V.setTeam(b.dataset.sw,!V.cur&&kk&&!kk.hidden?"app:k":undefined)}else dr.hidden=true};
   document.addEventListener("click",(e)=>{if(!dr.hidden&&!e.target.closest("#vdrop")&&!e.target.closest("#vteamb"))dr.hidden=true});
   refreshNav();
-  try{const g=sessionStorage.getItem("u13go");if(g){sessionStorage.removeItem("u13go");if(g==="app:k")setTimeout(()=>V.openKader(),600);else setTimeout(()=>{if(V.tabs.some((x)=>x.id===g))V.open(g)},500)}}catch(e){}
+  try{const g=sessionStorage.getItem("u13go");if(g){sessionStorage.removeItem("u13go");if(g==="app:k")setTimeout(()=>V.openKader(),600);else setTimeout(()=>{if(V.tabs.some((x)=>x.id===g))V.open(g)},500)}else if(!W.__NOLANDING&&(V.isAll()||V.canPlan())){/* übergeordnete Rolle: nach dem Öffnen zuerst die Übersicht, nicht eine Mannschaft */
+    setTimeout(()=>{const t=V.tabs.find((x)=>x.id==="uebersicht");if(t&&(!t.show||t.show())&&!V.cur)V.open("uebersicht")},700)}}catch(e){}
 }
 
 /* Handy: Menüs mit „Mehr“ statt verstecktem Wischen */
@@ -5906,7 +5907,7 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   if(act.length>1||have.length)h+='<div class="kpis"><div class="card kpi"><b>'+act.length+'</b><span>aktive Mannschaften</span></div><div class="card kpi"><b>'+have.reduce((a,s)=>a+(s.n||0),0)+'</b><span>Spieler insgesamt</span></div><div class="card kpi"><b>'+pcx(avg((s)=>s.bet))+'</b><span>Ø Training</span></div><div class="card kpi c'+(need.length?2:4)+'"><b>'+need.length+'</b><span>brauchen Aufmerksamkeit</span></div></div>';
   if(W.__FD&&W.__FD.weekHtml)h+=W.__FD.weekHtml(act);
   h+='<div class="vtg">'+act.map((t)=>{
-    const s=V.st[t.id],bas=!!(s&&s.st==="basis"),p=bas?{art:""}:V.pflege(s),f=s?s.fbet||0:0,stn=s&&s.st&&W.__STUFE&&W.__STUFE[s.st]?W.__STUFE[s.st].n:"";
+    const s=V.st[t.id],bas=!!(s&&s.st==="basis"),p=bas?{art:""}:V.pflege(s),f=s?s.fbet||0:0,stn=(function(){const S=W.__STUFE;if(!S)return"";if(s&&s.st&&S[s.st])return S[s.st].n;try{const k=S.of(t.id);return S[k]?S[k].n:""}catch(e){return""}})();
     return '<div class="vtc'+(p.art==="grau"?" dim":"")+(t.id===W.__TID?" cur":"")+'" data-go="'+E(t.id)+'" role="button" tabindex="0"><div class="vth"><b>'+E(t.name)+'</b><span class="note">'+E(t.ak||"")+'</span><span class="vn">'+(s?s.n+" Spieler":(got?"–":"…"))+'</span>'+(stn?'<span class="vst" title="Nutzungsstufe">'+E(stn)+'</span>':"")+'</div>'
       +(W.__FD&&W.__FD.platzHtml?W.__FD.platzHtml(t.id):"")
       +(bas?"":'<div class="vbar" title="Training"><i style="width:'+(s&&s.bet!=null?Math.round(s.bet*100):0)+'%;background:'+BCOL[s?(s.fbet||0):0]+'"></i></div>')
