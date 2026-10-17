@@ -59,7 +59,7 @@ TEAMS.forEach(([tid,name],ti)=>{
   [-54,-40,-26,-12,-5,4,11,25].forEach((off,i)=>{let d=addD(TODAY,off);while(dow(d)<6)d=addD(d,1);const past=d<TODAY,sp={};
     ids.forEach((id,j)=>{const r=R();sp[id]=past&&r<.7?{status:"k",minuten:Math.round(30*(1+R()))}:{status:past?"t":"n",minuten:0}});
     const noRes=/^[fgm]/.test(tid),to=past&&!noRes?pick([0,1,2,3,4]):null,gg=past&&!noRes?pick([0,1,2,3]):null;if(past&&!noRes)gl.push([d,to,gg]);   /* F- und G-Jugend: Spiele ohne Wertung, keine Ergebnisse */
-    put(tid+"__games/g"+(i+1),{id:"g"+(i+1),nr:i+1,datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:i%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:past?sp:{}})});
+    put(tid+"__games/g"+(i+1),{id:"g"+(i+1),nr:i+1,datum:d,art:/^[fgm]/.test(tid)?"Turnier":"Meisterschaft",dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:i%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:past?sp:{}})});
   /* weitere gespielte Spiele, damit jede Mannschaft 9 Ergebnisse für die Formkurve hat */
   for(let k=0;!/^[fgm]/.test(tid)&&gl.length<9;k++){let d=addD(TODAY,-61-7*k);while(dow(d)<6)d=addD(d,1);const to=pick([0,1,2,3,4]),gg=pick([0,1,2,3]),sp={};ids.forEach((id)=>{sp[id]={status:R()<.7?"k":"t",minuten:30}});gl.push([d,to,gg]);
     put(tid+"__games/gv"+k,{id:"gv"+k,nr:20+k,art:"Meisterschaft",datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:k%2?"A":"H",tore:to,gt:gg,wertung:true,spieler:sp})}
@@ -67,7 +67,7 @@ TEAMS.forEach(([tid,name],ti)=>{
   {const END=TODAY.slice(0,4)+"-12-31";let n=0,gi=8;
    for(let d=addD(TODAY,1);d<=END;d=addD(d,1)){const w=dow(d);
     if(w===2||w===4){put(tid+"__trainings/tf"+(n++),{id:"tf"+n,datum:d,spieler:{}})}
-    if(w===6&&Math.round((new Date(d+"T12:00:00")-new Date(TODAY+"T12:00:00"))/864e5/7)%2===ti%2&&d>addD(TODAY,26)&&d<=TODAY.slice(0,4)+"-12-20"){put(tid+"__games/g"+gi,{id:"g"+gi,nr:gi,datum:d,dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:gi%2?"A":"H",tore:null,gt:null,wertung:true,spieler:{}});gi++}}
+    if(w===6&&Math.round((new Date(d+"T12:00:00")-new Date(TODAY+"T12:00:00"))/864e5/7)%2===ti%2&&d>addD(TODAY,26)&&d<=TODAY.slice(0,4)+"-12-20"){put(tid+"__games/g"+gi,{id:"g"+gi,nr:gi,datum:d,art:/^[fgm]/.test(tid)?"Turnier":"Meisterschaft",dauer:60,form,gewichtet:true,spielerzahl:nF,gegner:pick(CL),ha:gi%2?"A":"H",tore:null,gt:null,wertung:true,spieler:{}});gi++}}
    const Y=TODAY.slice(0,4);
    [[Y+"-11-12","Termin","Elternabend","19:00",true],[Y+"-11-21","Turnier","Hallenturnier Musterstadt","10:00",true],[Y+"-12-04","Termin","Trainersitzung","20:00",false],[Y+"-12-12","Turnier","Nikolausturnier","09:30",true],[Y+"-12-18","Termin","Weihnachtsfeier","18:00",true]].forEach((e,i)=>{if(e[0]>TODAY)put(tid+"__events/ef"+i,{id:"ef"+i,datum:e[0],typ:e[1],titel:e[2],zeit:e[3],ort:e[4]?"Vereinsheim Musterstadt":"",eltern:e[4]})})}
   {const bet=.7+R()*.25,zt=.55+R()*.35;put(tid+"__vstat/main",{tid,ak:TEAMS[ti][2],n:cnt,tr:5,sp:gl.length,bet,betl:bet,zeit:zt,min:40,low:ri(0,2),lt:addD(TODAY,-7),ls:gl.length?gl.sort().slice(-1)[0][0]:null,naechste:[],fbet:bet>.9?4:bet>.8?3:2,fzeit:zt>.7?4:zt>.6?3:2,form:gl.slice().sort((x,y)=>y[0].localeCompare(x[0])).slice(0,5).map((g)=>g[1]>g[2]?"S":g[1]<g[2]?"N":"U").join(""),at:new Date().toISOString(),upd:new Date().toISOString()})}

@@ -106,6 +106,7 @@ body.scoutonly nav button:not([data-s="k"]){display:none!important}body.scoutonl
 body.kaus nav button[data-s="k"],body.kaus #hn [data-go="k"],body.kaus #k{display:none!important}
 #htd .kpi.htile{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center;gap:2px 24px;padding:14px 20px}#htd .kpi.htile>*{grid-column:1;min-width:0}#htd .kpi.htile>b{font-size:26px;line-height:1.15;margin:2px 0}#htd .kpi.htile>.hbtn{grid-column:2;grid-row:1/span 3;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-self:center}@media(max-width:760px){#htd .kpi.htile{grid-template-columns:minmax(0,1fr)!important}#htd .kpi.htile>.hbtn{grid-column:1;grid-row:auto;justify-content:flex-start;margin-top:8px}#htd .kpi.htile>.hbtn .btn{flex:1 1 140px}}
 html{scroll-padding-top:calc(var(--vnh,0px) + var(--demoh,0px) + 70px)}
+@media(max-width:760px){main section>p.sub,main .sub.note{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}main section>p.sub.open,main .sub.note.open{display:block}details.mfold{flex:1 1 100%;margin:0}details.mfold>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid var(--ln);border-radius:99px;background:var(--card);color:var(--tx);font-size:14px}details.mfold>summary::-webkit-details-marker{display:none}details.mfold>summary::after{content:"▾";font-size:12px;color:var(--mu)}details.mfold[open]>summary::after{content:"▴"}details.mfold>.bar{margin:10px 0 0}}
 /* ===== Demo-Designs: nur Optik, Inhalte und Funktionen bleiben unverändert ===== */
 .em{display:inline}
 
@@ -508,6 +509,26 @@ nav button .em{display:inline-flex;justify-content:center;align-items:center}
   const api = { hook, erreicht, zeitErfasst, spielStats, trainStats, saison, farbeSpielzeit, farbeTraining, setGrenzen, grenzen, grenzenStd, grTexte, ergebnis, statistik, nachArt };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.U13 = api;
 })(typeof window !== "undefined" ? window : globalThis);
+
+/* Handy-Feinschliff: Erklärtexte antippbar einklappen, Export und Darstellung unter einem Knopf */
+(function(){
+  if(typeof document==="undefined")return;
+  const ph=()=>window.innerWidth<=760;
+  document.addEventListener("click",(e)=>{const p=e.target.closest&&e.target.closest("p.sub");if(p&&ph()&&!e.target.closest("a,button"))p.classList.toggle("open")});
+  const isExp=(c)=>c.nodeType===1&&((c.matches(".seg")&&c.querySelector("[data-f]"))||c.querySelector("select.xth,select.xthp,select.xdz"));
+  function fold(){
+    if(!ph())return;
+    document.querySelectorAll(".bar").forEach((b)=>{
+      if(b.closest("details.mfold")||b.dataset.mf)return;
+      const kids=[...b.children],mark=new Set();
+      kids.forEach((c,i)=>{if(isExp(c)){mark.add(c);const pr=kids[i-1];if(pr&&!isExp(pr)&&(pr.matches("span.note,label.note")||/Export|Saison|Monat|Quer/i.test(pr.textContent||""))&&!pr.querySelector("button,input,select")&&(pr.textContent||"").length<60)mark.add(pr)}});
+      if(!mark.size){b.dataset.mf="0";return}
+      b.dataset.mf="1";
+      const d=document.createElement("details");d.className="mfold";d.innerHTML='<summary>Export &amp; Darstellung</summary><div class="bar"></div>';
+      const box=d.querySelector(".bar");kids.forEach((c)=>{if(mark.has(c))box.appendChild(c)});b.appendChild(d)});
+  }
+  setInterval(fold,800);
+})();
 </script>
 <script>
 const $=(q)=>document.querySelector(q),POS=["TW","IV","AV","FL","ZM","ST"],pc=(x)=>x==null?"–":(x*100).toFixed(1).replace(".",",")+" %",mn=(x)=>String(Math.round(x));
@@ -5589,6 +5610,7 @@ const CSS='html.vclub,html.vclub body{height:auto;min-height:100%}#vnav{position
 +'.vmx td.c,.vmx th.c{text-align:center}.vmx input[type=checkbox]{width:18px;height:18px}'
 +'body:not(.scoutonly) nav button[data-s="k"]{display:none!important}html.vinkader .app .top{display:none!important}@media(min-width:761px){html.vinkader .app>nav{display:none!important}}'
 +'@media(max-width:760px){#vnav .vpill button.mobx,nav button.mobx{display:none!important}#vnav .vbrand>span:last-child{display:none}#vnav .vbrand{padding:5px 8px 5px 6px}#vnav .vpill{overflow:visible!important}#vnav .vpill button{padding:7px 8px!important;font-size:13px!important}#vnav .vpill button.on{max-width:120px;overflow:hidden;text-overflow:ellipsis}#vnav .vpill #vmore{padding:5px 10px!important;font-size:18px!important}#vnav .vpill{max-width:100%;box-sizing:border-box}#vnav{grid-template-columns:minmax(0,1fr)!important}#vnav .vpill,#vnav .vr{grid-column:1!important;justify-self:stretch!important}#vnav .vpill{justify-content:space-between}@media(max-width:380px){#vnav .vpill button.on{max-width:92px!important}#vnav .vpill button{padding:7px 5px!important}#vnav .vbrand{padding:5px 4px 5px 4px!important}}html.mobnav nav button[data-s="h"]{position:static!important;box-shadow:none!important}html.mobnav nav button[data-s="h"]:not(.on){background:none!important}html.mobnav nav{width:auto!important;max-width:none!important;left:8px!important;right:8px!important;bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;border-radius:26px!important;padding:6px 4px!important}html.mobnav nav button{font-size:10.5px!important;flex:1 1 0!important;min-width:0!important;padding-left:2px!important;padding-right:2px!important}.mobsheet{position:fixed;z-index:400;left:12px;right:12px;background:var(--card);border:1px solid var(--ln);border-radius:20px;padding:10px;display:grid;gap:6px;box-shadow:0 12px 40px rgba(0,0,0,.35);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);max-height:70vh;overflow-y:auto}.mobsheet[hidden]{display:none}.mobsheet button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid var(--ln);background:var(--card);color:var(--tx);font:inherit;font-size:15px;border-radius:14px;padding:8px 10px;cursor:pointer;text-align:center}.mobsheet button.on{background:var(--acs);color:var(--ac);font-weight:600;border-color:var(--ac)}#mobsheetB{bottom:calc(84px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(2,minmax(0,1fr));overflow-x:hidden;padding:12px;gap:8px}#mobsheetB button{justify-content:flex-start;min-height:52px;padding:10px 14px;font-size:16px}#mobsheetT{top:calc(var(--vnh,56px) + 6px);grid-template-columns:1fr}}'
++'#vnav #vacc{display:none}@media(max-width:760px){#vnav .vr{display:flex!important;flex-wrap:nowrap;align-items:center;gap:6px;width:auto}#vnav .vr #vrole,#vnav .vr #vth{display:none!important}#vnav .vr #vsync{font-size:0!important;padding:6px 10px!important}#vnav .vr #vsync::before{content:"●";font-size:15px}#vnav .vr #vsync.err{color:var(--r,#c0392b)}#vnav .vr #vsync.ok{color:var(--g,#1b7a3a)}#vnav #vacc{display:inline-flex;order:3}#vnav .vr #vteamb{order:1}#vnav .vr #vsync{order:2;padding:4px 8px!important}html.vclub .top .logo,html.vclub .top #logox,html.vclub .top #th,html.vclub .top #st,html.vclub .top #tzl{display:none!important}html.vclub .top b{font-size:18px!important}}'
 +'@media(max-width:760px){#vnav{padding:8px 12px}#vnav .vr{margin-left:0;width:100%}#vp{bottom:0}#vbody{padding:14px 12px 90px}#vbody .card.vc,#vbody .vc{padding:12px 10px}#vbody .vrow .vseg{width:100%;display:flex}#vbody .vrow .vseg .btn{flex:1}}';
 function css(){if(q("#vcss"))return;const s=document.createElement("style");s.id="vcss";s.textContent=CSS;document.head.appendChild(s)}
 V.css=css;
@@ -5630,10 +5652,20 @@ function mountNav(){
   document.documentElement.classList.add("vclub");
   const nav=document.createElement("header");nav.id="vnav";
   nav.innerHTML='<div class="vpill" role="tablist"><button type="button" class="vbrand" id="vhome" title="Zur Übersicht (Verein)"><span class="vlogo img"><img alt="" src="'+E(W.__CLUBLOGO||"")+'"></span><span>'+E((W.__VEREIN&&W.__VEREIN.name)||"Verein")+'</span></button><span id="vmenu" style="display:contents"></span></div>'
-   +'<div class="vr"><button class="vchip warn" id="vview" type="button" hidden></button><select class="vchip" id="vth" aria-label="Darstellung" title="Darstellung"><option value="">◐ Auto</option><option value="light">☀ Hell</option><option value="dark">☾ Dunkel</option></select><span class="vchip" id="vsync" role="status" aria-live="polite">Verbinde …</span><button class="vchip err" id="vhin" type="button" hidden></button><button class="vchip" id="vteamb" type="button" aria-haspopup="true" aria-label="Mannschaft wechseln"></button><span class="vchip" id="vrole"></span><div id="vdrop" hidden></div></div>';
+   +'<div class="vr"><button class="vchip warn" id="vview" type="button" hidden></button><select class="vchip" id="vth" aria-label="Darstellung" title="Darstellung"><option value="">◐ Auto</option><option value="light">☀ Hell</option><option value="dark">☾ Dunkel</option></select><span class="vchip" id="vsync" role="status" aria-live="polite">Verbinde …</span><button class="vchip err" id="vhin" type="button" hidden></button><button class="vchip" id="vteamb" type="button" aria-haspopup="true" aria-label="Mannschaft wechseln"></button><span class="vchip" id="vrole"></span><button class="vchip" id="vacc" type="button" aria-haspopup="true" hidden>Konto ▾</button><div id="vdrop" hidden></div></div>';
   const app=q(".app");app?app.parentNode.insertBefore(nav,app):document.body.insertBefore(nav,document.body.firstChild);
   const fit=()=>document.documentElement.style.setProperty("--vnh",nav.offsetHeight+"px");
   fit();try{new ResizeObserver(fit).observe(nav)}catch(e){W.addEventListener("resize",fit)}
+  {/* Handy: Person und Darstellung hinter einem kleinen Knopf „Konto“ */
+   const acc=q("#vacc",nav);let sh=null;const close=()=>{if(sh){sh.hidden=true;sh.dataset.o=""}};
+   acc.hidden=false;
+   acc.onclick=(e)=>{e.stopPropagation();if(!sh){sh=document.createElement("div");sh.id="mobsheetA";sh.className="mobsheet";document.body.appendChild(sh);
+     sh.onclick=(ev)=>{const b=ev.target.closest("[data-th]");if(!b)return;const sel=q("#vth",nav);sel.value=b.dataset.th;sel.dispatchEvent(new Event("change",{bubbles:true}));close()}}
+     if(sh.dataset.o){close();return}
+     const cur=(q("#vth",nav)||{}).value||"";
+     sh.innerHTML='<div class="note" style="padding:4px 6px">'+E((q("#vrole",nav)||{}).textContent||"")+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">'+[["","◐ Auto"],["light","☀ Hell"],["dark","☾ Dunkel"]].map((x)=>'<button type="button" data-th="'+x[0]+'"'+(x[0]===cur?' style="border-color:var(--ac);font-weight:700"':"")+'>'+x[1]+'</button>').join("")+'</div>';
+     sh.style.top=(nav.getBoundingClientRect().bottom+6)+"px";sh.style.bottom="auto";sh.hidden=false;sh.dataset.o="1"};
+   document.addEventListener("click",(ev)=>{if(sh&&!sh.hidden&&!ev.target.closest("#mobsheetA,#vacc"))close()})}
   q("#vhome",nav).onclick=()=>V.go(V.isAll()?"uebersicht":"mannschaft");
   {const sy=q("#vsync",nav),upd=()=>{const e=document.getElementById("st"),t=((e&&e.textContent)||"").trim(),c=(e&&e.className)||"";
     let x="Verbinde …",k="";
@@ -5653,7 +5685,8 @@ function mountNav(){
   document.addEventListener("click",(e)=>{if(!dr.hidden&&!e.target.closest("#vdrop")&&!e.target.closest("#vteamb"))dr.hidden=true});
   refreshNav();
   try{const g=sessionStorage.getItem("u13go");if(g){sessionStorage.removeItem("u13go");if(g==="app:k")setTimeout(()=>V.openKader(),600);else setTimeout(()=>{if(V.tabs.some((x)=>x.id===g))V.open(g)},500)}else if(!W.__NOLANDING&&(V.isAll()||V.canPlan())){/* übergeordnete Rolle: nach dem Öffnen zuerst die Übersicht, nicht eine Mannschaft */
-    setTimeout(()=>{const t=V.tabs.find((x)=>x.id==="uebersicht");if(t&&(!t.show||t.show())&&!V.cur)V.open("uebersicht")},700)}}catch(e){}
+    const go=()=>{const t=V.tabs.find((x)=>x.id==="uebersicht");if(t&&(!t.show||t.show())&&!V.cur){V.open("uebersicht");return true}return false};if(!go())setTimeout(go,400)}}catch(e){}
+  {const de=document.documentElement;if(V.cur||W.__NOLANDING||!(V.isAll()||V.canPlan()))de.classList.remove("vpre");else setTimeout(()=>de.classList.remove("vpre"),450)}
 }
 
 /* Handy: Menüs mit „Mehr“ statt verstecktem Wischen */
@@ -6014,6 +6047,8 @@ function init(){
 if(!W.__WEB)return;
 if(W.__KAB){css();return}
 W.__Vui={refresh:()=>refreshNav()};
+/* Bis Rolle und Verein geladen sind, die Mannschaftsseite nicht zeigen (sonst blitzt sie kurz auf, bevor die Übersicht erscheint) */
+try{const de=document.documentElement,st=document.createElement("style");st.textContent="html.vpre .app{visibility:hidden}";document.head.appendChild(st);de.classList.add("vpre");setTimeout(()=>de.classList.remove("vpre"),12000)}catch(e){}
 if(W.__CLUB)init();else document.addEventListener("u13club",init,{once:true});
 })();
 
