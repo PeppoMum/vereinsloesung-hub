@@ -110,9 +110,10 @@ TEAMS.forEach(([tid,name],ti)=>{
   const NAMES=["SV Musterstadt","FC Beispieldorf","TuS Platzhausen","SC Testfeld","Spvgg Demotal","BV Probeheim","VfL Zufallsburg","SG Loremberg"];
   const fdid=(t)=>"DEMO"+t.toUpperCase()+"00000000000000000000";
   const gamesOf=(tid)=>[...store.entries()].filter(([k])=>k.indexOf(tid+"__games/")===0).map(([,v])=>v).sort((a,b)=>a.datum.localeCompare(b.datum));
+  TEAMS.forEach(([tid])=>gamesOf(tid).forEach((g,i)=>{g.nr=i+1;put(tid+"__games/"+g.id,g)}));   /* Spielnummern fortlaufend nach Datum */
   const idx={v:1,stand:new Date(Date.now()-2*36e5).toISOString(),aktiv:true,teams:{}};
-  [["d1",true,3],["d2",true,5],["g1",true,2],["f1",true,4],["f2",true,1],["e1",false,0]].forEach(([tid,liga,platz])=>{   /* Tabellen für alle Mannschaften bis einschließlich U10 (und D1/D2) */
-    const AK=tid[0]==="g"?["Bambini-Staffel","Bambini"]:tid[0]==="f"?["Kreisliga F-Junioren","F-Junioren"]:["Kreisliga B D-Junioren","D-Junioren"];
+  [["a1",true,2],["b1",true,1],["c1",true,6],["d1",true,3],["d2",true,5],["e1",true,4],["e2",true,7],["f1",false,0],["f2",false,0],["g1",false,0]].forEach(([tid,liga,platz])=>{   /* Tabellen für alle Mannschaften bis einschließlich U10 (und D1/D2) */
+    const AK={a:["Bezirksliga A-Junioren","A-Junioren"],b:["Kreisliga A B-Junioren","B-Junioren"],c:["Kreisliga B C-Junioren","C-Junioren"],d:["Kreisliga B D-Junioren","D-Junioren"],e:["Kreisliga C E-Junioren","E-Junioren"],f:["Spielfest","F-Junioren"],g:["Spielfest","Bambini"]}[tid[0]];
     const cfg=store.get(tid+"__config/main");
     cfg.fd={team:"https://www.fussball.de/mannschaft/demo/-/saison/2627/team-id/"+fdid(tid)+"#!/",liga:liga?"https://www.fussball.de/spieltagsuebersicht/demo/-/staffel/DEMOSTAFFEL#!/":""};put(tid+"__config/main",cfg);
     const own="TuS Musterstadt "+tid.toUpperCase(),gs=gamesOf(tid),sp=[],fut=gs.filter((g)=>g.datum>=TODAY);
