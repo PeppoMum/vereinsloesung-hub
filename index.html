@@ -3726,6 +3726,7 @@ function tabSet(pl){const jg=jgOf(pl.stufe,pl.saison);
   if(ks.cust)h+=listEd(pl,"wk","Wahrscheinlichkeit (Zusage / Bleiben)","wk")+listEd(pl,"status","Kaderstatus (eigene Spieler)","z")+listEd(pl,"rollen","Rolle / Scouting-Ampel","")+listEd(pl,"phasen","Phasen der Kontaktaufnahme","phase")+listEd(pl,"prios","Prioritäten","")+listEd(pl,"krit","Optionale Bewertungskriterien","krit")+'<div class="card" style="margin-top:10px"><button class="btn'+(ks.arm==="lreset"?" arm":"")+'" data-ka="lreset">'+(ks.arm==="lreset"?"Wirklich zurücksetzen? (Spieler behalten ihre Einträge)":"Alle Listen auf Standard zurücksetzen")+"</button></div>";
   h+=TABF.lnk?TABF.lnk(pl):"";
   h+='<div class="card" style="margin-top:12px"><h3>Kader-Modul</h3><p class="note" style="margin-top:0">Blendet den ganzen Kader-Bereich aus (Menü, Startseite, Kalender-Spielbesuche, Scouting-Link) – für alle, auch Co-Trainer. Die Daten bleiben erhalten. Wieder einblenden: Hauptmenü → Einstellungen → „Kader-Modul“.</p><button class="btn" data-ka="kaus">Kader ausblenden</button></div>';
+  if(window.__V&&window.__V.isAll&&window.__V.isAll())h+='<div class="card" style="margin-top:14px"><b>Archiv</b><p class="note" style="margin:4px 0 8px">Am Saisonende wird eine Planung automatisch archiviert. Du kannst sie auch jetzt schon ins Archiv verschieben: Sie bleibt erhalten, ist aber nur noch zum Ansehen.</p><button class="btn" data-archplan="1">Diese Planung ins Archiv verschieben</button></div>';
   h+='<div class="card" style="margin-top:14px;border-color:var(--r)"><button class="btn'+(ks.arm==="delplan"?" arm":"")+'" data-ka="delplan" style="color:var(--r)">'+(ks.arm==="delplan"?"Wirklich löschen? (Spieler bleiben in der Datenbank)":"Diese Planung löschen")+"</button></div>";
   return h}
 function kaderTab(pl,M){const P=inPlan(pl).filter((p)=>counted(p,pl)),groups=ap(pl).map((x)=>({n:x.name,L:P.filter((p)=>haupt(p)===x.name),x}));const rest=P.filter((p)=>!ap(pl).some((x)=>x.name===haupt(p)));if(rest.length)groups.push({n:"Ohne Hauptposition",L:rest,x:null});
@@ -3742,9 +3743,13 @@ function kaderTab(pl,M){const P=inPlan(pl).filter((p)=>counted(p,pl)),groups=ap(
     if(bed&&!g.L.length||bed){const c=cands(pl,g.n).slice(0,3);if(c.length)h+='<tr><td colspan="7" class="kn note">Mögliche Kandidaten: '+c.map((p)=>E(pname(p))+(score(p,pl)!=null?" ("+r1(score(p,pl))+")":"")).join(", ")+"</td></tr>"}});
   if(!P.length)h+='<tr><td colspan="7" class="note" style="text-align:center;padding:16px">Noch niemand im Kader. Unten kannst du deine eigenen Spieler übernehmen oder in „Datenbank“ Spieler anlegen.</td></tr>';
   return h+"</table></div></div>"}
+/* Jahrgänge der Kaderplanungen dieser Mannschaft öffentlich ablegen (nur Zahlen), damit der vereinsweite Scouting-Link weiß, wohin eine Meldung gehört */
+let kjLast="";
+function kjPub(){try{const fsr=window.__webFs,V=window.__V;if(!fsr||!V||!window.__TID||!window.__kgplans||window.__KRO||!V.has(window.__TID,"kaderbearb"))return;
+  const ys=Array.from(new Set([].concat(...KD.plans.filter((p)=>!p.arch).map(jgYears)))).sort().join(","),key=window.__TID+":"+ys;if(key===kjLast)return;kjLast=key;fsr.doc("pub/kj_"+window.__TID).set({j:ys}).catch(()=>{})}catch(e){}}
 /* ---------- Renderer ---------- */
 const TABF={};
-function renderKader(){const kaus=!!(D.config&&D.config.kaderAus);document.body.classList.toggle("kaus",kaus);const cb=document.getElementById("kadon");if(cb)cb.checked=!kaus;const r=$k("#k");if(!r)return;if(!window.__kinit){if(!kaus&&window.__noDb)r.innerHTML='<h2>Kader</h2><p class="sub">Keine Verbindung zur Datenbank. Bitte die Internetverbindung prüfen, anmelden und neu laden.</p>';else if(!kaus&&!r.innerHTML.trim())r.innerHTML='<h2>Kader</h2><p class="sub">Verbinde mit der Datenbank …</p>';return}if(!kaus&&!window.__kgplans){r.innerHTML='<h2>Kader</h2><p class="sub">Lade Daten … Dauert es länger: Seite neu laden und die Internetverbindung prüfen.</p>';return}if(kaus){if(!r.hidden&&typeof go==="function")go("h");return}
+function renderKader(){kjPub();const kaus=!!(D.config&&D.config.kaderAus);document.body.classList.toggle("kaus",kaus);const cb=document.getElementById("kadon");if(cb)cb.checked=!kaus;const r=$k("#k");if(!r)return;if(!window.__kinit){if(!kaus&&window.__noDb)r.innerHTML='<h2>Kader</h2><p class="sub">Keine Verbindung zur Datenbank. Bitte die Internetverbindung prüfen, anmelden und neu laden.</p>';else if(!kaus&&!r.innerHTML.trim())r.innerHTML='<h2>Kader</h2><p class="sub">Verbinde mit der Datenbank …</p>';return}if(!kaus&&!window.__kgplans){r.innerHTML='<h2>Kader</h2><p class="sub">Lade Daten … Dauert es länger: Seite neu laden und die Internetverbindung prüfen.</p>';return}if(kaus){if(!r.hidden&&typeof go==="function")go("h");return}
   if(!$k("#kcss")){const s=document.createElement("style");s.id="kcss";s.textContent=CSS;document.head.appendChild(s)}
   const pl=plan();if(pl&&!pl.wk)pl.wk=DEF.wk();if(pl&&pl.wk&&!pl.wkm){pl.wk.forEach((w)=>{if(w.a===undefined&&/absage|abgang/i.test(w.name)&&!(+w.p>0)&&!w.z)w.a=1});pl.wkm=1;savePlan(pl)}if(pl&&pl.rollen&&!(pl.rfv>=3)){(pl.phasen||[]).forEach((x)=>{if(x.name==="Entscheidung offen")x.name="Entscheidungsfindung"});pl.rollen.forEach((r)=>{if(r.id==="rp"&&r.c==="y")r.c="p";else if(r.id==="ro"&&(r.c==="gr"||r.c==="y"))r.c="be"});pl.rfv=3;savePlan(pl)}if(pl&&pl.prios&&!(pl.rfv>=4)){const nm={a:["r","n1"],b:["o","n2"],c:["y","n3"],d:["gr","n4"]};pl.prios.forEach((r)=>{const q=nm[r.id];if(q&&r.c===q[0])r.c=q[1]});pl.rfv=4;savePlan(pl)}if(pl&&pl.phasen&&!pl.phv){const P=pl.phasen,ren=(id,from,to)=>{const x=P.find((q)=>q.id===id);if(x&&x.name===from)x.name=to},del=(id)=>{const i=P.findIndex((q)=>q.id===id);if(i>=0)P.splice(i,1)};ren("be","Beobachtet","Im Blick");ren("pe","Probetraining eingeladen","Probetraining");del("in");del("gf");del("pa");pl.phv=1;savePlan(pl)}
   if(pl&&pl.phasen&&pl.phv<2){const P=pl.phasen,x=P.find((q)=>q.id==="ka");if(x&&x.name==="Kontakt aufgenommen")x.name="Kontakt & Gespräch";const i=P.findIndex((q)=>q.id==="gp");if(i>=0&&x)P.splice(i,1);pl.phv=2;savePlan(pl)}
@@ -3755,6 +3760,7 @@ function renderKader(){const kaus=!!(D.config&&D.config.kaderAus);document.body.
   if(pl&&pl.phasen&&!pl.phasen.some((x)=>/gespräch/i.test(x.name))){const i=pl.phasen.findIndex((x)=>x.id==="ka");pl.phasen.splice(i>=0?i+1:pl.phasen.length,0,{id:"gp",name:"Gespräch geplant",c:"b",z:0},{id:"gf",name:"Gespräch geführt",c:"ac",z:0});savePlan(pl)}if(pl&&!pl.fm){const y=sstart(pl.saison),o=(y+1)+"-04-30",n=y+"-04-30";if(pl.frist===o&&n>=td()){pl.frist=n}pl.fm=1;savePlan(pl)}if(pl&&!pl.am){pl.am=1;if(nOf(pl.stufe)>=12&&!pl.pos.some((x)=>kz(x)==="AM"||/außenmittel/i.test(x.name))){const i=pl.pos.findIndex((x)=>/zentral|mittelfeld/i.test(x.name));pl.pos.splice(i<0?pl.pos.length:i+1,0,{id:nid("x"),name:"Außenmittelfeld",k:"AM",soll:0,tw:false})}savePlan(pl)}if(pl&&ks.pid!==pl.id){ks.pid=pl.id}
   const active=document.activeElement;if(active&&r.contains(active)&&active.matches("input[type=text],input:not([type]),textarea,input[type=number],input[type=date],select")&&!ks._force)return;ks._force=false;
   let h=head(pl);
+  if(window.__KRO)h+='<div class="card" style="margin-top:12px;border-left:4px solid var(--y);background:var(--ys)"><b>Nur ansehen</b><p class="note" style="margin:4px 0 0">Du darfst diese Kaderplanung ansehen, aber nicht ändern. Eingaben werden nicht gespeichert. Wer mehr Rechte braucht, stellt eine Anfrage.</p><button class="btn" data-anl="kader" style="margin-top:8px">Zugriff anfragen</button></div>';
   if(ks.np||!pl)h+=newPlanCard();
   if(pl){
     if(ks.sf)h+=TABF.sf(pl);else if(ks.pe)h+=TABF.pe(pl);
@@ -3969,7 +3975,7 @@ function tabPipe(pl){
 /* ---------- Eingang ---------- */
 const scLink=()=>window.__scoutLink?(window.__scoutLink()||"(Link wird erzeugt …)"):(window.__lkbase?window.__lkbase():"")+"#scout";
 function tabIn(pl){const L=KD.inbox.slice().sort((a,b)=>(b.at||"").localeCompare(a.at||"")),lnk=scLink();
-  return (L.length?L.map((x)=>{const dup=(x.name||x.vorname)?KD.pers.find((q)=>q.typ!=="eigen"&&K.normN(q)===K.normN(x)):null;return'<div class="card" style="margin-bottom:8px"><div class="bar" style="margin:0"><b>'+E([x.vorname,x.name].filter(Boolean).join(" ")||(x.nr?"Nr. "+x.nr:"(ohne Namen)"))+"</b> · "+E(x.verein||"")+" "+E(x.mannschaft||"")+" · Bew. "+E(x.bew==null?"–":x.bew)+' <span class="note">von '+E(x.von||"?")+", "+E(fd((x.datum||"")))+'</span><span style="flex:1"></span><button class="btn" data-ka="inok" data-id="'+x.id+'" style="background:var(--ac);color:#fff;border-color:var(--ac)">'+(dup?"Trotzdem neu anlegen":"Übernehmen")+'</button><button class="btn" data-ka="inx" data-id="'+x.id+'">Verwerfen</button></div><div class="note" style="margin-top:4px">'+E([x.pos,"Stärken: "+[].concat(x.st||[]).filter(Boolean).join(", "),"Schwächen: "+[].concat(x.sw||[]).filter(Boolean).join(", "),x.notiz].filter(Boolean).join(" · "))+(dup?'<div class="kwarn" style="margin-top:6px">⚠ Gibt es schon in der Liste: '+E(K.pfull(dup))+(dup.verein?" ("+E(dup.verein)+")":"")+". Besser den Eintrag verwerfen und die Angaben dort ergänzen.</div>":"")+"</div>"}).join(""):'<div class="card note">Kein Eintrag im Eingang.</div>')}
+  return (L.length?L.map((x)=>{const dup=(x.name||x.vorname)?KD.pers.find((q)=>q.typ!=="eigen"&&K.normN(q)===K.normN(x)):null;const cl=(window.__kcl||{})[x.gid||x.id],other=cl&&cl.tid&&cl.tid!==window.__TID,jgb=(x.jg&&x.jg.length>1)?' <span class="kc" style="background:var(--ys);color:var(--y)">Jahrgang unsicher ('+E(x.jg.join("/"))+')</span>':(x.jg&&x.jg.length===1?' <span class="note">Jahrgang '+E(x.jg[0])+'</span>':""),cb=other?' <span class="kc" style="background:var(--grs);color:var(--gr)">bereits einsortiert'+(window.__V&&window.__V.tshort?' in '+E(window.__V.tshort(cl.tid)):'')+'</span>':"";return'<div class="card" style="margin-bottom:8px'+(other?';opacity:.7':'')+'"><div class="bar" style="margin:0"><b>'+E([x.vorname,x.name].filter(Boolean).join(" ")||(x.nr?"Nr. "+x.nr:"(ohne Namen)"))+"</b>"+jgb+cb+" · "+E(x.verein||"")+" "+E(x.mannschaft||"")+" · Bew. "+E(x.bew==null?"–":x.bew)+' <span class="note">von '+E(x.von||"?")+", "+E(fd((x.datum||"")))+'</span><span style="flex:1"></span><button class="btn" data-ka="inok" data-id="'+x.id+'" style="background:var(--ac);color:#fff;border-color:var(--ac)">'+(dup?"Trotzdem neu anlegen":"Übernehmen")+'</button><button class="btn" data-ka="inx" data-id="'+x.id+'">Verwerfen</button></div><div class="note" style="margin-top:4px">'+E([x.pos,"Stärken: "+[].concat(x.st||[]).filter(Boolean).join(", "),"Schwächen: "+[].concat(x.sw||[]).filter(Boolean).join(", "),x.notiz].filter(Boolean).join(" · "))+(dup?'<div class="kwarn" style="margin-top:6px">⚠ Gibt es schon in der Liste: '+E(K.pfull(dup))+(dup.verein?" ("+E(dup.verein)+")":"")+". Besser den Eintrag verwerfen und die Angaben dort ergänzen.</div>":"")+"</div>"}).join(""):'<div class="card note">Kein Eintrag im Eingang.</div>')}
 const skHtml=()=>{const z=window.__scKz;if(!z||!z.on())return"";
   if(!z.loaded()){z.load().then(()=>force());return'<div class="note" style="margin-top:12px">Kurzlink wird geladen …</div>'}
   const c=z.cur(),m=ks.skm?'<div class="note'+(ks.skerr?" kbad":"")+'" style="margin-top:6px">'+E(ks.skm)+"</div>":"",top='<div style="margin-top:14px;border-top:1px solid var(--ln);padding-top:12px"><b>Eigener Kurzlink</b>';
@@ -3985,7 +3991,11 @@ document.addEventListener("click",async(e)=>{const b=e.target.closest&&e.target.
   else if(a==="skpw")done(await z.setPw(val("newpw")),"Neues Passwort gilt ab jetzt.");else if(a==="skrnd")done(await z.setPw(""),"Neues zufälliges Passwort gilt ab jetzt.");
   else if(a==="skoff")done(await z.setOpen(true),"Passwort entfernt. Der Kurzlink öffnet jetzt ohne Passwort.");else if(a==="skon")done(await z.setOpen(false),"Passwort eingeschaltet.");
   else if(a==="skrm"){if(ks.arm==="skrm"){ks.arm=null;done(await z.remove(),"Kurzlink entfernt. Der lange Link funktioniert weiter.")}else{ks.arm="skrm";force()}}});
-TABF.lnk=function(pl){const lnk=scLink();return'<div class="card" style="margin-top:12px"><h3>Scouting-Link für Externe</h3><p class="note" style="margin-top:0">Dieser Link öffnet das Beobachtungs-Raster und ein Meldeformular (keine Datenbank). Die Person braucht keine Anmeldung. Wer den Link kennt, kann Meldungen schicken (nur Schreiben, kein Lesen). Gib ihn nur an Personen weiter, die scouten sollen.</p><input readonly id="sclink" value="'+E(lnk)+'" style="width:100%" onfocus="this.select()">'+(window.__scoutNew?'<div class="bar" style="margin:8px 0 0"><button class="btn" data-scn>Neu erzeugen</button><span class="note">Der bisherige Link wird dann ungültig.</span></div>':"")+skHtml()+'</div>'};
+TABF.lnk=function(pl){const lnk=scLink(),club=!!window.__scoutClub;
+  return'<div class="card" style="margin-top:12px"><h3>Scouting-Link für den ganzen Verein</h3><p class="note" style="margin-top:0">Ein Link für alle Mannschaften. Wer ihn öffnet, braucht kein Konto, sieht keine Daten und kann nur Meldungen einsenden. Er wählt den Jahrgang; die Meldung landet im Eingang der Mannschaften, deren Kaderplanung diesen Jahrgang umfasst. Bist du als Scout unsicher, wählt er mehrere Jahrgänge.'+(club?"":' <b>Hinweis:</b> Der vereinsweite Link ist noch nicht eingerichtet – die Leitung legt ihn beim nächsten Öffnen der App an.')+'</p><input readonly id="sclink" value="'+E(lnk)+'" style="width:100%" onfocus="this.select()"><div class="bar" style="margin:8px 0 0"><button class="btn" data-ka="sccopy">Link kopieren</button><button class="btn" data-ka="scqr">QR-Code</button>'+(window.__scoutNew?'<button class="btn" data-scn>Neu erzeugen (Notfall)</button><span class="note">Der bisherige Link wird dann ungültig.</span>':"")+'</div>'+(ks.scqr&&window.__QR&&lnk?'<div style="width:220px;max-width:100%;border:1px solid var(--ln);border-radius:12px;overflow:hidden;margin-top:8px;background:#fff">'+window.__QR.svg(lnk,{ecl:"M"})+'</div>':"")+skHtml()+'</div>'+(window.__kfCard?window.__kfCard(window.__TID):"")};
+document.addEventListener("click",async(e)=>{const b=e.target.closest&&e.target.closest("[data-ka=sccopy],[data-ka=scqr]");if(!b||!b.closest("#k"))return;
+  if(b.dataset.ka==="scqr"){ks.scqr=!ks.scqr;force();return}
+  const l=scLink();try{await navigator.clipboard.writeText(l);b.textContent="Kopiert"}catch(x){const i=document.getElementById("sclink");if(i){i.focus();i.select()}b.textContent="Bitte selbst kopieren"}},true);
 TABF.obs=tabObs;TABF.pipe=tabPipe;TABF.in=tabIn;
 /* ---------- Kalender-Integration ---------- */
 window.__kobsEv=()=>(D.config&&D.config.kaderAus)?[]:KD.obs.filter((o)=>o.datum&&o.status!=="entfallen").map((o)=>({id:"vk"+o.id,virt:true,kobs:true,datum:o.datum,bis:null,typ:"Sonstiges",titel:"Spielbeobachtung: "+(o.verein||"?")+(o.mannschaft?" ("+o.mannschaft+")":""),beginn:o.zeit||"",treffen:"",ende:"",eltern:false}));
@@ -4012,7 +4022,7 @@ function sfSave(pl){const s=ks.sf,m=document.getElementById("sfm");try{if(s.von)
 function doInbox(pl,x){const p=newPers(pl,{vorname:x.vorname||"",name:x.name||(x.vorname?"":(x.nr?"Nr. "+x.nr:"")),verein:x.verein||"",mannschaft:x.mannschaft||"",nr:x.nr||"",geb:x.geb||"",telM:x.telM||"",telV:x.telV||"",adresse:x.adresse||"",fuss:x.fuss||"",staerken:[].concat(x.st||[]).filter(Boolean).join("; "),schwaechen:[].concat(x.sw||[]).filter(Boolean).join("; "),notiz:x.notiz||"",beob:[{id:nid("b"),datum:x.datum||td(),anlass:"Spielbeobachtung",verein:x.verein||"",bew:x.bew==null?"":x.bew,notiz:"Gemeldet von "+(x.von||"?")}]});
   const AL={tw:"torw",iv:"innenv",av:"außenv",zm:"zentral",fl:"flügel",st:"stürm",zdm:"zentral",zom:"zentral",lv:"außenv",rv:"außenv",lf:"flügel",rf:"flügel",ra:"flügel",la:"flügel",mf:"mittel",ab:"abwehr",an:"angriff"};
   const mapPos=(n)=>{const q=n.toLowerCase().trim(),e=pl.pos.find((y)=>y.name.toLowerCase()===q)||pl.pos.find((y)=>y.name.toLowerCase().startsWith(q)&&q.length>=3)||(AL[q]&&pl.pos.find((y)=>y.name.toLowerCase().includes(AL[q])));return e?e.name:n};
-  (x.posn||[]).forEach((n,i)=>setP(p,"pos."+mapPos(n),i===0?2:1));if(x.kr)Object.keys(x.kr).forEach((k)=>setP(p,"kr."+k,x.kr[k]));if(x.rolle||x.prio){p.plans=p.plans||{};const mm=p.plans[pl.id]=p.plans[pl.id]||{phase:pl.phasen[0]&&pl.phasen[0].id||"",next:{}};if(x.rolle)mm.rolle=x.rolle;if(x.prio)mm.prio=x.prio}savePers(cleanPers(p,pl));sv("kinbox",x.id,null);KD.inbox=KD.inbox.filter((i)=>i.id!==x.id)}
+  (x.posn||[]).forEach((n,i)=>setP(p,"pos."+mapPos(n),i===0?2:1));if(x.kr)Object.keys(x.kr).forEach((k)=>setP(p,"kr."+k,x.kr[k]));if(x.rolle||x.prio){p.plans=p.plans||{};const mm=p.plans[pl.id]=p.plans[pl.id]||{phase:pl.phasen[0]&&pl.phasen[0].id||"",next:{}};if(x.rolle)mm.rolle=x.rolle;if(x.prio)mm.prio=x.prio}savePers(cleanPers(p,pl));sv("kinbox",x.id,null);KD.inbox=KD.inbox.filter((i)=>i.id!==x.id);try{const dbc=window.__webKcl;if(dbc&&x.gid)dbc.doc(x.gid).set({tid:window.__TID,von:String((window.__VME&&window.__VME.email)||"").slice(0,120),at:new Date().toISOString(),pl:String(pl.id||"").slice(0,80)}).catch(()=>{})}catch(e){}}
 const R=(f)=>{f();force()};
 function clickA(e){const xb=e.target.closest("[data-kx]");if(xb){window.__kxRun(xb.dataset.kx,xb.dataset.f);return}const b=e.target.closest("[data-ka]"),pl=P0();if(typeof ks.arm==="string"&&ks.arm.slice(0,2)==="dl"&&!(b&&b.dataset.ka==="pdl"&&"dl"+b.dataset.id===ks.arm)){ks.arm=null;if(!b)force()}
   if(e.target.closest("[data-kt]")){ks.tab=e.target.closest("[data-kt]").dataset.kt;try{window.scrollTo(0,0)}catch(x){}ks.pe=null;ks.dr=null;ks.sf=null;ks.arm=null;ks.vd=null;ks.vo=null;force();return}
@@ -4072,8 +4082,9 @@ function changeA(e){const t=e.target,pl=P0();if(!t.closest||!t.closest("#k"))ret
 K.after=()=>{};
 function initKader(dbh){if(window.__kinit)return;window.__kinit=true;
   const root=$k("#k");root.addEventListener("click",clickA);root.addEventListener("change",changeA);root.addEventListener("input",(e)=>{const t=e.target;if(t.dataset&&(t.dataset.dp||t.dataset.sf||t.dataset.od||t.dataset.dl)&&t.type!=="checkbox"&&!t.tagName.match(/SELECT/)){/* Entwurf mitführen, ohne neu zu zeichnen */changeA(e)}});
-  const S=(c,k)=>dbh.collection(c).onSnapshot((s)=>{const nd=K.mergeSnap(c,s.docs),key=(L)=>JSON.stringify(L.slice().sort((x,y)=>String(x.id).localeCompare(String(y.id))));if(window["__kg"+k]&&key(nd)===key(KD[k]||[])){KD[k]=nd;return}window["__kg"+k]=1;KD[k]=nd;renderKader();if(k==="obs")calRef()},(er)=>{if(er&&(er.code==="permission_denied"||/denied|not_granted|forbidden/i.test(String(er.code)))){document.body.classList.add("nok");document.querySelectorAll('nav button[data-s="k"]').forEach((x)=>{x.style.display="none"});const r=$k("#k");if(r)r.hidden=true}});
-  S("kplan","plans");S("kperson","pers");S("kobs","obs");S("kinbox","inbox")}
+  const S=(c,k)=>dbh.collection(c).onSnapshot((s)=>{let nd=K.mergeSnap(c,s.docs);if(c==="kplan")nd=nd.filter((x)=>!x.arch);const key=(L)=>JSON.stringify(L.slice().sort((x,y)=>String(x.id).localeCompare(String(y.id))));if(window["__kg"+k]&&key(nd)===key(KD[k]||[])){KD[k]=nd;return}window["__kg"+k]=1;KD[k]=nd;renderKader();if(k==="obs")calRef()},(er)=>{if(k==="obs"){KD.obs=[];window.__kgobs=1;renderKader();return}if(er&&(er.code==="permission_denied"||/denied|not_granted|forbidden/i.test(String(er.code)))){document.body.classList.add("nok");document.querySelectorAll('nav button[data-s="k"]').forEach((x)=>{x.style.display="none"});const r=$k("#k");if(r)r.hidden=true}});
+  S("kplan","plans");S("kperson","pers");S("kobs","obs");S("kinbox","inbox");
+  try{window.__webKcl=dbh.collection("kclaim");dbh.collection("kclaim").onSnapshot((s)=>{window.__kcl={};s.docs.forEach((d)=>{window.__kcl[d.id]=d.data()});renderKader()},()=>{})}catch(e){}}
 
 /* ---------- Scouting-Eingabe (nur Schreiben) über #scout ---------- */
 function scoutMode(dbh){if(window.__scin)return;window.__scin=true;
@@ -4083,25 +4094,35 @@ function scoutMode(dbh){if(window.__scin)return;window.__scin=true;
   try{const g=dbh.collection("config").doc("main");g.get&&g.get().then((s)=>{const v=s&&(typeof s.data==="function"?s.data():s);if(v&&v.kaderAus){const r=document.getElementById("ksc");if(r)r.innerHTML='<div class="card"><b>Scouting ist derzeit nicht aktiv.</b></div>'}}).catch(()=>{})}catch(x){}
   let nm="";try{nm=localStorage.getItem("u13scoutname")||""}catch(e){}
   const S={bew:null,done:0};
+  /* Vereinsweiter Link: Jahrgang wählen (mehrere, wenn unsicher) */
+  const club=()=>/^club-/.test(window.__SCOUTKEY||"");
+  const JG={sel:new Set((()=>{try{return JSON.parse(localStorage.getItem("u13scoutjg")||"[]")}catch(e){return[]}})()),years:null,msg:""};
+  window.__scoutJgSel=()=>Array.from(JG.sel);
+  const jgOn=(y)=>JG.sel.has(y)?"background:var(--ac);color:#fff;border-color:var(--ac)":"";
+  const jgHtml=()=>!club()?"":'<div class="card" style="margin-bottom:12px"><b>Welcher Jahrgang?</b><div class="note" style="margin:2px 0 8px">Bist du unsicher, wähle mehrere. Die Meldung erscheint dann bei allen passenden Mannschaften.</div><div class="bar" style="margin:0;flex-wrap:wrap;gap:6px">'+(JG.years===null?'<span class="note">Lädt …</span>':JG.years.length?JG.years.map((y)=>'<button type="button" class="btn" data-jg="'+y+'" style="'+jgOn(y)+'">'+y+'</button>').join(""):'<span class="note">Es sind noch keine Jahrgänge hinterlegt. Deine Meldung geht an die Leitung.</span>')+'</div><div class="note kbad" id="jgm">'+E(JG.msg)+'</div></div>';
+  const jgOk=()=>{if(!club()||!JG.years||!JG.years.length||JG.sel.size)return true;JG.msg="Bitte mindestens einen Jahrgang antippen.";const m=document.getElementById("jgm");if(m)m.textContent=JG.msg;return false};
   const box=document.createElement("div");box.id="ksc";document.body.appendChild(box);
+  if(club()&&window.__clubYears)window.__clubYears().then((y)=>{JG.years=y;JG.sel=new Set(Array.from(JG.sel).filter((x)=>y.indexOf(x)>=0));if(typeof draw==="function")draw()});
   const hub=()=>{const dr=window.slExtDraft&&window.slExtDraft();if(window.slCss)window.slCss();
     box.innerHTML='<h2>Scouting</h2><p class="sub">Du siehst hier keine Datenbank. Alles, was du einträgst, geht nur an den Trainer.</p>'
-     +(dr&&dr.open?'<div class="card" style="border-color:var(--ac);margin-bottom:12px"><b>Angefangene Beobachtung</b><div class="note" style="margin:4px 0 8px">'+E(dr.title)+" · "+E(fd(dr.datum))+" · "+dr.n+' bewertet, noch nicht gesendet</div><button class="btn" data-sx="resume" style="background:var(--ac);color:#fff;border-color:var(--ac)">Fortsetzen</button></div>':"")
+     +jgHtml()+(dr&&dr.open?'<div class="card" style="border-color:var(--ac);margin-bottom:12px"><b>Angefangene Beobachtung</b><div class="note" style="margin:4px 0 8px">'+E(dr.title)+" · "+E(fd(dr.datum))+" · "+dr.n+' bewertet, noch nicht gesendet</div><button class="btn" data-sx="resume" style="background:var(--ac);color:#fff;border-color:var(--ac)">Fortsetzen</button></div>':"")
      +'<button class="slbig" data-sx="start"><span style="font-size:30px">▶</span><span><b>Spiel beobachten</b><small>Rückennummern mit Plus und Minus bewerten, danach Bögen ausfüllen</small></span></button>'
      +'<div style="margin-top:14px"><button class="btn" data-sx="single">Einen einzelnen Spieler direkt melden</button></div>'};
   const draw=()=>{if(!S.single&&window.slOpenExt){hub();return}drawForm()};
   window.slOnClose=()=>{if(!S.single)draw()};
-  const drawForm=()=>{box.innerHTML=(window.slOpenExt?'<div class="bar"><button class="btn" data-sx="hub">◂ Zurück</button></div>':"")+'<h2>Scouting-Eingabe</h2><p class="sub">Neue Spieler melden. Du siehst hier keine Datenbank, die Meldung geht direkt an den Trainer.</p>'+(S.done?'<div class="card" style="border-color:var(--g);margin-bottom:12px"><b class="kok">✓ Gespeichert</b> ('+S.done+' in dieser Sitzung). Nächster Spieler:</div>':"")
+  const drawForm=()=>{box.innerHTML=(window.slOpenExt?'<div class="bar"><button class="btn" data-sx="hub">◂ Zurück</button></div>':"")+'<h2>Scouting-Eingabe</h2><p class="sub">Neue Spieler melden. Du siehst hier keine Datenbank, die Meldung geht direkt an den Trainer.</p>'+(S.done?'<div class="card" style="border-color:var(--g);margin-bottom:12px"><b class="kok">✓ Gespeichert</b> ('+S.done+' in dieser Sitzung). Nächster Spieler:</div>':"")+jgHtml()
     +'<div class="card"><div class="kg"><label>Dein Name<input id="sc_von" value="'+E(nm)+'"></label><label>Datum<input type="date" id="sc_datum" value="'+td()+'"></label><label>Verein<input id="sc_verein"></label><label>Mannschaft<input id="sc_mann" placeholder="z. B. U12 2"></label><label>Rückennummer<input id="sc_nr" inputmode="numeric"></label><label>Vorname<input id="sc_vor"></label><label>Nachname<input id="sc_name"></label><label>Position(en), Hauptposition zuerst<input id="sc_pos" placeholder="z. B. ZM, Flügel"></label><label>Geburtsdatum (optional)<input type="date" id="sc_geb"></label></div>'
     +'<div class="note"><b>Bewertung</b> <span id="sc_l"></span></div><div class="kb">'+Array.from({length:11},(_,i)=>'<button type="button" data-sb="'+i+'">'+i+'</button>').join("")+'</div><div class="note">10 NLZ · 9 Regionalliga · 8 Westfalenliga · 6/7 Landesliga · 4/5 Bezirksliga · 0–3 Kreisliga</div>'
     +'<div class="kg" style="margin-top:12px"><label style="grid-column:span 2">Stärken'+[1,2,3].map((i)=>'<input class="sc_st" placeholder="'+i+'." style="margin-top:4px">').join("")+'</label><label style="grid-column:span 2">Schwächen'+[1,2,3].map((i)=>'<input class="sc_sw" placeholder="'+i+'." style="margin-top:4px">').join("")+'</label><label style="grid-column:span 4">Notiz (z. B. Kontaktdaten, Eindruck)<textarea id="sc_notiz" rows="3"></textarea></label></div><div id="sc_m" class="note"></div><button class="btn" id="sc_go" style="background:var(--ac);color:#fff;border-color:var(--ac);width:100%;padding:14px;font-size:16px">Absenden</button></div>';
     S.bew=null};
   if(document.readyState==='complete')draw();else window.addEventListener('load',()=>draw());
-  box.addEventListener("click",(e)=>{const x=e.target.closest("[data-sx]");if(!x)return;const a=x.dataset.sx;if(a==="single"){S.single=true;draw()}else if(a==="hub"){S.single=false;draw()}else if(a==="start")window.slExtStart();else if(a==="resume")window.slOpenExt()});
+  box.addEventListener("click",(e)=>{const x=e.target.closest("[data-sx]");if(!x)return;const a=x.dataset.sx;if(a==="single"){S.single=true;draw()}else if(a==="hub"){S.single=false;draw()}else if(a==="start"){if(jgOk())window.slExtStart()}else if(a==="resume")window.slOpenExt()});
+  box.addEventListener("click",(e)=>{const j=e.target.closest("[data-jg]");if(!j)return;const y=j.dataset.jg;if(JG.sel.has(y))JG.sel.delete(y);else JG.sel.add(y);try{localStorage.setItem("u13scoutjg",JSON.stringify(Array.from(JG.sel)))}catch(x){}j.style.cssText=jgOn(y);JG.msg="";const m=document.getElementById("jgm");if(m)m.textContent=""});
   box.addEventListener("click",async(e)=>{const b=e.target.closest("[data-sb]");if(b){const v=+b.dataset.sb;S.bew=S.bew===v?null:v;box.querySelectorAll("[data-sb]").forEach((x)=>x.classList.toggle("on",+x.dataset.sb===S.bew));document.getElementById("sc_l").textContent=S.bew!=null?"· "+LIGA(S.bew):"";return}
     if(e.target.id==="sc_go"){const g=(i)=>document.getElementById(i).value.trim(),m=document.getElementById("sc_m");if(!(g("sc_vor")||g("sc_name"))){m.textContent="Bitte einen Namen eintragen.";m.className="note kbad";return}
       try{localStorage.setItem("u13scoutname",g("sc_von"))}catch(x){}nm=g("sc_von");
       const posn=g("sc_pos").split(/[,;\/]/).map((x)=>x.trim()).filter(Boolean),o={id:nid("ki"),at:new Date().toISOString(),von:g("sc_von"),datum:g("sc_datum"),verein:g("sc_verein"),mannschaft:g("sc_mann"),nr:g("sc_nr"),vorname:g("sc_vor"),name:g("sc_name"),pos:g("sc_pos"),posn,geb:g("sc_geb"),bew:S.bew,st:[...box.querySelectorAll(".sc_st")].map((x)=>x.value.trim()).filter(Boolean),sw:[...box.querySelectorAll(".sc_sw")].map((x)=>x.value.trim()).filter(Boolean),notiz:g("sc_notiz")};if(window.__SCOUTKEY)o.k=window.__SCOUTKEY;
+      if(club()){if(!g("sc_geb")&&!jgOk()){m.textContent="Bitte oben einen Jahrgang antippen (oder das Geburtsdatum eintragen).";m.className="note kbad";return}o.jg=Array.from(JG.sel)}
       m.textContent="Wird gesendet …";m.className="note";
       try{await dbh.collection("kinbox").doc(o.id).set(o);S.done++;draw()}catch(er){m.textContent="Konnte nicht gespeichert werden ("+(er&&er.code||"Fehler")+"). Bitte beim Trainer einen neuen Link holen (er wurde evtl. erneuert).";m.className="note kbad"}}});
 }
@@ -5568,7 +5589,7 @@ async function send(){
   try{db=(window.__scoutDb&&window.__scoutDb())||await (window.claude&&window.claude.use?window.claude.use("db"):null)}catch(e){db=null}
   for(const p of P){
     const r=L().res[p.id]||(L().res[p.id]={a:"s"}),d=r.bg||{vorname:"",name:String(p.name||""),pos:"",geb:"",bew:null,st:[],sw:[],notiz:p.note||""},o=kinboxOf(p,d,"kl_"+p.id);
-    if(window.__SCOUTKEY)o.k=window.__SCOUTKEY;
+    if(window.__SCOUTKEY){o.k=window.__SCOUTKEY;if(/^club-/.test(window.__SCOUTKEY)&&window.__scoutJgSel)o.jg=window.__scoutJgSel()}
     try{if(!db)throw{code:"offline"};await db.collection("kinbox").doc(o.id).set(o);r.sent=1}
     catch(e){if(e&&e.code==="http-409")r.sent=1;else{fail++;ui.lastErr=e&&e.code||""}}
     persist(true);
@@ -5814,7 +5835,7 @@ V.GN=["plan","kurz"];
 V.me=()=>W.__VME||{tr:{},g:[],kader:{},zu:[]};
 V.isAll=()=>["admin","jugendleiter"].indexOf(V.rolle())>=0;
 V.isAdmin=()=>V.rolle()==="admin";
-V.rights=(tid)=>{if(V.isAll())return RECHTE.slice();const m=V.me(),r=((m.tr||{})[tid]||[]).slice();if(((m.kader||{})[tid]||0)>Date.now())["kader","kaderbearb"].forEach((x)=>{if(r.indexOf(x)<0)r.push(x)});return r};
+V.rights=(tid)=>{if(V.isAll())return RECHTE.slice();const m=V.me(),r=((m.tr||{})[tid]||[]).slice();if(((m.kader||{})[tid]||0)>Date.now())["kader","kaderbearb"].forEach((x)=>{if(r.indexOf(x)<0)r.push(x)});return W.__kfApply?W.__kfApply(m,tid,r):r};
 V.has=(tid,r)=>V.rights(tid).indexOf(r)>=0;
 V.hasAnyT=(r)=>V.isAll()||V.teams().some((t)=>V.has(t.id,r));
 V.hasG=(r)=>V.isAll()||(V.me().g||[]).indexOf(r)>=0;
@@ -6166,8 +6187,8 @@ V.viewAs=(o)=>{
   if(!V.vw&&o){V.vw={real:{r:W.__VROLLE,me:W.__VME,al:W.__VALLOWED}}}
   if(!o){if(V.vw){const r=V.vw.real;W.__VROLLE=r.r;W.__VME=r.me;W.__VALLOWED=r.al;V.vw=null}}
   else{const real=V.vw.real,rolle=o.rolle,zu=o.zu||[];
-    if(rolle==="team"){const x=V.expandZu(zu);W.__VME={...real.me,rolle:"team",zu,tr:x.tr,g:x.g,kader:{}};}
-    else W.__VME={...real.me,rolle,zu:[],tr:{},g:[],kader:{}};
+    if(rolle==="team"){const x=V.expandZu(zu);W.__VME={...real.me,rolle:"team",zu,tr:x.tr,g:x.g,kader:{},kf:{}};}
+    else W.__VME={...real.me,rolle,zu:[],tr:{},g:[],kader:{},kf:{}};
     W.__VROLLE=rolle;V.vw={real,label:o.label||rolle};
     W.__VALLOWED=V.visTeams().map((t)=>t.id)}
   const t=V.tabs.find((x)=>x.id===V.cur);
@@ -6213,7 +6234,7 @@ const kVis=(p,pl)=>{if((p.plans&&p.plans[pl.id])||p.typ==="eigen")return true;co
 const kScore=(p)=>{if(p.manuell!=null&&p.manuell!=="")return+p.manuell;const v=Object.values(p.kr||{}).filter((x)=>x!=null&&x!=="").map(Number);if(v.length)return v.reduce((a,b)=>a+b,0)/v.length;const b=(p.beob||[]).map((x)=>+x.bew).filter((x)=>!isNaN(x));return b.length?b.reduce((a,c)=>a+c,0)/b.length:null};
 let kadForce=false,kadC={},kadQ="",kadAge="",kadT="",kadMore=50;
 function kadLoad(tids,redraw){tids.forEach((tid)=>{if(kadC[tid])return;kadC[tid]={loading:1};
-  Promise.all([V.fs().collection(tid+"__kplan").get(),V.fs().collection(tid+"__kperson").get()]).then(([a,b])=>{kadC[tid]={plans:a.docs.map((d)=>({id:d.id,...d.data()})),pers:b.docs.map((d)=>({id:d.id,...d.data()}))};redraw()}).catch(()=>{kadC[tid]={plans:[],pers:[],err:1};redraw()})})}
+  Promise.all([V.fs().collection(tid+"__kplan").get(),V.fs().collection(tid+"__kperson").get()]).then(([a,b])=>{kadC[tid]={plans:a.docs.map((d)=>({id:d.id,...d.data()})).filter((x)=>!x.arch),pers:b.docs.map((d)=>({id:d.id,...d.data()}))};redraw()}).catch(()=>{kadC[tid]={plans:[],pers:[],err:1};redraw()})})}
 V.kadAll=()=>{const ts=kadTeams();kadLoad(ts.map((t)=>t.id),()=>{const k=document.getElementById("k");if(k&&!k.hidden&&W.__kader&&W.__kader.force&&!V.typing())W.__kader.force()});return ts.map((t)=>({tid:t.id,name:t.name,plans:((kadC[t.id]||{}).plans||[]).map((p)=>({id:p.id,name:p.name}))}))};
 V.tab({id:"kader",label:"Kaderplanung",show:()=>kadTeams().length>0,render(el){
   const ts=kadTeams();
@@ -6241,7 +6262,7 @@ V.tab({id:"kader",label:"Kaderplanung",show:()=>kadTeams().length>0,render(el){
    +(L.length?"":'<tr><td colspan="6" class="note" style="text-align:left;padding:12px">'+(loading?"":"Keine Personen für diese Auswahl.")+'</td></tr>')+'</tbody></table></div>'
    +(L.length>kadMore?'<div class="vrow" style="margin-top:8px"><button class="btn" id="kdmore">Mehr anzeigen ('+(L.length-kadMore)+' weitere)</button></div>':"")
    +'<div class="note" style="margin-top:6px">* Altersgruppe in der Saison der jeweiligen Planung.</div></div>';
-  el.innerHTML=h;
+  el.innerHTML=h;if(V.archInit)V.archInit(el,ts);
   el.onclick=(e)=>{const b=e.target.closest("[data-ok]");if(b){if(b.dataset.ok===W.__TID)V.openKader();else V.setTeam(b.dataset.ok,"app:k");return}if(e.target.id==="kdmore"){kadMore+=50;kadForce=true;V.render()}};
   el.oninput=(e)=>{if(e.target.id==="kdq"){kadQ=e.target.value;kadMore=50;clearTimeout(el._kt);el._kt=setTimeout(()=>{kadForce=true;V.render();const i=q("#kdq",el);if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},250)}};
   el.onchange=(e)=>{if(e.target.id==="kdt"){kadT=e.target.value;kadForce=true;V.render()}if(e.target.id==="kda"){kadAge=e.target.value;kadForce=true;V.render()}};
@@ -6258,12 +6279,16 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   const open=V.hin.filter(hAct),own=V.st[W.__TID],ow=V.pflege(own);
   const have=act.map((t)=>V.st[t.id]).filter(Boolean);
   const avg=(f)=>{const v=have.filter((s)=>s.st!=="basis").map(f).filter((x)=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
-  const need=act.filter((t)=>{const s=V.st[t.id];if(s&&s.st==="basis")return false;return !s||V.pflege(s).art||(s.fbet>0&&s.fbet<=2)});
+  const need=act.filter((t)=>{const s=V.st[t.id];if(s&&s.st==="basis")return false;return !s||V.pflege(s).art||(V.fbetOf?V.fbetOf(t.id,s):(s.fbet||0))>0&&(V.fbetOf?V.fbetOf(t.id,s):(s.fbet||0))<=2});
   const hinT=(V.isAll()?V.teams().filter((t)=>t.aktiv!==false):V.teams().filter((t)=>t.aktiv!==false&&V.has(t.id,"hinweise")));
   if(V.isAll()&&!anfU){try{anfU=V.fs().collection("anfragen").onSnapshot((x)=>{const n=x.docs.filter((d)=>(d.data()||{}).status==="offen").length;if(n!==V.anfN){V.anfN=n;if(V.cur==="uebersicht"&&!V.typing())V.render()}},()=>{});hSub.push(()=>{if(anfU){try{anfU()}catch(e){}anfU=null}})}catch(e){}}
   const lite=!(V.isAll()||V.canPlan()||vis.length>1);
   let h=lite?'<h2>Hinweise</h2><p class="sub note">Wichtiges für deine Mannschaft.</p>':'<h2>Übersicht</h2><p class="sub note">'+((V.isAll()||fid==="alle"&&vis.length>1)?"Die Mannschaften auf einen Blick.":"Deine Mannschaft"+(act.length>1?"en":"")+" auf einen Blick.")+'</p>';
   if(V.isAll()&&V.anfN>0)h+='<div class="card vc" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="flex:1;min-width:180px">'+V.anfN+(V.anfN===1?" neue Anfrage":" neue Anfragen")+' von eingeladenen Personen</b><button class="btn" data-goanf="1" style="background:var(--ac);color:#fff;border-color:var(--ac)">Ansehen</button></div>';
+  if(V.anlN&&V.anlN()>0)h+='<div class="card vc" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="flex:1;min-width:180px">'+V.anlN()+(V.anlN()===1?" offenes Anliegen":" offene Anliegen")+' an dich</b><button class="btn" data-anl="x" style="background:var(--ac);color:#fff;border-color:var(--ac)">Ansehen</button></div>';
+  if(V.kfSoonBar)h+=V.kfSoonBar();
+  if(V.gesamtCard)h+=V.gesamtCard();
+  if(V.fgrBar)h+=V.fgrBar();
   if(filters.length>1)h+='<div class="vf" role="tablist">'+filters.map((x)=>'<button type="button" data-f="'+E(x.id)+'" class="'+(x.id===fid?"on":"")+'">'+E(x.n)+'</button>').join("")+'</div>';
   if(open.length&&V.has(W.__TID,"sehen"))h+='<div class="card vc" style="border-color:var(--y);background:var(--ys)"><b>Hinweise für '+E(V.tname(W.__TID))+'</b>'+open.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+E(x.text)+' <span class="note">· '+E(x.von||"")+' · '+E(String(x.at||"").slice(0,10).split("-").reverse().join("."))+'</span></span>'+(V.canWrite()&&x.ack!==false?'<button class="btn" data-ok="'+E(x.id)+'">Erledigt</button>':"")+(x.bis?' <span class="note">bis '+E(V.fdl(x.bis).slice(0,6))+'</span>':"")+'</div>').join("")+'</div>';
   if(V.canWrite()&&ow.art&&own!==undefined&&!(own&&own.st==="basis"))h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Erinnerung</b><div class="note" style="color:inherit">Die Daten von '+E(V.tname(W.__TID))+' wurden zuletzt '+E(V.pflegeTxt(ow))+' gepflegt. Bitte Anwesenheit und Spielzeit nachtragen.</div></div>';
@@ -6271,10 +6296,10 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   if(act.length>1||have.length)h+='<div class="kpis"><div class="card kpi"><b>'+act.length+'</b><span>aktive Mannschaften</span></div><div class="card kpi"><b>'+have.reduce((a,s)=>a+(s.n||0),0)+'</b><span>Spieler insgesamt</span></div><div class="card kpi"><b>'+pcx(avg((s)=>s.bet))+'</b><span>Ø Training</span></div><div class="card kpi c'+(need.length?2:4)+'"><b>'+need.length+'</b><span>brauchen Aufmerksamkeit</span></div></div>';
   if(W.__FD&&W.__FD.weekHtml)h+=W.__FD.weekHtml(act);
   h+='<div class="vtg">'+act.map((t)=>{
-    const s=V.st[t.id],bas=!!(s&&s.st==="basis"),p=bas?{art:""}:V.pflege(s),f=s?s.fbet||0:0,stn=(function(){const S=W.__STUFE;if(!S)return"";if(s&&s.st&&S[s.st])return S[s.st].n;try{const k=S.of(t.id);return S[k]?S[k].n:""}catch(e){return""}})();
+    const s=V.st[t.id],bas=!!(s&&s.st==="basis"),p=bas?{art:""}:V.pflege(s),f=V.fbetOf?V.fbetOf(t.id,s):(s?s.fbet||0:0),stn=(function(){const S=W.__STUFE;if(!S)return"";if(s&&s.st&&S[s.st])return S[s.st].n;try{const k=S.of(t.id);return S[k]?S[k].n:""}catch(e){return""}})();
     return '<div class="vtc'+(p.art==="grau"?" dim":"")+(t.id===W.__TID?" cur":"")+'" data-go="'+E(t.id)+'" role="button" tabindex="0"><div class="vth"><b>'+E(t.name)+'</b><span class="note">'+E(t.ak||"")+'</span><span class="vn">'+(s?s.n+" Spieler":(got?"–":"…"))+'</span>'+(stn?'<span class="vst" title="Nutzungsstufe">'+E(stn)+'</span>':"")+'</div>'
       +(W.__FD&&W.__FD.platzHtml?W.__FD.platzHtml(t.id):"")
-      +(bas?"":'<div class="vbar" title="Training"><i style="width:'+(s&&s.bet!=null?Math.round(s.bet*100):0)+'%;background:'+BCOL[s?(s.fbet||0):0]+'"></i></div>')
+      +(bas?"":'<div class="vbar" title="Training"><i style="width:'+(s&&s.bet!=null?Math.round(s.bet*100):0)+'%;background:'+BCOL[f]+'"></i></div>')
       +(s&&s.form?V.formHtml(s.form):'')
       +(bas?"":'<div class="vm">Training '+(s?pcx(s.bet):"–")+'</div>'
       +'<div class="vm">'+(s&&s.at?"gepflegt "+E(V.pflegeTxt(p)):(got?"noch keine Daten":"…"))+' '+(p.art==="grau"&&s&&s.at?'<span class="vbad">ausgegraut</span>':p.art==="erinnerung"?'<span class="vbad o">Erinnerung</span>':"")+'</div>')
@@ -6284,7 +6309,7 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   if(hinT.length){
     h+='<div class="card vc" style="margin-top:14px"><h3>Hinweis an eine Mannschaft</h3>';
     if(need.length)h+=need.filter((t)=>hinT.some((x)=>x.id===t.id)).map((t)=>{const s=V.st[t.id],p=V.pflege(s),why=[];
-      if(!s)why.push("noch keine Daten");else{if(p.art)why.push("zuletzt gepflegt "+V.pflegeTxt(p));if(s.fbet>0&&s.fbet<=2)why.push("Training niedrig ("+pcx(s.bet)+")");0}
+      if(!s)why.push("noch keine Daten");else{if(p.art)why.push("zuletzt gepflegt "+V.pflegeTxt(p));if((V.fbetOf?V.fbetOf(t.id,s):s.fbet)>0&&(V.fbetOf?V.fbetOf(t.id,s):s.fbet)<=2)why.push("Training niedrig ("+pcx(s.bet)+")");0}
       return '<div class="vrow"><b style="min-width:110px">'+E(V.tname(t.id))+'</b><span class="note" style="flex:1;min-width:200px">'+E(why.join(" · "))+'</span><button class="btn" data-rem="'+E(t.id)+'">Erinnern</button></div>'}).join("");
     h+='<div class="vrow" style="margin-top:8px"><div style="flex:1 1 100%"><div class="note" style="margin-bottom:4px">An welche Mannschaften?</div><div id="slt">'+(hEdit?'':'<span class="vch'+(hinT.length&&hinT.every((t)=>hSel.has(t.id))?' on':'')+'" data-sta="1" role="button" tabindex="0">Alle Mannschaften</span>'+V.bereiche().filter((b)=>(b.teams||[]).some((id)=>hinT.some((t)=>t.id===id))).map((b)=>'<span class="vch" data-stb="'+E(b.id)+'" role="button" tabindex="0">Bereich '+E(b.name)+'</span>').join(""))+hinT.filter((t)=>!hEdit||hSel.has(t.id)).map((t)=>'<span class="vch'+(hSel.has(t.id)?' on':'')+'" data-st="'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join("")+'</div></div><label style="flex:1;min-width:220px">Hinweis<input id="slx" maxlength="300" placeholder="z. B. Bitte die Spielzeit vom letzten Wochenende nachtragen"></label><label>angezeigt ab (optional)<input id="slv" type="date"></label><label>angezeigt bis (optional)<input id="slb" type="date"></label><label style="flex-direction:row;align-items:center;gap:6px;align-self:flex-end"><input type="checkbox" id="sla"> muss als erledigt markiert werden</label><button class="btn" id="slsend" type="button" style="align-self:flex-end">Senden</button><button class="btn" id="slcan" type="button" style="align-self:flex-end" hidden>Abbrechen</button></div><div class="note">Der Hinweis erscheint bei den Trainern der Mannschaft oben im Menü und in der Übersicht. Ohne Haken ist er nur eine Info und verschwindet nach dem Datum (oder wenn du ihn löschst). Mit Haken müssen die Trainer ihn als erledigt markieren.</div><div class="vmsg" id="slm"></div>';
     const all=[];hinT.forEach((t)=>(V.st["~h"+t.id]||[]).forEach((x)=>all.push({...x,tid:t.id})));all.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
@@ -6915,20 +6940,19 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   if(pe){
     const hPre=h;h="";
     h+='<div class="card vc" id="pcard" style="scroll-margin-top:64px;border:2px solid var(--ac)"><h3>'+(pe.neu?"Person hinzufügen":"Person bearbeiten")+'</h3>'+(pe.wunsch?'<div class="note" style="margin:0 0 8px"><b>Wunsch der Person:</b> '+E(pe.wunsch)+'. Du kannst alles ändern, bevor du speicherst.</div>':'')+'<div class="vrow"><label>E-Mail-Adresse<input id="pe_e" type="email" autocomplete="off" style="min-width:230px" value="'+E(pe.email)+'"'+(pe.neu?"":" disabled")+'></label><label>Name (Pflicht)<input id="pe_n" required maxlength="60" style="width:180px" value="'+E(pe.name)+'"></label></div>';
-    const roleSel=(i,glob)=>'<label>Rolle<select data-za="'+i+'">'+(glob?'<optgroup label="Für den ganzen Verein">'+[["admin","Administrator"],["jugendleiter","Jugendleiter"]].filter((r)=>adm||r[0]==="jugendleiter").map((r)=>'<option value="g:'+r[0]+'"'+(pe.rolle===r[0]?" selected":"")+'>'+r[1]+'</option>').join("")+'</optgroup>':"")+'<optgroup label="In Mannschaften">'+arten.map((a)=>'<option value="a:'+E(a.id)+'"'+(pe.rolle==="team"&&pe.zu[i]&&pe.zu[i].art===a.id?" selected":"")+'>'+E(a.name)+'</option>').join("")+'</optgroup></select></label>';
-    if(pe.rolle!=="team")h+='<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px;margin-top:8px">'+roleSel(0,true)+'<span class="note" style="align-self:center">Diese Rolle gilt für den ganzen Verein. Für eine Mannschaftsrolle (zum Beispiel Trainer oder Sportlicher Leiter) oben eine Rolle aus „In Mannschaften“ wählen.</span></div>';
-    if(pe.rolle==="team"){
+    const roleSel=(i,glob)=>'<label>Rolle<select data-za="'+i+'">'+(glob?'<optgroup label="Für den ganzen Verein">'+[["admin","Administrator"],["jugendleiter","Jugendleiter"]].filter((r)=>adm||r[0]==="jugendleiter").map((r)=>'<option value="g:'+r[0]+'"'+(pe.rolle===r[0]&&!pe.ext?" selected":"")+'>'+r[1]+'</option>').join("")+'</optgroup>':"")+'<optgroup label="Extern"><option value="x:ext"'+(pe.ext?" selected":"")+'>Externer Trainer-Anwärter (nur Kaderplanung, befristet)</option></optgroup><optgroup label="In Mannschaften">'+arten.map((a)=>'<option value="a:'+E(a.id)+'"'+(pe.rolle==="team"&&!pe.ext&&pe.zu[i]&&pe.zu[i].art===a.id?" selected":"")+'>'+E(a.name)+'</option>').join("")+'</optgroup></select></label>';
+    if(pe.rolle!=="team"||pe.ext)h+='<div class="vrow" style="border-top:1px solid var(--ln);padding-top:8px;margin-top:8px">'+roleSel(0,true)+'<span class="note" style="align-self:center">'+(pe.ext?'Der externe Anwärter sieht nur die Kaderplanung der Mannschaft, die du nach dem Speichern freigibst, und nur bis zum Ablaufdatum. Danach hat er keinen Zugriff mehr, bis er als normaler Trainer eingetragen wird.':'Diese Rolle gilt für den ganzen Verein. Für eine Mannschaftsrolle (zum Beispiel Trainer oder Sportlicher Leiter) oben eine Rolle aus „In Mannschaften“ wählen.')+'</span></div>';
+    if(pe.rolle==="team"&&!pe.ext){
       h+='<h4 style="margin:12px 0 6px">Rollen und Mannschaften</h4>'+pe.zu.map((z,i)=>'<div class="vrow" style="align-items:flex-start;border-top:1px solid var(--ln);padding-top:8px">'+roleSel(i,i===0)
         +'<label>Für<select data-zb="'+i+'"><option value="*'+(z.alle?" selected":"")+'">alle Mannschaften</option><option value=""'+(!z.alle&&!z.bereich?" selected":"")+'">einzelne Mannschaften</option>'+bs.map((b)=>'<option value="'+E(b.id)+'"'+(b.id===z.bereich?" selected":"")+'>Bereich '+E(b.name)+'</option>').join("")+'</select></label>'
         +'<span style="flex:1;min-width:200px;align-self:center">'+(z.alle?'<span class="note">Diese Rolle gilt für alle Mannschaften des Vereins, auch für später angelegte.</span>':z.bereich?'<span class="note">'+(((bs.find((b)=>b.id===z.bereich)||{}).teams||[]).map((t)=>V.tshort(t)).join(", ")||"Der Bereich enthält noch keine Mannschaften.")+'</span>':teams.map((t)=>'<span class="vch'+((z.teams||[]).indexOf(t.id)>=0?" on":"")+'" data-zt="'+i+'|'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join(""))+'</span><button class="btn" data-zx="'+i+'" aria-label="Zuordnung entfernen">✕</button></div>').join("")
         +'<button class="btn" id="pzadd" type="button" style="margin-top:6px">＋ Weitere Rolle hinzufügen</button>';
-      h+='<h4 style="margin:14px 0 6px">Kaderplanung freigeben (zeitlich begrenzt)</h4><div class="note" style="margin:0 0 6px">Zum Beispiel für einen Trainer, der die Kaderplanung einer anderen Mannschaft für die nächste Saison braucht. Die Person kann dort Kader &amp; Scouting ansehen und bearbeiten, sonst nichts.</div>'
-        +Object.keys(pe.kader).map((t)=>'<div class="vrow"><b style="min-width:90px">'+E(V.tshort(t))+'</b><label>gültig bis<input type="date" data-kd="'+E(t)+'" value="'+E(msIso(pe.kader[t]))+'"></label>'+(pe.kader[t]<Date.now()?'<span class="vbad r">abgelaufen</span>':'')+'<button class="btn" data-kx="'+E(t)+'">Entfernen</button></div>').join("")
-        +'<div style="margin-top:8px"><b>Neue Freigabe</b></div><div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0"><span class="vch'+(pkSel.has("*")?" on":"")+'" data-kp="*" role="button" tabindex="0">Alle Mannschaften</span>'+V.teams().map((t)=>'<span class="vch'+(pkSel.has(t.id)?" on":"")+'" data-kp="'+E(t.id)+'" role="button" tabindex="0">'+E(V.tshort(t.id))+'</span>').join("")+'</div><div class="vrow"><label>gültig bis<input type="date" id="pkd" value="'+E(msIso(endMs(seasonEnd())))+'"></label><button class="btn" id="pkadd" type="button" style="align-self:flex-end">Freigabe hinzufügen</button></div>';
+      h+='<h4 style="margin:14px 0 6px">Rechte in der Kaderplanung</h4><div class="note" style="margin:0 0 6px">Zusätzlich oder abweichend von der Rolle: pro Mannschaft kein Zugriff, nur ansehen oder bearbeiten, mit Ablaufdatum (Standard: Saisonende). '+(pe.neu?'Das geht, sobald die Person gespeichert ist.':'')+'</div>'+(pe.neu?'':'<button class="btn" id="pkopen" type="button">Rechte in der Kaderplanung einstellen …</button>')+(Object.keys(pe.kader||{}).length?'<div class="note" style="margin-top:6px">Frühere Freigaben: '+Object.keys(pe.kader).map((t)=>E(V.tshort(t))+' bis '+E(V.fdl(msIso(pe.kader[t])))).join(', ')+' – werden im Dialog angezeigt und beim Speichern umgewandelt.</div>':'');
     }
     h+='<div class="vrow" style="margin-top:12px"><button class="btn" id="psave" type="button" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button><button class="btn" id="pcancel" type="button">Abbrechen</button></div><div class="vmsg" id="pem"></div></div>';
     h=hPre.slice(0,pIns)+h+hPre.slice(pIns);
   }
+  if(V.isAll()&&V.kfOvHtml)h+='<div class="card vc" id="kfov"><h3>Rechte-Übersicht Kaderplanung</h3><p class="note">Lädt …</p></div>';
   /* Rollen und Berechtigungen */
   const FIX=[["admin","Administrator"],["jugendleiter","Jugendleiter"]];
   /* Zeilen, die fest in den Sicherheitsregeln stehen: [Text, Administrator, Jugendleiter, Platzwart, alle anderen Rollen] */
@@ -6954,6 +6978,7 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   h+='</tbody></table></div>';
   h+='<div class="note" style="margin-top:8px">„Sportlicher Leiter“ vergibst du bei der Person oben entweder für <b>alle Mannschaften</b> oder nur für einen <b>Bereich</b> beziehungsweise einzelne Mannschaften. Dann sieht er auch nur diese Mannschaften. „Einstellungen, Links und Sicherung“ steuert, was in der Mannschafts-App angezeigt wird. Alle anderen Rechte werden zusätzlich von den Sicherheitsregeln der Datenbank durchgesetzt. Änderungen gelten für alle Personen mit dieser Rolle, sobald sie die App neu öffnen.</div><div class="vmsg" id="amsg"></div></div>';
   el.innerHTML=h;
+  if(V.isAll()&&V.kfOvHtml)V.kfOvHtml().then((x)=>{const b=q("#kfov",el);if(b)b.innerHTML=x});
   const msg=(t,k)=>{mMsg=t;mMsgK=k||"ok";const m=q("#vmm",el);if(m){m.textContent=t;m.className="vmsg "+mMsgK}};
   const pm=(t,k)=>{const m=q("#pem",el);if(m){m.textContent=t;m.className="vmsg "+(k||"ok")}};
   const am=(t,k)=>{const m=q("#amsg",el);if(m){m.textContent=t;m.className="vmsg "+(k||"ok")}};
@@ -6962,7 +6987,7 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
   const saveArten=async(arr,txt)=>{try{await V.saveVerein({arten:arr});V.log(txt);await V.resync();am("Gespeichert.");return true}catch(x){am("Das konnte nicht gespeichert werden.","er");return false}};
   el.onchange=async(e)=>{
     const t=e.target,d=t.dataset||{};
-    if(d.za!=null){readEd();const v=t.value;if(v.indexOf("g:")===0){pe.rolle=v.slice(2);pe.zu=[];V.render();return}const was=pe.rolle;pe.rolle="team";if(!pe.zu.length)pe.zu=[emptyZu()];pe.zu[+d.za].art=v.slice(2);if(was!=="team")V.render();return}
+    if(d.za!=null){readEd();const v=t.value;if(v.indexOf("x:")===0){pe.rolle="team";pe.ext=true;pe.zu=[];try{document.activeElement.blur()}catch(x){}V.render();return}if(v.indexOf("g:")===0){pe.rolle=v.slice(2);pe.ext=false;pe.zu=[];try{document.activeElement.blur()}catch(x){}V.render();return}const was=pe.rolle;const wasExt=pe.ext;if(pe.ext){pe.ext=false;pe.zu=[emptyZu()]}pe.rolle="team";if(!pe.zu.length)pe.zu=[emptyZu()];pe.zu[+d.za].art=v.slice(2);if(was!=="team"||wasExt){try{document.activeElement.blur()}catch(x){}V.render()}return}
     if(d.zb!=null){readEd();const z=pe.zu[+d.zb];z.alle=t.value==='*';z.bereich=z.alle?'':t.value;V.render();return}
     if(d.kd){const ms=endMs(t.value);if(ms)pe.kader[d.kd]=ms;V.render();return}
     if(d.ar){const [aid,r,k]=d.ar.split("|");await saveArten(arten.map((a)=>{if(a.id!==aid)return a;const key=k==="g"?"gl":"rechte",L=(a[key]||[]).slice(),i=L.indexOf(r);if(t.checked&&i<0)L.push(r);if(!t.checked&&i>=0)L.splice(i,1);return{...a,[key]:L}}),"Rechte der Rolle geändert: "+aid);return}
@@ -6971,7 +6996,8 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
     const t=e.target;
     if(t.id==="pnew"){pe={neu:true,email:"",name:"",rolle:"team",zu:[emptyZu()],kader:{}};V.render();try{q("#pcard",el).scrollIntoView({block:"start"})}catch(x){}return}
     if(t.id==="pcancel"){pe=null;V.render();return}
-    const ed=t.closest("[data-ed]");if(ed){const r=get(ed.dataset.ed);if(r){pe={neu:false,email:r.id,name:r.name||"",rolle:r.rolle,zu:JSON.parse(JSON.stringify(r.zu||[])),kader:{...(r.kader||{})}};V.render();try{q("#pcard",el).scrollIntoView({block:"start"})}catch(x){}}return}
+    if(t.id==="pkopen"){readEd();if(V.kfOpen)V.kfOpen({email:pe.email,name:pe.name});return}
+    const ed=t.closest("[data-ed]");if(ed){const r=get(ed.dataset.ed);if(r){pe={neu:false,email:r.id,name:r.name||"",rolle:r.rolle,zu:JSON.parse(JSON.stringify(r.zu||[])),kader:{...(r.kader||{})},ext:r.rolle==="team"&&!(r.zu||[]).length};V.render();try{q("#pcard",el).scrollIntoView({block:"start"})}catch(x){}}return}
     if(t.id==="pzadd"){readEd();pe.zu.push(emptyZu());V.render();return}
     const zx=t.closest("[data-zx]");if(zx){readEd();pe.zu.splice(+zx.dataset.zx,1);V.render();return}
     const zt=t.closest("[data-zt]");if(zt){readEd();const [i,tid]=zt.dataset.zt.split("|"),z=pe.zu[+i],a=(z.teams||[]).slice(),k=a.indexOf(tid);if(k>=0)a.splice(k,1);else a.push(tid);z.teams=a;zt.classList.toggle("on");return}
@@ -6986,9 +7012,11 @@ V.tab({id:"personen",label:"Personen & Rechte",show:()=>V.isAll(),stop(){if(mUns
       if(!(pe.name||"").trim()){pm("Bitte einen Namen eintragen. Ohne Namen kann die Person nicht gespeichert werden.","er");try{q("#pe_n",el).focus()}catch(x){}return}
       if(pe.neu&&get(pe.email)){pm("Diese Person gibt es schon. Bitte in der Liste bearbeiten.","er");return}
       if(pe.rolle==="team"&&pe.zu.some((z)=>!z.alle&&!z.bereich&&!(z.teams||[]).length&&((arten.find((x)=>x.id===z.art)||{}).rechte||[]).length)){pm("Bitte bei jeder Rolle mindestens eine Mannschaft oder einen Bereich wählen.","er");return}
+      if(pe.rolle==="team"&&!pe.ext&&!pe.zu.length){pm("Bitte eine Rolle wählen.","er");return}
       const ex=pe.rolle==="team"?V.expandZu(pe.zu):{tr:{},g:[]};
-      const doc={email:pe.email,name:pe.name,rolle:pe.rolle,zu:pe.rolle==="team"?pe.zu:[],tr:ex.tr,g:ex.g,kader:pe.rolle==="team"?pe.kader:{},am:new Date().toISOString()};
-      try{await V.fs().doc("mitglieder/"+pe.email).set(doc);V.log((pe.neu?"Person hinzugefügt: ":"Person geändert: ")+pe.email);if(pe.anf){try{await V.fs().doc("anfragen/"+pe.anf).delete()}catch(x){}}pe=null;msg("Gespeichert. Gilt beim nächsten Öffnen der App durch die Person.");V.render()}catch(x){pm("Das konnte nicht gespeichert werden (fehlende Berechtigung?).","er")}
+      const kat=[];if(pe.rolle==="team"&&pe.zu.some((z)=>{const a=V.arten().find((x)=>x.id===z.art);return z.art==="sportleiter"||(a&&/sportlich/i.test(a.name))}))kat.push("sl");
+      const doc={email:pe.email,name:pe.name,rolle:pe.rolle,zu:pe.rolle==="team"?pe.zu:[],tr:ex.tr,g:ex.g,kader:pe.rolle==="team"?pe.kader:{},kat,am:new Date().toISOString()};
+      try{await V.fs().doc("mitglieder/"+pe.email).set(doc);V.log((pe.neu?"Person hinzugefügt: ":"Person geändert: ")+pe.email);if(pe.anf){try{await V.fs().doc("anfragen/"+pe.anf).delete()}catch(x){}}const wasExt=pe.ext&&pe.neu,eN=pe.email,nN=pe.name;pe=null;msg("Gespeichert. Gilt beim nächsten Öffnen der App durch die Person.");V.render();if(wasExt&&V.kfOpen)V.kfOpen({email:eN,name:nN,add:true})}catch(x){pm("Das konnte nicht gespeichert werden (fehlende Berechtigung?).","er")}
       return}
     if(t.id==="oabg"){if(!t.dataset.arm){t.dataset.arm="1";t.textContent="Wirklich abgeben? Dann hast du keine Administratorrechte mehr";return}try{await V.fs().doc("ownercheck/frei").set({at:new Date().toISOString()});V.log("Besitzer hat Administratorrechte abgegeben");location.reload()}catch(x){const o=q("#omsg",el);if(o){o.textContent="Das hat nicht geklappt.";o.className="vmsg er"}}return}
     if(t.id==="obk"){try{await V.fs().doc("ownercheck/frei").delete();location.reload()}catch(x){const o=q("#omsg",el);if(o){o.textContent="Das hat nicht geklappt.";o.className="vmsg er"}}return}
@@ -8073,6 +8101,465 @@ setInterval(()=>{try{boot()}catch(e){}},2500);
 const mo=new MutationObserver(()=>{try{badges()}catch(e){}});
 const wt=setInterval(()=>{const tb=q("#tb");if(tb){clearInterval(wt);mo.observe(tb,{childList:true,subtree:true})}},500);
 W.__konten=K;
+})();
+
+/* ===== Rechte der Kaderplanung: ein gemeinsamer Dialog, Rechte-Übersicht, Ablauf-Hinweis, Anfragen ans Team ===== */
+(function(){
+"use strict";
+const W=window;
+if(!W.__WEB||W.__DEMO||!W.__V)return;
+const V=W.__V,E=V.E,q=V.q;
+const mk=(em)=>String(em||"").toLowerCase().replace(/[.]/g,"_").replace(/@/g,"_at_");
+const kid=(tid,em)=>tid+"~"+mk(em);
+const SL={kein:"Kein Zugriff",sehen:"Nur ansehen",bearbeiten:"Ansehen und bearbeiten"};
+const seasonEnd=()=>{const m=/(\d{4})\s*\/\s*(\d{2,4})/.exec((W.__VEREIN&&W.__VEREIN.saison)||"");const y=m?+m[1]+1:new Date().getFullYear()+1;return y+"-06-30"};
+const endMs=(iso)=>iso?new Date(iso+"T23:59:59").getTime():0;
+const msIso=(ms)=>ms?V.iso(new Date(ms)):"";
+const meMail=()=>String((W.__VME&&W.__VME.email)||"").toLowerCase();
+const mayAll=()=>V.isAll();
+/* Welche Stufen darf ich in dieser Mannschaft vergeben? Leitung alles, Trainer nie mehr als er selbst hat */
+const cap=(tid)=>{if(mayAll())return["kein","sehen","bearbeiten"];if(!V.has(tid,"bearbeiten"))return[];const o=["kein"];if(V.has(tid,"kader")||V.has(tid,"kaderbearb"))o.push("sehen");if(V.has(tid,"kaderbearb"))o.push("bearbeiten");return o};
+V.kfMay=(tid)=>cap(tid).length>0;
+const css=()=>{if(q("#rzcss"))return;const s=document.createElement("style");s.id="rzcss";s.textContent='#rzpop{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.5)}#rzpop .c{width:100%;max-width:640px;max-height:calc(100dvh - 32px);overflow:auto;background:var(--card,var(--bg));color:var(--fg,inherit);border:1px solid var(--ln);border-radius:14px;padding:16px}#rzpop h3{margin:0 0 4px}#rzpop .rr{border-top:1px solid var(--ln);padding:10px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}#rzpop .rr .w{flex:1;min-width:150px}#rzpop .rr small{display:block;color:var(--mut,gray)}#rzpop .ms{margin-top:8px;min-height:18px}#rzpop .er{color:var(--r)}#rzpop .ok{color:var(--g)}#rzpop label{display:inline-flex;gap:6px;align-items:center}.rzx{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--ln)}.rzx .w{flex:1;min-width:150px}.rzb{border-left:4px solid var(--y);background:var(--ys);margin-bottom:12px}';document.head.appendChild(s)};
+/* ---------- Laden / Speichern ---------- */
+async function load(o){
+  const fs=V.fs();let rows=[];
+  try{const r=await(o.email?fs.collection("kfrei").where("email","==",o.email):fs.collection("kfrei").where("tid","==",o.tid)).get();rows=r.docs.map((d)=>({...d.data(),ex:true}))}catch(e){}
+  /* alte Freigaben (Ablaufzeit je Mannschaft) zeigen wir mit an, sie werden beim Speichern umgewandelt */
+  if(mayAll()){
+    try{
+      const ms=o.email?[await fs.doc("mitglieder/"+o.email).get()].filter((s)=>s.exists).map((s)=>({id:s.id,...s.data()})):(await fs.collection("mitglieder").get()).docs.map((s)=>({id:s.id,...s.data()}));
+      ms.forEach((m)=>{Object.keys(m.kader||{}).forEach((t)=>{if(o.tid&&t!==o.tid)return;if(rows.some((r)=>r.tid===t&&r.email===m.id))return;if((m.kader[t]||0)<=Date.now())return;rows.push({tid:t,email:m.id,name:m.name||"",stufe:"bearbeiten",ein:true,bis:m.kader[t],leg:true,ex:false})})});
+    }catch(e){}
+  }
+  return rows;
+}
+async function members(){if(!mayAll())return[];try{const r=await V.fs().collection("mitglieder").get();return r.docs.map((d)=>({id:d.id,...d.data()})).filter((m)=>m.rolle==="team")}catch(e){return[]}}
+async function saveRow(r){
+  const doc={tid:r.tid,email:r.email,name:(r.name||"").slice(0,60),stufe:r.stufe,ein:r.ein!==false,bis:+r.bis||0,von:meMail(),am:new Date().toISOString()};
+  await V.fs().doc("kfrei/"+kid(r.tid,r.email)).set(doc);
+  if(r.leg&&mayAll()){try{const s=await V.fs().doc("mitglieder/"+r.email).get();if(s.exists){const m=s.data(),k={...(m.kader||{})};delete k[r.tid];await V.fs().doc("mitglieder/"+r.email).set({...m,kader:k})}}catch(e){}}
+  V.log("Kaderplanung-Recht: "+r.email+" · "+V.tshort(r.tid)+" · "+SL[r.stufe]+(doc.bis?" bis "+V.fdl(msIso(doc.bis)):" unbegrenzt"),r.tid);
+}
+async function delRow(r){
+  try{await V.fs().doc("kfrei/"+kid(r.tid,r.email)).delete()}catch(e){if(!r.leg)throw e}
+  if(r.leg&&mayAll()){const s=await V.fs().doc("mitglieder/"+r.email).get();if(s.exists){const m=s.data(),k={...(m.kader||{})};delete k[r.tid];await V.fs().doc("mitglieder/"+r.email).set({...m,kader:k})}}
+  V.log("Kaderplanung-Recht entfernt: "+r.email+" · "+V.tshort(r.tid),r.tid);
+}
+/* ---------- Der eine Dialog (aus „Personen & Rechte“ und aus der Kaderplanung einer Mannschaft) ---------- */
+V.kfOpen=async function(o){
+  css();o=o||{};
+  const st={rows:[],mem:[],msg:"",bad:false,add:o.add||false,busy:false};
+  let pop=q("#rzpop");if(pop)pop.remove();
+  pop=document.createElement("div");pop.id="rzpop";document.body.appendChild(pop);
+  const title=o.email?"Kaderplanung: Rechte von "+E(o.name||o.email):"Kaderplanung "+E(V.tshort(o.tid))+": wer darf was?";
+  const teams=o.tid?V.teams().filter((t)=>t.id===o.tid):V.teams().filter((t)=>cap(t.id).length);
+  const draw=()=>{
+    const intro=o.email?'Hier legst du fest, was <b>'+E(o.name||o.email)+'</b> in der Kaderplanung einer Mannschaft darf. Ohne Eintrag gelten die normalen Rechte der Rolle.':'Hier siehst du, wer zusätzlich oder eingeschränkt auf die Kaderplanung dieser Mannschaft zugreifen darf. Ohne Eintrag gelten die normalen Rechte der Rolle.';
+    let h='<div class="c"><h3>'+title+'</h3><p class="note" style="margin:0 0 6px">'+intro+(mayAll()?"":' Du kannst nur deinen Co-Trainern in deiner Mannschaft etwas geben oder nehmen, und nie mehr, als du selbst hast.')+'</p>';
+    if(!st.rows.length)h+='<div class="rr"><span class="note">Noch keine Einzelfreigaben.</span></div>';
+    st.rows.forEach((r,i)=>{const c=cap(r.tid);
+      h+='<div class="rr" data-i="'+i+'"><div class="w"><b>'+E(o.email?V.tshort(r.tid):(r.name||r.email))+'</b><small>'+(o.email?"":E(r.email))+(r.leg?' Frühere Freigabe, wird beim Speichern umgewandelt.':'')+'</small></div>'
+        +'<select data-f="stufe" aria-label="Zugriff">'+["kein","sehen","bearbeiten"].map((s)=>'<option value="'+s+'"'+(r.stufe===s?" selected":"")+(c.indexOf(s)<0?" disabled":"")+'>'+SL[s]+'</option>').join("")+'</select>'
+        +'<label>bis <input type="date" data-f="bis" value="'+E(msIso(r.bis))+'"'+(r.bis?"":" disabled")+'></label><label><input type="checkbox" data-f="unb"'+(r.bis?"":" checked")+(mayAll()?"":" disabled")+'>unbegrenzt</label>'
+        +(r.stufe!=="kein"?'<label title="Sonst sieht die Person Spielerdaten und Pläne, aber nicht die Einschätzungen der Beobachter"><input type="checkbox" data-f="ein"'+(r.ein!==false?" checked":"")+(mayAll()?"":" disabled")+'>sieht Einschätzungen</label>':'')
+        +'<button class="btn" data-a="save" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button><button class="btn" data-a="del">Auf Standard</button></div>'});
+    if(st.add){
+      h+='<div class="rr" id="rzadd"><div class="w"><b>Neue Freigabe</b></div>'
+        +(o.email?'<select id="rzt">'+teams.map((t)=>'<option value="'+E(t.id)+'">'+E(t.name)+'</option>').join("")+'</select>'
+          :(st.mem.length?'<select id="rzp"><option value="">Person wählen …</option>'+st.mem.map((m)=>'<option value="'+E(m.id)+'">'+E((m.name||m.id)+" ("+m.id+")")+'</option>').join("")+'</select>':'')+'<input id="rze" type="email" placeholder="E-Mail-Adresse der Person" style="min-width:200px">')
+        +'<button class="btn" data-a="new">Hinzufügen</button></div>';
+    }else h+='<div class="rr"><button class="btn" data-a="addo">＋ Neue Freigabe</button></div>';
+    h+='<div class="ms '+(st.bad?"er":"ok")+'" role="status">'+E(st.msg)+'</div><div class="rr" style="border:0"><button class="btn" data-a="close">Schließen</button></div></div>';
+    pop.innerHTML=h};
+  st.rows=await load(o);st.mem=o.tid?await members():[];if(o.add&&o.email){st.rows=st.rows}
+  draw();
+  const say=(t,bad)=>{st.msg=t;st.bad=!!bad;draw()};
+  const rowOf=(e)=>{const el=e.target.closest("[data-i]");return el?st.rows[+el.dataset.i]:null};
+  pop.onchange=(e)=>{const r=rowOf(e),f=e.target.dataset.f;if(!r||!f)return;
+    if(f==="stufe")r.stufe=e.target.value;
+    else if(f==="bis")r.bis=endMs(e.target.value);
+    else if(f==="unb"){r.bis=e.target.checked?0:endMs(seasonEnd())}
+    else if(f==="ein")r.ein=e.target.checked;
+    r.dirty=true;draw()};
+  pop.onclick=async(e)=>{
+    if(e.target===pop){pop.remove();return}
+    const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,r=rowOf(e);
+    if(a==="close"){pop.remove();return}
+    if(a==="addo"){st.add=true;draw();return}
+    if(a==="new"){
+      let tid=o.tid,em=o.email,nm=o.name||"";
+      if(o.email){tid=q("#rzt",pop).value}
+      else{const sel=q("#rzp",pop),inp=q("#rze",pop);em=((inp&&inp.value)||(sel&&sel.value)||"").trim().toLowerCase();const m=st.mem.find((x)=>x.id===em);nm=m?m.name||"":""}
+      if(!em||!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(em)){say("Bitte eine Person oder eine gültige E-Mail-Adresse angeben.",true);return}
+      if(!tid){say("Bitte eine Mannschaft wählen.",true);return}
+      if(em===meMail()){say("Eigene Rechte kannst du hier nicht ändern.",true);return}
+      if(st.rows.some((x)=>x.tid===tid&&x.email===em)){say("Für diese Kombination gibt es schon einen Eintrag. Bitte dort ändern.",true);return}
+      const c=cap(tid);
+      st.rows.push({tid,email:em,name:nm,stufe:c.indexOf("sehen")>=0?"sehen":c[0]||"sehen",ein:mayAll()?false:true,bis:endMs(seasonEnd()),ex:false,dirty:true,isNew:true});
+      st.add=false;say("Eintrag angelegt. Bitte Zugriff und Datum prüfen und „Speichern“ tippen.");return}
+    if(!r)return;
+    if(a==="save"){
+      if(r.stufe!=="kein"&&r.bis&&r.bis<Date.now()){say("Das Datum liegt in der Vergangenheit.",true);return}
+      if(cap(r.tid).indexOf(r.stufe)<0){say("Diese Stufe darfst du nicht vergeben.",true);return}
+      try{await saveRow(r);r.ex=true;r.leg=false;r.dirty=false;r.isNew=false;say("Gespeichert. Gilt beim nächsten Öffnen der App durch die Person.")}
+      catch(x){say("Das konnte nicht gespeichert werden. "+(mayAll()?"":"Als Trainer darfst du das nur für deine Co-Trainer (Personen mit Rechten in deiner Mannschaft, die schon in „Personen & Rechte“ stehen)."),true)}
+      return}
+    if(a==="del"){
+      if(!r.ex&&!r.leg){st.rows.splice(st.rows.indexOf(r),1);draw();return}
+      try{await delRow(r);st.rows.splice(st.rows.indexOf(r),1);say("Zurückgesetzt: Es gelten wieder die normalen Rechte der Rolle.")}catch(x){say("Das konnte nicht gespeichert werden.",true)}
+    }
+  };
+};
+/* ---------- Karte „Wer darf diese Kaderplanung sehen?“ (in den Einstellungen einer Kaderplanung) ---------- */
+let cacheT={};
+W.__kfCard=function(tid){
+  if(!V.kfMay(tid))return"";
+  const c=cacheT[tid];
+  if(!c||Date.now()-c.at>30000){
+    cacheT[tid]=c||{at:0,rows:null};cacheT[tid].at=Date.now();
+    V.fs().collection("kfrei").where("tid","==",tid).get().then((r)=>{cacheT[tid]={at:Date.now(),rows:r.docs.map((d)=>d.data())};const el=document.getElementById("kfcard");if(el)el.innerHTML=inner(tid)}).catch(()=>{cacheT[tid]={at:Date.now(),rows:[]}})}
+  return'<div class="card" id="kfcard" style="margin-top:12px">'+inner(tid)+'</div>'};
+function inner(tid){
+  const c=cacheT[tid],rows=c&&c.rows;
+  let h='<h3>Zugriff auf diese Kaderplanung</h3><p class="note" style="margin-top:0">Die Trainer der Mannschaft sehen und bearbeiten die Kaderplanung ohnehin. Hier kannst du Einzelnen mehr, weniger oder nur befristet Zugriff geben.</p>';
+  if(rows===null||rows===undefined)h+='<p class="note">Lädt …</p>';
+  else if(!rows.length)h+='<p class="note">Keine Einzelfreigaben.</p>';
+  else h+=rows.map((r)=>'<div class="rzx"><div class="w"><b>'+E(r.name||r.email)+'</b><small class="note" style="display:block">'+E(SL[r.stufe]||r.stufe)+' · '+(r.bis?"bis "+E(V.fdl(msIso(r.bis))):"unbegrenzt")+(r.bis&&r.bis<Date.now()?" · abgelaufen":"")+'</small></div></div>').join("");
+  h+='<button class="btn" data-kfo="'+E(tid)+'" style="margin-top:8px">Zugriff ändern</button>';
+  return h}
+document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.closest("[data-kfo]");if(!b)return;e.preventDefault();V.kfOpen({tid:b.dataset.kfo})});
+/* ---------- Rechte-Übersicht (Leitung): wer darf wo was, bis wann ---------- */
+V.kfOverview=async function(){
+  let rows=[];
+  try{const r=await V.fs().collection("kfrei").get();rows=r.docs.map((d)=>d.data())}catch(e){}
+  try{(await V.fs().collection("mitglieder").get()).docs.forEach((d)=>{const m=d.data();Object.keys(m.kader||{}).forEach((t)=>{if((m.kader[t]||0)>Date.now()&&!rows.some((r)=>r.tid===t&&r.email===d.id))rows.push({tid:t,email:d.id,name:m.name||"",stufe:"bearbeiten",bis:m.kader[t],ein:true})})})}catch(e){}
+  return rows.sort((a,b)=>String(a.name||a.email).localeCompare(String(b.name||b.email),"de")||String(a.tid).localeCompare(b.tid))};
+V.kfSoon=(rows,days)=>rows.filter((r)=>r.bis&&r.bis>Date.now()&&r.bis-Date.now()<=(days||7)*864e5);
+V.kfExtend=async(r)=>{const y=new Date(r.bis).getFullYear()+1;await saveRow({...r,bis:endMs(y+"-06-30")})};
+
+V.kfOvHtml=async function(){
+  const rows=await V.kfOverview();
+  let h='<h3>Rechte-Übersicht Kaderplanung</h3><p class="note" style="margin-top:0">Alle Einzelfreigaben auf einen Blick. Ohne Eintrag gelten die normalen Rechte der Rolle.</p>';
+  const soon=V.kfSoon(rows,7);
+  if(soon.length)h+='<div class="card rzb"><b>Läuft bald ab</b>'+soon.map((r)=>'<div class="rzx"><div class="w">'+E(r.name||r.email)+' · '+E(V.tshort(r.tid))+' · bis '+E(V.fdl(msIso(r.bis)))+'</div><button class="btn" data-kfv="'+E(r.tid+"|"+r.email)+'">Verlängern bis nächstes Saisonende</button></div>').join("")+'</div>';
+  if(!rows.length)return h+'<p class="note">Keine Einzelfreigaben vorhanden.</p>';
+  h+='<div class="tw"><table class="vt"><thead><tr><th style="text-align:left">Person</th><th style="text-align:left">Mannschaft</th><th>Zugriff</th><th>Bis</th><th></th></tr></thead><tbody>'+rows.map((r)=>{const ab=r.bis&&r.bis<Date.now();return'<tr><td style="text-align:left"><b>'+E(r.name||"–")+'</b><div class="note">'+E(r.email)+'</div></td><td style="text-align:left">'+E(V.tshort(r.tid))+'</td><td>'+E(SL[r.stufe])+(r.stufe!=="kein"&&r.ein===false?'<div class="note">ohne Einschätzungen</div>':'')+'</td><td>'+(r.bis?E(V.fdl(msIso(r.bis)))+(ab?' <span class="vbad r">abgelaufen</span>':''):"unbegrenzt")+'</td><td><button class="btn" data-kfe="'+E(r.email)+'">Ändern</button></td></tr>'}).join("")+'</tbody></table></div>';
+  return h};
+document.addEventListener("click",async(e)=>{
+  const v=e.target.closest&&e.target.closest("[data-kfv]");
+  if(v){const [tid,em]=v.dataset.kfv.split("|");const rows=await V.kfOverview();const r=rows.find((x)=>x.tid===tid&&x.email===em);if(r){try{await V.kfExtend(r);v.textContent="Verlängert";v.disabled=true}catch(x){v.textContent="Hat nicht geklappt"}}return}
+  const c=e.target.closest&&e.target.closest("[data-kfe]");if(c){V.kfOpen({email:c.dataset.kfe,name:""})}});
+
+/* Leitung: Liste der Mannschaften und deren Kader-Jahrgänge für den vereinsweiten Scouting-Link aktuell halten (höchstens einmal am Tag je Gerät) */
+document.addEventListener("u13club",()=>{setTimeout(async()=>{
+  try{
+    if(!V.isAll()||!W.__kader||!W.__kader.jgYears)return;
+    const fs=V.fs(),ts=V.teams().filter((t)=>t.aktiv!==false).map((t)=>t.id),key=ts.join(",");
+    const day=new Date().toISOString().slice(0,10);let last="";try{last=localStorage.getItem("u13kjday")||""}catch(e){}
+    if(last===day+"|"+key)return;
+    await fs.doc("pub/kj_idx").set({t:key});
+    for(const t of ts){try{const r=await fs.collection(t+"__kplan").get();const ys=Array.from(new Set([].concat(...r.docs.map((d)=>d.data()).filter((p)=>p&&!p.arch&&p.stufe&&p.saison).map((p)=>W.__kader.jgYears(p))))).sort().join(",");await fs.doc("pub/kj_"+t).set({j:ys})}catch(e){}}
+    try{localStorage.setItem("u13kjday",day+"|"+key)}catch(e){}
+  }catch(e){}},4000)});
+
+/* ---------- Archiv der Kaderplanung (E) ---------- */
+const planEnd=(sa)=>{const m=/(\d{4})/.exec(String(sa||""));return m?(+m[1]+1)+"-06-30":""};
+const trimP=(p,pid)=>{const m=(p.plans&&p.plans[pid])||{};return{id:p.id,vorname:p.vorname||"",name:p.name||"",geb:p.geb||"",verein:p.verein||"",typ:p.typ||"",pos:p.pos||{},plan:m,kr:p.kr||{},manuell:p.manuell==null?"":p.manuell,nBeob:(p.beob||[]).length,bew:(p.beob||[]).slice(-3).map((b)=>({datum:b.datum,bew:b.bew,verein:b.verein}))}};
+V.archPlan=async function(tid,pl,pers,auto){
+  const fs=V.fs();
+  let ps=(pers||[]).filter((p)=>(p.plans&&p.plans[pl.id])||p.typ==="eigen").map((p)=>trimP(p,pl.id));
+  let doc={id:pl.id,tid,name:pl.name||"",stufe:pl.stufe||"",saison:pl.saison||"",at:new Date().toISOString(),von:meMail(),plan:pl,pers:ps};
+  while(JSON.stringify(doc).length>850000&&ps.length>10){ps=ps.slice(0,Math.floor(ps.length*0.8));doc={...doc,pers:ps,gekuerzt:true}}
+  await fs.doc(tid+"__karchiv/"+pl.id).set(JSON.parse(JSON.stringify(doc)));
+  await fs.doc(tid+"__kplan/"+pl.id).set(JSON.parse(JSON.stringify({...pl,arch:true,archAt:doc.at})));
+  V.log("Kaderplanung archiviert"+(auto?" (Saisonende)":"")+": "+(pl.name||pl.stufe)+" "+(pl.saison||""),tid);
+};
+async function archAuto(){
+  if(!V.isAll())return;
+  const today=new Date().toISOString().slice(0,10);
+  for(const t of V.teams().filter((x)=>x.aktiv!==false)){
+    try{
+      const r=await V.fs().collection(t.id+"__kplan").get();
+      const due=r.docs.map((d)=>({id:d.id,...d.data()})).filter((p)=>!p.arch&&p.saison&&planEnd(p.saison)&&planEnd(p.saison)<today);
+      if(!due.length)continue;
+      const pr=await V.fs().collection(t.id+"__kperson").get(),pers=pr.docs.map((d)=>({id:d.id,...d.data()}));
+      for(const p of due)await V.archPlan(t.id,p,pers,true);
+    }catch(e){}}
+}
+document.addEventListener("u13club",()=>setTimeout(archAuto,9000));
+const archRights=(tid)=>V.isAll()||(((V.me().tr||{})[tid]||[]).some((r)=>r==="bearbeiten"||r==="kader"));
+V.archInit=function(el,teams){
+  const ts=teams.filter((t)=>archRights(t.id));if(!ts.length)return;
+  const c=document.createElement("div");c.className="card vc";c.style.marginTop="18px";c.id="karch";
+  c.innerHTML='<h3>Archiv früherer Kaderplanungen</h3><p class="note" style="margin-top:0">Am Saisonende wandern Kaderplanungen automatisch hierher. Sie bleiben erhalten und sind nur zum Ansehen. '+(V.isAll()?'Die Trainer sehen nur das Archiv ihrer eigenen Mannschaft.':'')+'</p><button class="btn" id="karchb">Archiv anzeigen</button><div id="karchl"></div>';
+  el.appendChild(c);
+  c.querySelector("#karchb").onclick=async function(){
+    this.disabled=true;const out=c.querySelector("#karchl");out.innerHTML='<p class="note">Lädt …</p>';let rows=[];
+    for(const t of ts){try{const r=await V.fs().collection(t.id+"__karchiv").get();r.docs.forEach((d)=>rows.push({tid:t.id,...d.data()}))}catch(e){}}
+    rows.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+    out.innerHTML=rows.length?rows.map((r,i)=>'<div class="rzx"><div class="w"><b>'+E(r.name||r.stufe)+'</b> · '+E(V.tshort(r.tid))+'<small class="note" style="display:block">Saison '+E(r.saison)+' · archiviert am '+E(V.fdl((r.at||"").slice(0,10)))+' · '+(r.pers||[]).length+' Personen'+(r.gekuerzt?' (gekürzt)':'')+'</small></div><button class="btn" data-av="'+i+'">Ansehen</button></div>').join(""):'<p class="note">Noch nichts archiviert.</p>';
+    out.onclick=(e)=>{const b=e.target.closest("[data-av]");if(!b)return;const r=rows[+b.dataset.av];archView(r)};
+  };
+};
+function archView(r){
+  css();let pop=q("#rzpop");if(pop)pop.remove();pop=document.createElement("div");pop.id="rzpop";document.body.appendChild(pop);
+  const ps=(r.pers||[]).slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),"de"));
+  pop.innerHTML='<div class="c"><h3>'+E(r.name||r.stufe)+' · Saison '+E(r.saison)+'</h3><p class="note" style="margin:0 0 8px">Nur zum Ansehen. Stand beim Archivieren am '+E(V.fdl((r.at||"").slice(0,10)))+'.</p><div class="tw"><table class="vt"><thead><tr><th style="text-align:left">Name</th><th>Jg.</th><th style="text-align:left">Verein</th><th>Status</th></tr></thead><tbody>'
+   +ps.map((p)=>'<tr><td style="text-align:left">'+E([p.vorname,p.name].filter(Boolean).join(" ")||"–")+(p.typ==="eigen"?' <span class="note">eigen</span>':'')+'</td><td>'+E(String(p.geb||"").slice(0,4)||"–")+'</td><td style="text-align:left">'+E(p.verein||"")+'</td><td>'+E((p.plan&&(p.plan.status||p.plan.phase))||"–")+'</td></tr>').join("")
+   +'</tbody></table></div><div class="rr" style="border:0"><button class="btn" data-a="x">Schließen</button></div></div>';
+  pop.onclick=(e)=>{if(e.target===pop||e.target.dataset.a==="x")pop.remove()};
+}
+document.addEventListener("click",async(e)=>{const b=e.target.closest&&e.target.closest("[data-archplan]");if(!b)return;
+  if(!b.dataset.arm){b.dataset.arm="1";b.textContent="Wirklich ins Archiv verschieben?";return}
+  const K=W.__kader;if(!K)return;const pl=K.plan&&K.plan();if(!pl)return;
+  try{await V.archPlan(W.__TID,pl,K.KD.pers,false);b.textContent="Archiviert";if(K.force)K.force()}catch(x){b.textContent="Hat nicht geklappt"}});
+
+/* ---------- Farben der Trainingsbeteiligung in der Übersicht (F) ---------- */
+let FG=null,fgLoaded=false;
+const prefId=()=>meMail().replace(/[^a-z0-9@._-]/g,"_");
+const colorOf=(x,a)=>x==null?0:x<a[0]/100?1:x<a[1]/100?2:x<a[2]/100?3:4;
+const okG=(a)=>Array.isArray(a)&&a.length===3&&a.every((v,i)=>Number.isInteger(v)&&v>=1&&v<=99&&(i===0||v>a[i-1]));
+const fgOver=()=>V.isAll()||V.canPlan()||V.visTeams().length>1;
+function fgLoad(){if(fgLoaded)return;fgLoaded=true;try{V.fs().doc("prefs/"+prefId()).get().then((x)=>{FG=(x.exists&&x.data()&&x.data().fgr)||null;if(V.cur==="uebersicht"&&!V.typing())V.render()}).catch(()=>{})}catch(e){}}
+V.fbetOf=(tid,st)=>{if(!st)return 0;fgLoad();if(!fgOver())return st.fbet||0;const th=FG&&((FG.t&&okG(FG.t[tid])&&FG.t[tid])||(okG(FG.all)&&FG.all));return th?colorOf(st.bet,th):(st.fbet||0)};
+V.fgrBar=()=>{if(!fgOver())return"";fgLoad();const own=FG&&(okG(FG.all)||Object.keys(FG.t||{}).length);return'<div class="vrow" style="margin:0 0 8px"><span class="note" style="flex:1;min-width:200px">Farben beim Training: '+(own?'<b>von dir angepasst</b>':'wie in den Mannschaften eingestellt')+'</span><button class="btn" data-fgr="1">Farben ändern</button></div>'};
+document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.closest("[data-fgr]");if(b)fgrOpen()});
+function fgrOpen(){
+  css();let pop=q("#rzpop");if(pop)pop.remove();pop=document.createElement("div");pop.id="rzpop";document.body.appendChild(pop);
+  const std=(W.U13&&W.U13.grenzenStd?W.U13.grenzenStd().t:[80,85,90]),cur=JSON.parse(JSON.stringify(FG||{all:null,t:{}}));cur.t=cur.t||{};
+  const teams=V.visTeams().filter((t)=>t.aktiv!==false);
+  const inp=(k,a,i)=>'<input type="number" min="1" max="99" data-g="'+k+'|'+i+'" value="'+(a?a[i]:std[i])+'" style="width:64px">';
+  const draw=(msg,bad)=>{
+    pop.innerHTML='<div class="c"><h3>Farben der Trainingsbeteiligung</h3><p class="note" style="margin:0 0 8px">Ohne Änderung gilt für jede Mannschaft das, was dort in den Einstellungen steht. Hier stellst du Grenzen nur für deine eigene Ansicht ein. Die Mannschaften selbst ändern sich nicht.</p>'
+     +'<div class="rr"><label><input type="checkbox" id="fgall"'+(okG(cur.all)?" checked":"")+'>Eigene Grenzen für alle Mannschaften</label></div>'
+     +'<div class="rr" id="fgallr"'+(okG(cur.all)?"":" hidden")+'><span>rot unter</span>'+inp("all",cur.all,0)+'<span>% · orange bis</span>'+inp("all",cur.all,1)+'<span>% · gelb bis</span>'+inp("all",cur.all,2)+'<span>% · ab dort grün</span></div>'
+     +'<h4 style="margin:10px 0 0">Einzelne Mannschaft abweichend</h4>'+teams.map((t)=>{const a=cur.t[t.id],on=okG(a);return'<div class="rr"><div class="w"><b>'+E(t.name)+'</b>'+(on?' <span class="vbad o">angepasst</span>':'')+'</div><label><input type="checkbox" data-tc="'+E(t.id)+'"'+(on?" checked":"")+'>eigene Grenzen</label>'+(on?inp(t.id,a,0)+inp(t.id,a,1)+inp(t.id,a,2):'')+'</div>'}).join("")
+     +'<div class="ms '+(bad?"er":"ok")+'">'+E(msg||"")+'</div><div class="rr" style="border:0"><button class="btn" data-fx="save" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button><button class="btn" data-fx="reset">Alles zurücksetzen</button><button class="btn" data-fx="close">Schließen</button></div></div>'};
+  draw();
+  const read=()=>{pop.querySelectorAll("[data-g]").forEach((i)=>{const [k,n]=i.dataset.g.split("|"),v=Math.round(+i.value);if(k==="all"){cur.all=cur.all||std.slice();cur.all[+n]=v}else{cur.t[k]=cur.t[k]||std.slice();cur.t[k][+n]=v}})};
+  pop.onchange=(e)=>{const t=e.target;read();if(t.id==="fgall"){cur.all=t.checked?(okG(cur.all)?cur.all:std.slice()):null;draw()}else if(t.dataset.tc){if(t.checked)cur.t[t.dataset.tc]=okG(cur.t[t.dataset.tc])?cur.t[t.dataset.tc]:(okG(cur.all)?cur.all.slice():std.slice());else delete cur.t[t.dataset.tc];draw()}};
+  pop.onclick=async(e)=>{
+    if(e.target===pop){pop.remove();return}
+    const a=e.target.dataset&&e.target.dataset.fx;if(!a)return;
+    if(a==="close"){pop.remove();return}
+    read();
+    if(a==="reset"){FG=null;try{await V.fs().doc("prefs/"+prefId()).set({fgr:null},{merge:true})}catch(x){}pop.remove();V.render();return}
+    if(a==="save"){
+      if(!document.getElementById("fgall").checked)cur.all=null;
+      if(cur.all&&!okG(cur.all)||Object.keys(cur.t).some((k)=>!okG(cur.t[k]))){draw("Die Grenzen müssen von klein nach groß aufsteigen (zum Beispiel 80, 85, 90).",true);return}
+      try{await V.fs().doc("prefs/"+prefId()).set({fgr:{all:cur.all,t:cur.t}},{merge:true});FG={all:cur.all,t:cur.t};pop.remove();V.render()}catch(x){draw("Das konnte nicht gespeichert werden.",true)}}};
+}
+
+/* Hinweis in der Übersicht: Freigaben, die in 7 Tagen ablaufen */
+let soonC=null,soonT=0;
+V.kfSoonBar=()=>{
+  if(!V.isAll())return"";
+  if(!soonC||Date.now()-soonT>60000){soonT=Date.now();const had=soonC?soonC.length:-1;soonC=soonC||[];V.kfOverview().then((r)=>{soonC=V.kfSoon(r,7);if(soonC.length!==had&&V.cur==="uebersicht"&&!V.typing())V.render()}).catch(()=>{})}
+  return soonC&&soonC.length?'<div class="card vc rzb" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="flex:1;min-width:200px">'+soonC.length+(soonC.length===1?" Freigabe der Kaderplanung läuft":" Freigaben der Kaderplanung laufen")+' in den nächsten 7 Tagen ab</b><button class="btn" data-gopers="1">Ansehen und verlängern</button></div>':""};
+document.addEventListener("click",(e)=>{if(e.target.closest&&e.target.closest("[data-gopers]")&&V.go)V.go("personen")});
+V.rzCss=css;
+V.kfSL=SL;V.kfEndMs=endMs;V.kfIso=msIso;V.kfSeasonEnd=seasonEnd;
+})();
+
+/* ===== Anfragen an Leitung, sportliche Leitung oder Administrator (ohne automatische E-Mail) ===== */
+(function(){
+"use strict";
+const W=window;
+if(!W.__WEB||W.__DEMO||!W.__V)return;
+const V=W.__V,E=V.E,q=V.q;
+const ART={kader:"Zugriff auf eine Kaderplanung",rechte:"Rechte oder Zugang ändern",platz:"Platz- oder Kabinenbelegung",spieler:"Spieler eintragen",sonst:"Etwas anderes"};
+const EMP=[["sl","Sportliche Leitung"],["jl","Jugendleitung"],["ad","Administrator"]];
+const em=()=>String((W.__VME&&W.__VME.email)||"").toLowerCase();
+const myName=()=>(W.__VME&&(W.__VME.name||W.__VME.email))||"";
+const isSL=()=>((W.__VME&&W.__VME.kat)||[]).indexOf("sl")>=0;
+const rid=()=>"a"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const fdt=(iso)=>{if(!iso)return"";const d=new Date(iso);return isNaN(d)?"":V.fdl(V.iso(d))+", "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
+let L={};let subs=[];let ui={view:"list",sel:null,msg:"",bad:false,draft:null,filt:"offen"};
+const list=()=>Object.keys(L).map((k)=>L[k]).sort((a,b)=>String(b.up||b.at).localeCompare(String(a.up||a.at)));
+const mine=(a)=>a.von===em();
+const forMe=(a)=>!mine(a)&&((a.r_jl&&V.rolle()==="jugendleiter")||(a.r_ad&&V.rolle()==="admin")||(a.r_sl&&isSL()));
+const openForMe=()=>list().filter((a)=>forMe(a)&&a.st==="offen").length;
+function sub(){
+  if(subs.length||!V.fs())return;
+  const fs=V.fs(),put=(s)=>{s.docs.forEach((d)=>{L[d.id]={id:d.id,...d.data()}});after()},err=()=>{};
+  const rm=(s,fn)=>{};
+  subs.push(fs.collection("anliegen").where("von","==",em()).onSnapshot(put,err));
+  if(V.rolle()==="jugendleiter")subs.push(fs.collection("anliegen").where("r_jl","==",true).onSnapshot(put,err));
+  if(V.rolle()==="admin")subs.push(fs.collection("anliegen").where("r_ad","==",true).onSnapshot(put,err));
+  if(isSL())subs.push(fs.collection("anliegen").where("r_sl","==",true).onSnapshot(put,err));
+}
+let tm=null;function after(){clearTimeout(tm);tm=setTimeout(()=>{try{V.refreshNav&&V.refreshNav()}catch(e){}if(V.cur==="anliegen"&&!V.typing())V.render()},150)}
+/* ---------- Menü ---------- */
+V.tab({id:"anliegen",label:"Anliegen",show:()=>true,stop(){},render(el){sub();draw(el)}});
+if(V.MENU&&!V.MENU.some((m)=>m.id==="anliegen")){const i=V.MENU.findIndex((m)=>m.id==="personen");V.MENU.splice(i<0?V.MENU.length:i,0,{id:"anliegen",label:()=>{const n=openForMe();return"Anliegen"+(n?" ("+n+")":"")},tabs:["anliegen"]})}
+setTimeout(sub,2500);
+/* ---------- Ansicht ---------- */
+function say(t,bad){ui.msg=t;ui.bad=!!bad;if(V.cur==="anliegen")V.render()}
+function empfLabel(a){return EMP.filter((e)=>a["r_"+e[0]]).map((e)=>e[1]).join(", ")}
+function draw(el){
+  const css=q("#anlcss");if(!css){const s=document.createElement("style");s.id="anlcss";s.textContent='.anl .ar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--ln)}.anl .ar:first-of-type{border-top:0}.anl .ar .w{flex:1;min-width:180px}.anl .st{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;background:var(--ys);color:var(--y)}.anl .st.ok{background:var(--gs);color:var(--g)}.anl .msgb{padding:8px 10px;border-radius:10px;background:var(--bg2,rgba(127,127,127,.12));margin:6px 0}.anl .msgb small{display:block;color:var(--mut,gray)}.anl textarea{width:100%;min-height:90px}.anl .ms{min-height:18px;margin-top:6px}';document.head.appendChild(s)}
+  let h='<div class="anl"><h2>Anliegen</h2><p class="sub note">Schreibe der Leitung, wenn dir ein Recht fehlt oder du etwas brauchst. Es wird keine E-Mail verschickt: Die Empfänger sehen die Anfrage hier in der App.</p>';
+  if(ui.view==="new")h+=formHtml();
+  else if(ui.view==="one"&&L[ui.sel])h+=oneHtml(L[ui.sel]);
+  else h+=listHtml();
+  h+='<div class="ms '+(ui.bad?"er":"ok")+'" role="status">'+E(ui.msg)+'</div></div>';
+  el.innerHTML=h;bind(el)}
+function listHtml(){
+  const all=list(),inb=all.filter(forMe),out=all.filter(mine);
+  const row=(a)=>'<div class="ar" data-open="'+E(a.id)+'" role="button" tabindex="0"><div class="w"><b>'+E(a.betreff)+'</b><div class="note">'+(mine(a)?"An: "+E(empfLabel(a)):"Von: "+E(a.vname||a.von))+" · "+E(ART[a.art]||"")+" · "+E(fdt(a.up||a.at))+'</div>'+(a.byn&&a.st==="erledigt"?'<div class="note">bearbeitet von '+E(a.byn)+'</div>':'')+'</div><span class="st'+(a.st==="erledigt"?" ok":"")+'">'+(a.st==="erledigt"?"erledigt":"offen")+'</span></div>';
+  let h='<div class="bar" style="margin:0 0 10px"><button class="btn" id="anew" style="background:var(--ac);color:#fff;border-color:var(--ac)">＋ Neue Anfrage</button></div>';
+  if(inb.length)h+='<div class="card"><h3>An mich'+(openForMe()?' <span class="st">'+openForMe()+' offen</span>':"")+'</h3>'+inb.map(row).join("")+'</div>';
+  h+='<div class="card" style="margin-top:12px"><h3>Von mir</h3>'+(out.length?out.map(row).join(""):'<p class="note">Du hast noch keine Anfrage gestellt.</p>')+'</div>';
+  return h}
+function formHtml(){
+  const d=ui.draft||{art:"sonst",betreff:"",text:"",emp:{},sp:{}};ui.draft=d;
+  const teams=V.teams().filter((t)=>t.aktiv!==false);
+  let h='<div class="card"><h3>Neue Anfrage</h3><div class="vrow"><label>Worum geht es?<select id="fa">'+Object.keys(ART).map((k)=>'<option value="'+k+'"'+(d.art===k?" selected":"")+'>'+ART[k]+'</option>').join("")+'</select></label></div>'
+   +'<div style="margin:8px 0"><b>An wen?</b><div class="vrow" style="gap:12px;margin-top:4px">'+EMP.map((e)=>'<label><input type="checkbox" data-emp="'+e[0]+'"'+(d.emp[e[0]]?" checked":"")+'>'+e[1]+'</label>').join("")+'</div></div>'
+   +'<label style="display:block">Betreff<input id="fb" maxlength="120" style="width:100%" value="'+E(d.betreff)+'"></label>'
+   +(d.art==="spieler"?'<div class="vrow" style="margin-top:8px"><label>Vorname<input id="fsv" maxlength="40" value="'+E(d.sp.vorname||"")+'"></label><label>Nachname<input id="fsn" maxlength="40" value="'+E(d.sp.name||"")+'"></label><label>Jahrgang<input id="fsj" maxlength="4" inputmode="numeric" placeholder="z. B. 2014" style="width:90px" value="'+E(d.sp.jg||"")+'"></label><label>Verein<input id="fsc" maxlength="60" value="'+E(d.sp.verein||"")+'"></label><label>Für Mannschaft<select id="fst"><option value="">–</option>'+teams.map((t)=>'<option value="'+E(t.id)+'"'+(d.sp.tid===t.id?" selected":"")+'>'+E(t.name)+'</option>').join("")+'</select></label></div>':"")
+   +'<label style="display:block;margin-top:8px">Nachricht<textarea id="ft" maxlength="2000">'+E(d.text)+'</textarea></label>'
+   +'<div class="bar" style="margin:10px 0 0"><button class="btn" id="fsend" style="background:var(--ac);color:#fff;border-color:var(--ac)">Anfrage senden</button><button class="btn" id="fcancel">Abbrechen</button></div></div>';
+  return h}
+function oneHtml(a){
+  const rec=forMe(a)||V.isAll();
+  let h='<div class="bar" style="margin:0 0 8px"><button class="btn" id="aback">◂ Zurück</button></div><div class="card"><div class="ar" style="border:0;padding-top:0"><div class="w"><h3 style="margin:0">'+E(a.betreff)+'</h3><div class="note">'+(mine(a)?"An: "+E(empfLabel(a)):"Von: "+E(a.vname||a.von)+" ("+E(a.von)+")")+" · "+E(ART[a.art]||"")+" · "+E(fdt(a.at))+'</div></div><span class="st'+(a.st==="erledigt"?" ok":"")+'">'+(a.st==="erledigt"?"erledigt":"offen")+'</span></div>';
+  if(a.byn)h+='<div class="note">Zuletzt bearbeitet von '+E(a.byn)+'</div>';
+  h+='<div class="msgb">'+E(a.text).replace(/\n/g,"<br>")+(a.art==="spieler"&&a.sp?'<small>'+E([a.sp.vorname,a.sp.name].filter(Boolean).join(" "))+(a.sp.jg?" · Jahrgang "+E(a.sp.jg):"")+(a.sp.verein?" · "+E(a.sp.verein):"")+(a.sp.tid?" · für "+E(V.tshort(a.sp.tid)):"")+'</small>':"")+'</div>';
+  (a.msgs||[]).forEach((m)=>{h+='<div class="msgb"><small>'+E(m.vn||m.von)+' · '+E(fdt(m.at))+'</small>'+E(m.t).replace(/\n/g,"<br>")+'</div>'});
+  h+='<label style="display:block;margin-top:8px">Antwort<textarea id="fr" maxlength="500"></textarea></label><div class="bar" style="margin:8px 0 0"><button class="btn" id="areply">Antwort senden</button>'
+   +(a.st==="offen"?'<button class="btn" id="adone">Als erledigt markieren</button>':'<button class="btn" id="areopen">Wieder öffnen</button>')
+   +(rec&&a.art==="spieler"&&a.sp&&a.sp.tid&&a.st==="offen"?'<button class="btn" id="aplay" style="background:var(--ac);color:#fff;border-color:var(--ac)">Spieler in den Eingang der Mannschaft eintragen</button>':'')
+   +((mine(a)||V.isAll())?'<button class="btn" id="adel">Löschen</button>':'')+'</div></div>';
+  return h}
+function bind(el){
+  const g=(id)=>q("#"+id,el);
+  el.onclick=async(e)=>{
+    const t=e.target;
+    if(t.id==="anew"){ui.view="new";ui.draft=ui.draft||null;ui.msg="";V.render();return}
+    if(t.id==="fcancel"||t.id==="aback"){ui.view="list";ui.sel=null;ui.msg="";ui.draft=null;V.render();return}
+    const o=t.closest("[data-open]");if(o){ui.view="one";ui.sel=o.dataset.open;ui.msg="";V.render();return}
+    if(t.id==="fsend"){await send(el);return}
+    const a=L[ui.sel];if(!a)return;
+    const upd=async(patch,txt)=>{try{const nx={...a,...patch,up:new Date().toISOString()};await V.fs().doc("anliegen/"+a.id).set(clean(nx));L[a.id]=nx;say(txt||"Gespeichert.")}catch(x){say("Das konnte nicht gespeichert werden.",true)}};
+    if(t.id==="areply"){const tx=(g("fr").value||"").trim();if(!tx){say("Bitte eine Antwort eintragen.",true);return}
+      const msgs=(a.msgs||[]).concat([{von:em(),vn:myName(),at:new Date().toISOString(),t:tx.slice(0,500)}]);if(msgs.length>40){say("Zu viele Antworten. Bitte eine neue Anfrage stellen.",true);return}
+      await upd({msgs,...(forMe(a)||V.isAll()?{by:em(),byn:myName()}:{})},"Antwort gesendet.");return}
+    if(t.id==="adone"){await upd({st:"erledigt",by:em(),byn:myName()},"Als erledigt markiert.");return}
+    if(t.id==="areopen"){await upd({st:"offen"},"Wieder geöffnet.");return}
+    if(t.id==="adel"){if(!t.dataset.arm){t.dataset.arm="1";t.textContent="Wirklich löschen?";return}try{await V.fs().doc("anliegen/"+a.id).delete();delete L[a.id];ui.view="list";ui.sel=null;say("Gelöscht.")}catch(x){say("Das konnte nicht gelöscht werden.",true)}return}
+    if(t.id==="aplay"){
+      const s=a.sp||{},id="ki"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+      try{await V.fs().doc(s.tid+"__kinbox/"+id).set(clean({id,at:new Date().toISOString(),von:a.vname||a.von,datum:V.iso(new Date()),verein:s.verein||"",mannschaft:"",nr:"",vorname:s.vorname||"",name:s.name||"",pos:"",posn:[],geb:"",bew:null,st:[],sw:[],notiz:("Angefragt von "+(a.vname||a.von)+": "+(a.text||"")).slice(0,1500),gid:id,jg:s.jg?[String(s.jg)]:[]}));
+        V.log("Spieler aus Anfrage in den Eingang von "+V.tshort(s.tid)+" eingetragen: "+[s.vorname,s.name].filter(Boolean).join(" "),s.tid);
+        await upd({st:"erledigt",by:em(),byn:myName(),msgs:(a.msgs||[]).concat([{von:em(),vn:myName(),at:new Date().toISOString(),t:"Ist im Eingang der Kaderplanung von "+V.tshort(s.tid)+" eingetragen."}])},"Eingetragen. Der Spieler liegt jetzt im Eingang der Mannschaft.")}
+      catch(x){say("Das ging nicht. Du brauchst dafür Bearbeiten-Rechte in der Kaderplanung dieser Mannschaft.",true)}
+      return}
+  };
+  el.onchange=(e)=>{const t=e.target;if(!ui.draft)return;if(t.id==="fa"){keep(el);ui.draft.art=t.value;V.render();return}if(t.dataset&&t.dataset.emp){ui.draft.emp[t.dataset.emp]=t.checked}};
+}
+const clean=(o)=>JSON.parse(JSON.stringify(o));
+function keep(el){const d=ui.draft;if(!d)return;const v=(id)=>{const x=q("#"+id,el);return x?x.value:null};
+  if(v("fb")!==null)d.betreff=v("fb");if(v("ft")!==null)d.text=v("ft");
+  if(v("fsv")!==null)d.sp={vorname:v("fsv"),name:v("fsn"),jg:v("fsj"),verein:v("fsc"),tid:v("fst")}}
+async function send(el){
+  keep(el);const d=ui.draft;
+  if(!d.emp.sl&&!d.emp.jl&&!d.emp.ad){say("Bitte mindestens einen Empfänger wählen.",true);return}
+  if(!(d.betreff||"").trim()){say("Bitte einen Betreff eintragen.",true);return}
+  if(d.art==="spieler"&&!((d.sp.vorname||d.sp.name||"").trim()&&d.sp.tid)){say("Bitte den Namen des Spielers und die Mannschaft eintragen.",true);return}
+  const a={id:rid(),von:em(),vname:String(myName()).slice(0,60),r_jl:!!d.emp.jl,r_ad:!!d.emp.ad,r_sl:!!d.emp.sl,art:d.art,betreff:d.betreff.trim().slice(0,120),text:(d.text||"").slice(0,2000),at:new Date().toISOString(),st:"offen",msgs:[],up:new Date().toISOString()};
+  if(d.art==="spieler")a.sp={vorname:(d.sp.vorname||"").slice(0,40),name:(d.sp.name||"").slice(0,40),jg:(d.sp.jg||"").slice(0,4),verein:(d.sp.verein||"").slice(0,60),tid:d.sp.tid||""};
+  try{await V.fs().doc("anliegen/"+a.id).set(clean(a));L[a.id]=a;ui.view="list";ui.draft=null;say("Gesendet. Du siehst hier, wenn jemand antwortet oder die Anfrage erledigt.")}
+  catch(x){say("Das konnte nicht gesendet werden. Bitte später noch einmal versuchen.",true)}
+}
+/* Kurzwege aus anderen Stellen der App */
+V.anlN=openForMe;
+V.anlNew=(o)=>{o=o||{};ui.view="new";ui.draft={art:o.art||"sonst",betreff:o.betreff||"",text:o.text||"",emp:o.emp||{jl:true},sp:{}};ui.msg="";sub();if(V.go)V.go("anliegen");else V.open&&V.open("anliegen")};
+document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.closest("[data-anl]");if(!b)return;e.preventDefault();const k=b.dataset.anl;if(k==="x"){ui.view="list";sub();V.go&&V.go("anliegen");return}
+  V.anlNew(k==="kader"?{art:"kader",betreff:"Zugriff auf die Kaderplanung "+((W.__TEAM||{}).name||""),emp:{jl:true,sl:true}}:{art:k})});
+})();
+
+/* ===== Gesamtsicherung (Administrator und Jugendleitung): alle Mannschaften und Vereinsdaten in eine Datei, optional mit Passwort ===== */
+(function(){
+"use strict";
+const W=window;
+if(!W.__WEB||W.__DEMO||!W.__V)return;
+const V=W.__V,E=V.E,q=V.q;
+const TEAMC=["players","games","trainings","notes","events","todos","dienste","config","spieltag","tipps","kplan","kperson","kobs","kinbox","karchiv","vhinweise","vstat"];
+const CLUBC=["verein","mitglieder","plaene","kfrei","protokoll"];
+const may=()=>V.isAll();
+const b64=(u)=>{let s="";const n=0x8000;for(let i=0;i<u.length;i+=n)s+=String.fromCharCode.apply(null,u.subarray(i,i+n));return btoa(s)};
+const unb64=(t)=>Uint8Array.from(atob(t),(c)=>c.charCodeAt(0));
+async function gz(txt){const u=new TextEncoder().encode(txt);if(typeof CompressionStream==="undefined")return{z:0,u};const cs=new Blob([u]).stream().pipeThrough(new CompressionStream("gzip"));return{z:1,u:new Uint8Array(await new Response(cs).arrayBuffer())}}
+async function gunz(u,z){if(!z)return new TextDecoder().decode(u);const ds=new Blob([u]).stream().pipeThrough(new DecompressionStream("gzip"));return new TextDecoder().decode(await new Response(ds).arrayBuffer())}
+async function key(pw,salt){const m=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:250000,hash:"SHA-256"},m,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+const days=(ms)=>ms?Math.floor((Date.now()-ms)/864e5):null;
+let last=null,loaded=false;
+function loadLast(){if(loaded||!V.fs())return;loaded=true;V.fs().doc("verein/gesamt").get().then((s)=>{last=s.exists?s.data():null;if(V.cur==="uebersicht"&&!V.typing())V.render()}).catch(()=>{})}
+/* Karte in der Übersicht */
+V.gesamtCard=()=>{
+  if(!may())return"";loadLast();
+  const d=last&&last.at?days(Date.parse(last.at)):null,warn=d===null||d>=30;
+  return'<div class="card vc'+'" style="'+(warn?"border-color:var(--o);background:var(--os)":"")+'"><div class="vrow" style="margin:0"><div style="flex:1;min-width:200px"><b>Gesamtsicherung</b><div class="note" style="color:inherit">'+(d===null?(loaded&&last===null?"Es gibt noch keine Gesamtsicherung.":"Lädt …"):d===0?"Letzte Gesamtsicherung: heute.":"Letzte Gesamtsicherung vor "+d+(d===1?" Tag":" Tagen")+".")+(warn&&d!==null?" Zeit für eine neue.":"")+'</div></div><button class="btn" data-gs="open">Sichern oder wiederherstellen</button></div></div>'};
+document.addEventListener("click",(e)=>{if(e.target.closest&&e.target.closest("[data-gs=open]"))dlg()});
+function dlg(){
+  V.rzCss&&V.rzCss();let pop=q("#rzpop");if(pop)pop.remove();pop=document.createElement("div");pop.id="rzpop";document.body.appendChild(pop);
+  const st={msg:"",bad:false,busy:false,file:null,teams:[],tid:"",pw2:""};
+  const teams=V.teams();
+  const draw=()=>{pop.innerHTML='<div class="c"><h3>Gesamtsicherung</h3><p class="note" style="margin:0 0 8px">Sichert alle Mannschaften und die Vereinsdaten (Mannschaften, Personen und Rechte, Platzpläne, Kaderplanungen) in <b>eine Datei</b> auf deinem Gerät. Spieler- und Elternkonten, Links und Passwörter sind nicht enthalten.</p>'
+    +'<div class="rr"><label style="flex:1;min-width:220px">Passwort für die Datei (freiwillig)<input id="gpw" type="password" autocomplete="new-password" style="width:100%" placeholder="leer lassen = ohne Passwort"></label><button class="btn" data-g="make"'+(st.busy?" disabled":"")+' style="background:var(--ac);color:#fff;border-color:var(--ac)">Gesamtsicherung herunterladen</button></div>'
+    +'<p class="note">Ohne Passwort kann jeder die Datei lesen, der sie bekommt. Mit Passwort ist sie verschlüsselt. Bei vergessenem Passwort ist die Datei nicht mehr lesbar.</p>'
+    +'<h4 style="margin:12px 0 4px">Eine Mannschaft aus einer Sicherung wiederherstellen</h4><div class="rr"><input type="file" id="gfile" accept=".json,application/json"></div>'
+    +(st.file?'<div class="rr"><label>Mannschaft<select id="gteam">'+st.teams.map((t)=>'<option value="'+E(t)+'"'+(st.tid===t?" selected":"")+'>'+E(V.tshort(t))+'</option>').join("")+'</select></label><label style="flex:1;min-width:150px">Passwort (falls gesetzt)<input id="gpw2" type="password" autocomplete="off" value="'+E(st.pw2||"")+'"></label></div><div class="note">Stand der Sicherung: '+E(V.fdl((st.file.at||"").slice(0,10)))+'. Beim Wiederherstellen werden die gesicherten Daten dieser Mannschaft zurückgeschrieben. Was seitdem neu entstanden ist, bleibt bestehen; Geändertes wird auf den Stand der Sicherung zurückgesetzt.</div><div class="rr"><button class="btn" data-g="restore"'+(st.busy?" disabled":"")+'>Diese Mannschaft wiederherstellen</button></div>':'')
+    +'<div class="ms '+(st.bad?"er":"ok")+'" role="status">'+E(st.msg)+'</div><div class="rr" style="border:0"><button class="btn" data-g="close">Schließen</button></div></div>'};
+  const say=(t,bad)=>{st.msg=t;st.bad=!!bad;const m=q(".ms",pop);if(m){m.textContent=t;m.className="ms "+(bad?"er":"ok")}else draw()};
+  draw();
+  pop.onclick=async(e)=>{
+    if(e.target===pop){pop.remove();return}
+    const a=e.target.dataset&&e.target.dataset.g;if(!a)return;
+    if(a==="close"){pop.remove();return}
+    if(a==="make"){
+      const pw=(q("#gpw",pop).value||"");st.busy=true;draw();
+      try{
+        const fs=V.fs(),out={format:"vereinsloesung-gesamtsicherung",v:1,at:new Date().toISOString(),von:(W.__VME&&W.__VME.email)||"",verein:{},teams:{},fehlt:[]};
+        const rd=async(coll)=>{try{const r=await fs.collection(coll).get();const o={};r.docs.forEach((d)=>{o[d.id]=d.data()});return o}catch(x){out.fehlt.push(coll);return null}};
+        for(const c of CLUBC){say("Sichere "+c+" …");const o=await rd(c);if(o){if(c==="verein"){delete o.scout;delete o.gesamt}out.verein[c]=o}}
+        let i=0;
+        for(const t of teams){i++;out.teams[t.id]={name:t.name,coll:{}};say("Sichere "+t.name+" ("+i+" von "+teams.length+") …");
+          for(const c of TEAMC){const o=await rd(t.id+"__"+c);if(o&&Object.keys(o).length)out.teams[t.id].coll[c]=o}}
+        const txt=JSON.stringify(out),g=await gz(txt);let file;
+        if(pw){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),k=await key(pw,salt),ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},k,g.u));file={format:"vereinsloesung-gesamtsicherung",v:1,at:out.at,enc:true,z:g.z,salt:b64(salt),iv:b64(iv),d:b64(ct),teams:Object.keys(out.teams)}}
+        else file={format:"vereinsloesung-gesamtsicherung",v:1,at:out.at,enc:false,z:g.z,d:b64(g.u),teams:Object.keys(out.teams)};
+        const blob=new Blob([JSON.stringify(file)],{type:"application/json"}),dl=await W.claude.use("downloads");if(!dl)throw new Error("nodl");
+        await dl.save({filename:"Gesamtsicherung_"+out.at.slice(0,10)+(pw?"_verschluesselt":"")+".json",data:blob});
+        try{await fs.doc("verein/gesamt").set({at:out.at,von:out.von,enc:!!pw,teams:Object.keys(out.teams).length});last={at:out.at}}catch(x){}
+        V.log("Gesamtsicherung erstellt"+(pw?" (mit Passwort)":"")+(out.fehlt.length?"; nicht lesbar: "+out.fehlt.join(", "):""));
+        st.busy=false;draw();say("Fertig. Die Datei liegt in deinen Downloads."+(out.fehlt.length?" Nicht gesichert werden konnte: "+out.fehlt.join(", ")+".":""));
+        if(V.cur==="uebersicht")V.render();
+      }catch(x){st.busy=false;draw();say("Das hat nicht geklappt. Bitte noch einmal versuchen.",true)}
+      return}
+    if(a==="restore"){
+      const tid=q("#gteam",pop).value,pw=(q("#gpw2",pop)||{}).value||"";st.tid=tid;st.pw2=pw;
+      if(!e.target.dataset.arm){e.target.dataset.arm="1";e.target.textContent="Wirklich wiederherstellen? Nochmal tippen";return}
+      st.busy=true;draw();
+      try{
+        const f=st.file;let u=unb64(f.d);
+        if(f.enc){if(!pw){throw new Error("pw")}try{u=new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(f.iv)},await key(pw,unb64(f.salt)),u))}catch(x){throw new Error("pw")}}
+        const data=JSON.parse(await gunz(u,f.z)),T=data.teams&&data.teams[tid];if(!T)throw new Error("none");
+        let n=0;const fs=V.fs();
+        for(const c of Object.keys(T.coll||{})){const docs=T.coll[c];for(const id of Object.keys(docs)){say("Stelle "+c+" wieder her …");await fs.doc(tid+"__"+c+"/"+id).set(docs[id]);n++}}
+        V.log("Mannschaft aus Gesamtsicherung wiederhergestellt: "+V.tshort(tid)+" ("+n+" Einträge, Stand "+(data.at||"").slice(0,10)+")",tid);
+        st.busy=false;draw();say("Wiederhergestellt: "+V.tshort(tid)+" ("+n+" Einträge). Bitte die App einmal neu laden.");
+      }catch(x){st.busy=false;draw();say(x&&x.message==="pw"?"Das Passwort stimmt nicht.":"Das hat nicht geklappt.",true)}
+    }};
+  pop.oninput=(e)=>{if(e.target.id==="gpw2")st.pw2=e.target.value};
+  pop.onchange=async(e)=>{
+    if(e.target.id==="gteam"){st.tid=e.target.value;return}
+    if(e.target.id!=="gfile"||!e.target.files[0])return;
+    try{const txt=await e.target.files[0].text(),f=JSON.parse(txt);if(f.format!=="vereinsloesung-gesamtsicherung")throw new Error("fmt");st.file=f;st.teams=(f.teams||[]);st.msg="";draw()}
+    catch(x){st.file=null;draw();say("Diese Datei ist keine Gesamtsicherung.",true)}};
+}
 })();
 
 </script>
