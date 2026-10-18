@@ -463,7 +463,7 @@ async function afterLogin(){
   /* Ein dauerhafter Scouting-Link für den ganzen Verein (verein/scout). Ihn legt automatisch die Leitung an; erneuern (Notfall) nur Leitung/Administrator. */
   const isLeit=rolle==="admin"||rolle==="jugendleiter";
   try{const r=await fs.doc("verein/scout").get();let k=r.exists&&r.data()&&r.data().k;if(!k&&isLeit){k=rndClub();await fs.doc("verein/scout").set({k})}
-    if(!k){const r2=await fs.doc(T("config/scout")).get();k=r2.exists&&r2.data()&&r2.data().k;if(!k&&!isLeit){k=rndKey();await fs.doc(T("config/scout")).set({k})}}
+    if(!k){const r2=await fs.doc(T("config/scout")).get();k=r2.exists&&r2.data()&&r2.data().k}
     scoutKey=k||""}catch(e){}
   window.__scoutLink=()=>scoutKey?window.__WEB_BASE0+"#scout."+scoutKey:"";window.__scoutNew=isLeit;window.__scoutClub=/^club-/.test(scoutKey||"");
   let last=null;const tid=window.__TID;
