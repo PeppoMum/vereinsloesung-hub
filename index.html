@@ -6217,6 +6217,8 @@ V.pflege=(s)=>{const st=V.set(),tage=s&&s.at?V.days(s.at):null;if(tage==null)ret
 V.pflegeTxt=(p)=>p.tage==null?"noch nie":p.tage<=0?"heute":p.tage===1?"gestern":"vor "+p.tage+" Tagen";
 const nextGame=(s)=>{const g=s&&(s.naechste||[])[0];return g?V.fd(g.d)+(g.z?" "+g.z:"")+" · "+(g.h==="H"?"Heim gegen ":g.h==="A"?"Auswärts gegen ":"")+(g.g||"?"):"–"};
 V.nextGame=nextGame;
+V.hide=(k,d)=>{try{localStorage.setItem("u13hid_"+k,String(Date.now()+d*864e5))}catch(e){}};
+V.isHid=(k)=>{try{return +localStorage.getItem("u13hid_"+k)>Date.now()}catch(e){return false}};
 const BCOL=["var(--grs)","var(--r)","var(--o)","var(--y)","var(--g)"];
 
 /* ---------- Übersicht (mit Filtern), Hinweise, Handlungsbedarf ---------- */
@@ -6288,10 +6290,9 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
   if(V.anlN&&V.anlN()>0)h+='<div class="card vc" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="flex:1;min-width:180px">'+V.anlN()+(V.anlN()===1?" offenes Anliegen":" offene Anliegen")+' an dich</b><button class="btn" data-anl="x" style="background:var(--ac);color:#fff;border-color:var(--ac)">Ansehen</button></div>';
   if(V.kfSoonBar)h+=V.kfSoonBar();
   if(V.gesamtCard)h+=V.gesamtCard();
-  if(V.fgrBar)h+=V.fgrBar();
   if(filters.length>1)h+='<div class="vf" role="tablist">'+filters.map((x)=>'<button type="button" data-f="'+E(x.id)+'" class="'+(x.id===fid?"on":"")+'">'+E(x.n)+'</button>').join("")+'</div>';
   if(open.length&&V.has(W.__TID,"sehen"))h+='<div class="card vc" style="border-color:var(--y);background:var(--ys)"><b>Hinweise für '+E(V.tname(W.__TID))+'</b>'+open.map((x)=>'<div class="vrow" style="margin:6px 0 0"><span style="flex:1;min-width:200px">'+E(x.text)+' <span class="note">· '+E(x.von||"")+' · '+E(String(x.at||"").slice(0,10).split("-").reverse().join("."))+'</span></span>'+(V.canWrite()&&x.ack!==false?'<button class="btn" data-ok="'+E(x.id)+'">Erledigt</button>':"")+(x.bis?' <span class="note">bis '+E(V.fdl(x.bis).slice(0,6))+'</span>':"")+'</div>').join("")+'</div>';
-  if(V.canWrite()&&ow.art&&own!==undefined&&!(own&&own.st==="basis"))h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><b>Erinnerung</b><div class="note" style="color:inherit">Die Daten von '+E(V.tname(W.__TID))+' wurden zuletzt '+E(V.pflegeTxt(ow))+' gepflegt. Bitte Anwesenheit und Spielzeit nachtragen.</div></div>';
+  if(V.canWrite()&&ow.art&&own!==undefined&&!(own&&own.st==="basis")&&!V.isHid("er_"+W.__TID+"_"+(own&&own.at||"")))h+='<div class="card vc" style="border-color:var(--o);background:var(--os)"><div class="vrow" style="margin:0"><b style="flex:1">Erinnerung</b><button class="btn" data-hide="er_'+E(W.__TID+"_"+(own&&own.at||""))+'|30">Ausblenden</button></div><div class="note" style="color:inherit">Die Daten von '+E(V.tname(W.__TID))+' wurden zuletzt '+E(V.pflegeTxt(ow))+' gepflegt. Bitte Anwesenheit und Spielzeit nachtragen.</div></div>';
   const cut=h.length;
   if(act.length>1||have.length)h+='<div class="kpis"><div class="card kpi"><b>'+act.length+'</b><span>aktive Mannschaften</span></div><div class="card kpi"><b>'+have.reduce((a,s)=>a+(s.n||0),0)+'</b><span>Spieler insgesamt</span></div><div class="card kpi"><b>'+pcx(avg((s)=>s.bet))+'</b><span>Ø Training</span></div><div class="card kpi c'+(need.length?2:4)+'"><b>'+need.length+'</b><span>brauchen Aufmerksamkeit</span></div></div>';
   if(W.__FD&&W.__FD.weekHtml)h+=W.__FD.weekHtml(act);
@@ -6318,12 +6319,14 @@ V.tab({id:"uebersicht",label:"Übersicht",show:()=>V.visTeams().length>0||V.hasA
     if(!hSub.length)hinT.forEach((t)=>{hSub.push(V.fs().collection(t.id+"__vhinweise").onSnapshot((s)=>{V.st["~h"+t.id]=s.docs.map((d)=>({id:d.id,...d.data()}));if(V.cur==="uebersicht"&&!V.typing())V.render()},()=>{}))});
   }
   const L=U13.grTexte("t"),L2=U13.grTexte("s");
+  if(V.fgrBar)h+='<h3 style="margin:18px 0 6px">Weitere Funktionen</h3>'+V.fgrBar()+(V.gesamtBtn?V.gesamtBtn():"");
   h+='<p class="note" style="margin-top:10px">Training = Beteiligung im Durchschnitt. Farben: rot '+E(L[0])+' · orange '+E(L[1])+' · gelb '+E(L[2])+' · grün '+E(L[3])+'. Mannschaften, die lange nicht gepflegt wurden, erscheinen ausgegraut (Einstellung unter „Mannschaften“).</p>';
   if(lite){h=h.slice(0,cut);if(h.indexOf('class="card vc"')<0)h+='<div class="card vc note">Im Moment gibt es keine Hinweise.</div>'}
   el.innerHTML=h;
   {const gb=el.querySelector("[data-goanf]");if(gb)gb.onclick=()=>V.go("personen")}
   const send=async(tid,text,art,o)=>{const m=q("#slm",el);o=o||{};try{await V.fs().doc(tid+"__vhinweise/"+V.id("h")).set({text,von:(W.__VME&&(W.__VME.name||W.__VME.email))||"",at:new Date().toISOString(),erledigt:false,art:art||"hinweis",ack:art==="erinnerung"?true:!!o.ack,...(o.bis?{bis:o.bis}:{}),...(o.ab?{ab:o.ab}:{})});V.log("Hinweis an "+V.tshort(tid),tid);if(m){m.className="vmsg ok";m.textContent="Gesendet an "+V.tshort(tid)+"."}return true}catch(e){if(m){m.className="vmsg er";m.textContent="Das hat nicht geklappt."}return false}};
   el.onclick=async(e)=>{
+    const hd=e.target.closest("[data-hide]");if(hd){const [k,dd]=hd.dataset.hide.split("|");V.hide(k,+dd||14);V.render();return}
     const fb=e.target.closest("[data-f]");if(fb){ufilt=fb.dataset.f;try{localStorage.setItem("u13uf",ufilt)}catch(x){}V.render();return}
     const g=e.target.closest("[data-go]");if(g){if(g.dataset.go===W.__TID){V.go("mannschaft");const st=document.querySelector('nav button[data-s="h"]');if(st)st.click();try{window.scrollTo(0,0)}catch(x){}}else V.setTeam(g.dataset.go);return}
     const o=e.target.closest("[data-ok]");if(o){try{await V.fs().doc(W.__TID+"__vhinweise/"+o.dataset.ok).update({erledigt:true,erledigtAm:new Date().toISOString()})}catch(x){}return}
@@ -8354,9 +8357,9 @@ function fgrOpen(){
 /* Hinweis in der Übersicht: Freigaben, die in 7 Tagen ablaufen */
 let soonC=null,soonT=0;
 V.kfSoonBar=()=>{
-  if(!V.isAll())return"";
+  if(!V.isAll()||V.isHid("kfs"))return"";
   if(!soonC||Date.now()-soonT>60000){soonT=Date.now();const had=soonC?soonC.length:-1;soonC=soonC||[];V.kfOverview().then((r)=>{soonC=V.kfSoon(r,7);if(soonC.length!==had&&V.cur==="uebersicht"&&!V.typing())V.render()}).catch(()=>{})}
-  return soonC&&soonC.length?'<div class="card vc rzb" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="flex:1;min-width:200px">'+soonC.length+(soonC.length===1?" Freigabe der Kaderplanung läuft":" Freigaben der Kaderplanung laufen")+' in den nächsten 7 Tagen ab</b><button class="btn" data-gopers="1">Ansehen und verlängern</button></div>':""};
+  return soonC&&soonC.length?'<div class="card vc rzb" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="flex:1;min-width:200px">'+soonC.length+(soonC.length===1?" Freigabe der Kaderplanung läuft":" Freigaben der Kaderplanung laufen")+' in den nächsten 7 Tagen ab</b><button class="btn" data-hide="kfs|7">Ausblenden</button><button class="btn" data-gopers="1">Ansehen und verlängern</button></div>':""};
 document.addEventListener("click",(e)=>{if(e.target.closest&&e.target.closest("[data-gopers]")&&V.go)V.go("personen")});
 V.rzCss=css;
 V.kfSL=SL;V.kfEndMs=endMs;V.kfIso=msIso;V.kfSeasonEnd=seasonEnd;
@@ -8498,10 +8501,11 @@ const days=(ms)=>ms?Math.floor((Date.now()-ms)/864e5):null;
 let last=null,loaded=false;
 function loadLast(){if(loaded||!V.fs())return;loaded=true;V.fs().doc("verein/gesamt").get().then((s)=>{last=s.exists?s.data():null;if(V.cur==="uebersicht"&&!V.typing())V.render()}).catch(()=>{})}
 /* Karte in der Übersicht */
+V.gesamtBtn=()=>may()?'<div class="vrow" style="margin:0 0 8px"><span class="note" style="flex:1;min-width:200px">Gesamtsicherung aller Mannschaften</span><button class="btn" data-gs="open">Sichern oder wiederherstellen</button></div>':"";
 V.gesamtCard=()=>{
-  if(!may())return"";loadLast();
+  if(!may())return"";loadLast();if(V.isHid("gs"))return"";
   const d=last&&last.at?days(Date.parse(last.at)):null,warn=d===null||d>=30;
-  return'<div class="card vc'+'" style="'+(warn?"border-color:var(--o);background:var(--os)":"")+'"><div class="vrow" style="margin:0"><div style="flex:1;min-width:200px"><b>Gesamtsicherung</b><div class="note" style="color:inherit">'+(d===null?(loaded&&last===null?"Es gibt noch keine Gesamtsicherung.":"Lädt …"):d===0?"Letzte Gesamtsicherung: heute.":"Letzte Gesamtsicherung vor "+d+(d===1?" Tag":" Tagen")+".")+(warn&&d!==null?" Zeit für eine neue.":"")+'</div></div><button class="btn" data-gs="open">Sichern oder wiederherstellen</button></div></div>'};
+  return'<div class="card vc'+'" style="'+(warn?"border-color:var(--o);background:var(--os)":"")+'"><div class="vrow" style="margin:0"><div style="flex:1;min-width:200px"><b>Gesamtsicherung</b> <button class="btn" data-hide="gs|14" style="float:right;margin-left:8px">Ausblenden</button><div class="note" style="color:inherit">'+(d===null?(loaded&&last===null?"Es gibt noch keine Gesamtsicherung.":"Lädt …"):d===0?"Letzte Gesamtsicherung: heute.":"Letzte Gesamtsicherung vor "+d+(d===1?" Tag":" Tagen")+".")+(warn&&d!==null?" Zeit für eine neue.":"")+'</div></div><button class="btn" data-gs="open">Sichern oder wiederherstellen</button></div></div>'};
 document.addEventListener("click",(e)=>{if(e.target.closest&&e.target.closest("[data-gs=open]"))dlg()});
 function dlg(){
   V.rzCss&&V.rzCss();let pop=q("#rzpop");if(pop)pop.remove();pop=document.createElement("div");pop.id="rzpop";document.body.appendChild(pop);
