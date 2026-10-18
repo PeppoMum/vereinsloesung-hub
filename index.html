@@ -2442,6 +2442,105 @@ async function gateCo(){
   const nm=()=>{const s=(((D.config&&D.config.staff)||[]).find((x)=>x.id===window.__CO[1]));window.__COName=s?s.name:"";const st=$("#st");if(st&&window.__COName&&!/Speichert|Gespeichert|Nicht/.test(st.textContent))st.title="Angemeldet als "+window.__COName};
   nm();setInterval(nm,2000);
 }
+/* ---------- Konten für Spieler und Eltern: gepackter Stand (nicht verschlüsselt, Schutz durch die Verknüpfung) und Ansicht ---------- */
+async function pack(obj){let raw=enc.encode(JSON.stringify(obj)),flag=0;if(typeof CompressionStream==="function"){try{raw=await gz(raw,"c");flag=1}catch(e){}}const o=new Uint8Array(raw.length+1);o[0]=flag;o.set(raw,1);return b64(o)}
+async function unpack(blob){const pl=unb64(blob);let raw=pl.subarray(1);if(pl[0]===1)raw=await gz(raw,"d");return JSON.parse(dec.decode(raw))}
+/* Stand eines Spielers für sein Konto: Profil, Terminplan, Liga. ev = Beginn aller Termine für die Frist bei Abmeldungen */
+async function kvBuild(pid){
+  const p=active().find((x)=>x.id===pid);if(!p)return null;
+  const TP=planSnap(),FDS=window.__FD?window.__FD.snap():null,HN=(D.config&&D.config.hinweise)||[],logo=lgR(),sa=(D.config&&D.config.saison)||"",u=new Date().toISOString(),ev={};
+  Object.keys(TP.days).forEach((d)=>TP.days[d].forEach((o,i)=>{if(o.v)ev["d"+d.replace(/-/g,"")+"_"+i]=o.v}));
+  const dz=(L[pid]&&L[pid].dz)||undefined;
+  const d={h:profileHtml(pid),l:logo,s:sa,m:mann(),u,t:TP,n:p.vorname,hn:HN,li:FDS,dz:dzOf(pid),da:daOf(dzOf(pid)),dg:dgOf(dzOf(pid))};
+  return{b:await pack(d),ev,u,abm:!!(D.config&&D.config.abm)};
+}
+window.__lk.kvBuild=kvBuild;
+const ekey=(d,i)=>"d"+d.replace(/-/g,"")+"_"+i;
+function elternShow(o){
+  const fs=o.fs,em=o.email,kids=[],ES={cur:0,tab:"u",abm:{},abw:[]};
+  const KE="u13ekid";
+  try{const k=+localStorage.getItem(KE);if(k>=0)ES.cur=k}catch(e){}
+  const css='<style>.bar:has(#vxo),.bar:has(#vxo)+p.note{display:none!important}.ek{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--ln)}.ek:first-child{border-top:0}.ek .w{flex:1;min-width:140px}.ek small{display:block;color:var(--mu);font-size:12.5px}.ek .t{font-weight:600}.ek.ab{background:var(--ys,transparent)}.ek form{display:flex;gap:6px;flex:1 1 100%;flex-wrap:wrap}.ek form input{flex:1;min-width:160px;font:inherit;padding:8px 10px;border:1px solid var(--ln);border-radius:9px;background:var(--card);color:var(--tx)}#etab{display:flex;margin-bottom:14px;max-width:100%}#etab button{flex:1;padding:8px 6px;font-size:14px;white-space:nowrap}@media(max-width:420px){#etab button{font-size:12.5px;padding:8px 2px}}.emsg{margin:6px 0;font-size:13.5px}.emsg.er{color:var(--r)}.emsg.ok{color:var(--g)}</style>';
+  const load=async(l)=>{
+    const base=l.tid+"~"+l.pid;let r;try{r=await fs.doc("kview/"+base).get()}catch(e){return{l,err:true}}
+    if(!r.exists)return{l,wait:true};const m=r.data();let b=m.b||"";
+    for(let i=1;i<(m.n||1);i++){try{const c=await fs.doc("kview/"+base+"~~"+i).get();b+=c.data().b}catch(e){return{l,err:true}}}
+    try{return{l,d:await unpack(b),ev:m.ev||{},abm:m.abm===true}}catch(e){return{l,err:true}}
+  };
+  const myAbm=async(k)=>{ES.abm={};ES.abw=[];
+    try{const a=await fs.collection("kabm").where("email","==",em).get();a.docs.forEach((x)=>{const v=x.data();if(v.tid===k.l.tid&&v.pid===k.l.pid)ES.abm[v.k]=v})}catch(e){}
+    try{const a=await fs.collection("kabw").where("email","==",em).get();a.docs.forEach((x)=>{const v=x.data();if(v.tid===k.l.tid&&v.pid===k.l.pid)ES.abw.push({id:x.id,...v})})}catch(e){}};
+  const init=async()=>{const ls=await o.reload().catch(()=>o.links);kids.length=0;for(const l of ls){if(l.gesperrt===true)continue;kids.push(await load(l))}
+    if(ES.cur>=kids.length)ES.cur=0;if(kids[ES.cur]&&kids[ES.cur].abm)await myAbm(kids[ES.cur]);draw()};
+  const v=shell();
+  const hm=(ms)=>{const d=new Date(ms);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
+  const dfmt=(s)=>{const a=s.split("-");return a[2]+"."+a[1]+"."+a[0]};
+  const WD=["So","Mo","Di","Mi","Do","Fr","Sa"];
+  const wdOf=(s)=>WD[new Date(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10)).getDay()];
+  function draw(){
+    const k=kids[ES.cur],cur=document.documentElement.getAttribute("data-theme")||"";
+    if(!kids.length){v.innerHTML=css+'<div class="card" style="max-width:440px;margin:8vh auto 0"><h3>Noch kein Spieler verknüpft</h3><p style="margin-top:0">Dein Konto ist mit keinem Spieler verknüpft oder wurde gesperrt. Bitte den Trainer nach einem Link fragen.</p><button class="btn" id="eso">Abmelden</button></div>';document.getElementById("eso").onclick=()=>o.signOut();return}
+    if(!k.d&&k.wait){clearTimeout(ES.rt);ES.rt=setTimeout(()=>{init().catch(()=>{})},window.__EKRETRY||15000)}
+    if(!k.d){v.innerHTML=css+'<div class="card" style="max-width:440px;margin:8vh auto 0"><h3>'+(k.wait?"Der Stand wird vorbereitet":"Das hat nicht geklappt")+'</h3><p style="margin-top:0">'+(k.wait?"Der Trainer-Bereich veröffentlicht den Stand für dein Kind gleich. Das dauert meist nur kurz, die Seite lädt von selbst neu.":"Die Verbindung hat nicht geklappt. Bitte später noch einmal versuchen.")+'</p><button class="btn" id="ere">Neu laden</button> <button class="btn" id="eso">Abmelden</button></div>';document.getElementById("ere").onclick=()=>init();document.getElementById("eso").onclick=()=>o.signOut();return}
+    const d=k.d;useBg();dzApply(d);
+    const head='<div class="vh">'+(d.l?'<img alt="" src="'+esc(d.l)+'">':"")+'<div><b style="font-size:22px;line-height:1.2">'+esc(d.n||"")+'</b><div class="note" style="font-size:14px">'+esc(d.m||"")+' · Saison '+esc(d.s||"")+'</div></div><span style="flex:1"></span>'+(kids.length>1?'<select id="eki" aria-label="Kind wählen">'+kids.map((x,i)=>'<option value="'+i+'"'+(i===ES.cur?" selected":"")+'>'+esc(x.d?x.d.n+" · "+(x.d.m||""):"Kind "+(i+1))+'</option>').join("")+'</select>':"")+'</div>';
+    const tabs='<div class="seg" id="etab"><button data-e="u" class="'+(ES.tab==="u"?"on":"")+'">Übersicht</button><button data-e="t" class="'+(ES.tab==="t"?"on":"")+'">Termine</button><button data-e="p" class="'+(ES.tab==="p"?"on":"")+'">Spielerprofil</button><button data-e="e" class="'+(ES.tab==="e"?"on":"")+'">Einstellungen</button></div>';
+    v.innerHTML=css+head+tabs+'<div id="ebody"></div><div class="vf">Stand: '+esc(dt(d.u))+'</div>';
+    const s=document.getElementById("eki");if(s)s.onchange=async()=>{ES.cur=+s.value;try{localStorage.setItem(KE,String(ES.cur))}catch(e){}if(kids[ES.cur].abm)await myAbm(kids[ES.cur]);draw()};
+    document.getElementById("etab").onclick=(e)=>{const b=e.target.closest("button");if(!b)return;ES.tab=b.dataset.e;draw()};
+    body(k,d);
+  }
+  function body(k,d){
+    const el=document.getElementById("ebody"),t=ES.tab;
+    if(t==="p"){el.innerHTML=d.h;el.addEventListener("click",(e)=>{const b=e.target.closest("#pmode button");if(!b)return;const w=b.closest("[data-m]");w.dataset.m=b.dataset.pm;w.querySelectorAll("#pmode button").forEach((x)=>x.classList.toggle("on",x===b))});return}
+    if(t==="t"){if(d.t)vPlan(el,{...d.t,s:d.s,lg:d.l,hn:d.hn});else el.innerHTML='<div class="card"><div class="note">Noch kein Terminplan veröffentlicht.</div></div>';return}
+    if(t==="e"){settings(el,k,d);return}
+    /* Übersicht: Hinweise, nächste Termine mit Abmeldung, Liga */
+    const td=new Date(),iso=td.getFullYear()+"-"+String(td.getMonth()+1).padStart(2,"0")+"-"+String(td.getDate()).padStart(2,"0"),days=Object.keys((d.t&&d.t.days)||{}).filter((x)=>x>=iso).sort();
+    const items=[];for(const day of days){(d.t.days[day]||[]).forEach((e,i)=>{if(e.ty==="Ferien")return;items.push({day,e,i})});if(items.length>=8)break}
+    let h=hnHtml(hnItems(d.hn,"alle"))+'<div class="card"><h3 style="margin-top:0">Nächste Termine</h3>';
+    if(!items.length)h+='<div class="note">Im Moment sind keine Termine eingetragen.</div>';
+    items.forEach((it)=>{const key=ekey(it.day,it.i),ab=ES.abm[key],von=k.ev[key]||it.e.v||0,can=k.abm&&von&&von-36e5>Date.now(),late=k.abm&&von&&!can&&von>Date.now(),inW=ES.abw.some((w)=>it.day>=w.von&&it.day<=w.bis);
+      h+='<div class="ek'+(ab||inW?" ab":"")+'" data-k="'+key+'"><div class="w"><span class="t">'+wdOf(it.day)+", "+dfmt(it.day).slice(0,6)+'</span> · '+esc(it.e.tl||it.e.ty)+'<small>'+esc(it.e.tx||"")+(it.e.z?" · "+esc(it.e.z):"")+'</small></div>'
+        +(ab?'<span class="note">Abgemeldet: '+esc(ab.grund)+'</span>'+(von-36e5>Date.now()?' <button class="btn" data-un="'+key+'">Zurücknehmen</button>':""):inW?'<span class="note">Abwesenheit eingetragen</span>':can?'<button class="btn" data-ab="'+key+'" data-v="'+von+'">Abmelden</button>':late?'<span class="note">Zu spät für eine Absage, bitte persönlich beim Trainer melden.</span>':"")+'</div>'});
+    h+='</div>';
+    if(k.abm){h+='<div class="card"><h3 style="margin-top:0">Abwesenheit (zum Beispiel Urlaub)</h3>';
+      ES.abw.sort((a,b)=>a.von.localeCompare(b.von)).forEach((w)=>{h+='<div class="ek"><div class="w"><span class="t">'+dfmt(w.von)+" – "+dfmt(w.bis)+'</span><small>'+esc(w.grund)+'</small></div><button class="btn" data-uw="'+esc(w.id)+'">Entfernen</button></div>'});
+      h+='<div class="ek"><form id="eabw"><input type="date" id="ewv" aria-label="von" required><input type="date" id="ewb" aria-label="bis" required><input id="ewg" maxlength="200" placeholder="Grund (Pflicht)" required><button class="btn pr" type="submit">Eintragen</button></form></div><div class="emsg" id="ewm"></div></div>'}
+    if(d.li&&window.__FD)h+='<div class="card"><h3 style="margin-top:0">Liga</h3><div id="eli"></div></div>';
+    el.innerHTML=h+'<div class="emsg" id="eam"></div>';
+    const li=document.getElementById("eli");if(li)li.innerHTML=window.__FD.view(d.li);
+    const say=(t,c)=>{const m=document.getElementById("eam");if(m){m.className="emsg "+(c||"");m.textContent=t}};
+    el.onclick=async(e)=>{
+      const b=e.target.closest("[data-ab]");
+      if(b){const key=b.dataset.ab,von=+b.dataset.v,row=b.closest(".ek");if(von-36e5<=Date.now()){say("Zu spät für eine Absage, bitte melde dich persönlich beim Trainer.","er");return}
+        if(!row.querySelector("form")){row.insertAdjacentHTML("beforeend",'<form data-f="'+key+'"><input maxlength="200" placeholder="Grund (Pflicht), z. B. Fieber" required><button class="btn pr" type="submit">Abmelden</button></form><div class="note" style="flex:1 1 100%">Den Grund sieht nur der Trainer deiner Mannschaft.</div>');row.querySelector("input").focus()}return}
+      const u=e.target.closest("[data-un]");if(u){try{await fs.doc("kabm/"+k.l.tid+"~"+k.l.pid+"~"+u.dataset.un).delete();await myAbm(k);draw()}catch(x){say("Das hat nicht geklappt.","er")}return}
+      const w=e.target.closest("[data-uw]");if(w){try{await fs.doc("kabw/"+w.dataset.uw).delete();await myAbm(k);draw()}catch(x){say("Das hat nicht geklappt.","er")}return}
+    };
+    el.onsubmit=async(e)=>{e.preventDefault();const f=e.target;
+      if(f.dataset.f){const key=f.dataset.f,grund=f.querySelector("input").value.trim(),von=k.ev[key]||0;if(!grund){say("Bitte einen Grund angeben.","er");return}if(von-36e5<=Date.now()){say("Zu spät für eine Absage, bitte melde dich persönlich beim Trainer.","er");return}
+        try{await fs.doc("kabm/"+k.l.tid+"~"+k.l.pid+"~"+key).set({tid:k.l.tid,pid:k.l.pid,k:key,von,grund,email:em,at:new Date().toISOString(),name:k.l.name||""});await myAbm(k);draw()}catch(x){say("Das hat nicht geklappt. Bitte später noch einmal versuchen.","er")}return}
+      if(f.id==="eabw"){const von=document.getElementById("ewv").value,bis=document.getElementById("ewb").value,grund=document.getElementById("ewg").value.trim(),m=document.getElementById("ewm");
+        const er=(t)=>{m.className="emsg er";m.textContent=t};
+        if(!von||!bis){er("Bitte von und bis eintragen.");return}if(von>bis){er("Das Enddatum liegt vor dem Anfang.");return}if(bis<iso){er("Der Zeitraum liegt in der Vergangenheit.");return}if(!grund){er("Bitte einen Grund angeben.");return}
+        try{await fs.doc("kabw/"+k.l.tid+"~"+k.l.pid+"~"+Date.now().toString(36)).set({tid:k.l.tid,pid:k.l.pid,von,bis,grund,email:em,at:new Date().toISOString(),name:k.l.name||""});await myAbm(k);draw()}catch(x){er("Das hat nicht geklappt. Bitte später noch einmal versuchen.")}}};
+  }
+  function settings(el,k,d){
+    const cur=document.documentElement.getAttribute("data-theme")||"";
+    el.innerHTML='<div class="card"><h3 style="margin-top:0">Dein Konto</h3><div class="note">Angemeldet als <b>'+esc(em)+'</b></div>'
+      +'<div class="ek"><div class="w"><span class="t">Verknüpfte Spieler</span>'+kids.map((x)=>'<small>'+esc(x.d?x.d.n+" · "+(x.d.m||""):x.l.pid)+" ("+(x.l.rolle==="spieler"?"du bist der Spieler":"Elternteil")+")</small>").join("")+'</div></div>'
+      +'<div class="ek"><div class="w"><span class="t">Darstellung</span></div><select id="eth" aria-label="Darstellung"><option value="">Auto</option><option value="light">Hell</option><option value="dark">Dunkel</option></select></div>'
+      +'<div class="ek"><div class="w"><span class="t">Weiteres Kind hinzufügen</span><small>Öffne den Link, den du vom Trainer des Kindes bekommen hast. Du bleibst mit demselben Konto angemeldet.</small></div></div>'
+      +'<div class="ek"><div class="w"><span class="t">Anleitung</span><small><a href="anleitungen/eltern.pdf" target="_blank" rel="noopener">Anleitung für Eltern und Spieler (PDF)</a></small></div></div>'
+      +'<div class="ek"><button class="btn" id="eso">Abmelden</button></div></div>';
+    const s=document.getElementById("eth");s.value=cur;s.onchange=()=>{applyTheme(s.value);try{s.value?localStorage.setItem("u13theme",s.value):localStorage.removeItem("u13theme")}catch(e){}};
+    document.getElementById("eso").onclick=()=>o.signOut();
+  }
+  document.title="TuS Haltern · Teamzentrale";
+  init();
+}
+window.__eltern={show:elternShow};
 /* Start */
 const h=location.hash;
 if(window.__CO)gateCo();
@@ -2973,7 +3072,7 @@ function planSnap(){
   const all=evAllM(),sa=String((D.config&&D.config.saison)||""),y=+sa.slice(0,4)||+today().slice(0,4),st=y+"-07-01",en=(y+1)+"-06-30",days={};
   for(let d=st;d<=en;d=addD(d,1)){const E=xEv(all,d,d,"Eltern");if(!E.length)continue;
     days[d]=E.map((e)=>{if(e.typ==="Ferien")return{ty:"Ferien",tx:e.titel||"Ferien",f1:e.datum,f2:e.bis&&e.bis>e.datum?e.bis:e.datum};
-      const o={ty:e.typ,tl:typL(e)!==e.typ?typL(e):undefined,g:xIsGame(e)?1:0,tx:xEvText0(e),u:e.unsicher?unsTx(e):undefined,z:xEvTime(e),b:xBul(e).map((x)=>[x[0],x[1]])},dn=dienstSub(e,d);if(dn.length)o.dn=dn;const tk=xIsGame(e)?trikotsOf(e,d):"";if(tk)o.tk=tk;return o})}
+      const o={ty:e.typ,tl:typL(e)!==e.typ?typL(e):undefined,g:xIsGame(e)?1:0,tx:xEvText0(e),u:e.unsicher?unsTx(e):undefined,z:xEvTime(e),b:xBul(e).map((x)=>[x[0],x[1]])},dn=dienstSub(e,d);{const hm=/^(\d{1,2}):(\d{2})/.exec(String(e.treffen||e.beginn||""));if(hm&&d>=today()){const dd=d.split("-").map(Number);o.v=new Date(dd[0],dd[1]-1,dd[2],+hm[1],+hm[2]).getTime()}}if(dn.length)o.dn=dn;const tk=xIsGame(e)?trikotsOf(e,d):"";if(tk)o.tk=tk;return o})}
   const dn=(D.dienste||[]).filter((x)=>x.art!=="Trikots"&&(x.bis||x.datum||"")>=st).map((x)=>({a:x.art,d:x.datum,b:x.bis||null,l:x.label||"",x:dienstText(x)}));
   return{st:today(),days,dn,k:kontakte().map((k)=>({t:k.titel,z:String(k.zeilen||"")}))};
 }
@@ -7822,6 +7921,158 @@ const CSS='.stchip{all:unset;cursor:pointer;margin-left:8px;font-size:11px;opaci
 if(!q("#stcss")){const s=document.createElement("style");s.id="stcss";s.textContent=CSS;document.head.appendChild(s)}
 
 setInterval(()=>{try{if(document.body.classList.contains("scoutonly"))return;apply();maybeDialog();if(q("#stcardw")&&!q("#stcard"))renderCard()}catch(e){}},1000);
+})();
+
+/* ===== Konten für Spieler und Eltern (Trainer-Seite) =====
+   Einladung per Spielerlink oder Mannschaftslink, Anfragen genehmigen, Konten sehen/sperren, Abmeldungen, Stand für die Konten veröffentlichen. */
+(function(){
+"use strict";
+const W=window;
+if(!W.__WEB||W.__DEMO)return;
+const E=(s)=>String(s==null?"":s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const q=(s,r)=>(r||document).querySelector(s);
+const mkeyOf=(em)=>String(em||"").toLowerCase().replace(/[.]/g,"_").replace(/@/g,"_at_");
+const rnd=()=>{const a=new Uint8Array(18);crypto.getRandomValues(a);return btoa(String.fromCharCode.apply(null,a)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=/g,"")};
+const K={acc:[],anf:[],ein:[],mt:[],abm:[],abw:[],tid:"",fs:null,on:false,msg:"",msgBad:false,sel:{}};
+const can=()=>W.__ROLE==="voll"&&!!K.fs&&!!K.tid;
+const pl=(pid)=>((typeof D!=="undefined"&&D.spieler)||[]).find((p)=>p.id===pid);
+const pname=(pid)=>{const p=pl(pid);return p?(p.vorname+" "+p.name).trim():pid};
+const base=()=>W.__WEB_BASE0||(location.origin+location.pathname);
+const say=(t,bad)=>{K.msg=t||"";K.msgBad=!!bad;draw()};
+function css(){if(q("#kontcss"))return;const s=document.createElement("style");s.id="kontcss";s.textContent='.kcb{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:1px 7px;border-radius:99px;font-size:12px;font-weight:600;background:var(--acs,#e8eefc);color:var(--ac,#2563eb);cursor:pointer;vertical-align:middle}'
+ +'#kcc .kr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--ln)}#kcc .kr:first-of-type{border-top:0}#kcc .kr .w{flex:1;min-width:150px}#kcc .kr small{display:block;color:var(--mu);font-size:12.5px}#kcc select{font:inherit;padding:6px 8px;border:1px solid var(--ln);border-radius:9px;background:var(--card);color:var(--tx);max-width:100%}'
+ +'#kcpop{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.5)}#kcpop .c{width:100%;max-width:460px;max-height:calc(100dvh - 32px);overflow:auto;background:var(--card);color:var(--tx);border:1px solid var(--ln);border-radius:16px;padding:16px}'
+ +'#kcc .ok{color:var(--g)}#kcc .er{color:var(--r)}#kabc .kr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--ln)}#kabc .kr .w{flex:1;min-width:150px}#kabc small{display:block;color:var(--mu);font-size:12.5px}';
+ document.head.appendChild(s)}
+/* ---------- Daten abonnieren ---------- */
+function subscribe(){
+  const fs=W.__webFs;if(!fs||!W.__TID||(K.fs===fs&&K.tid===W.__TID))return;
+  K.fs=fs;K.tid=W.__TID;const t=K.tid,sub=(coll,key)=>{try{fs.collection(coll).where("tid","==",t).onSnapshot((s)=>{K[key]=s.docs.map((d)=>({id:d.id,...d.data()}));after()},()=>{K[key]=[];after()})}catch(e){}};
+  if(!can())return;
+  sub("kverkn","acc");sub("kanfr","anf");sub("spielereinl","ein");sub("mteinl","mt");sub("kabm","abm");sub("kabw","abw");
+}
+let tm=null;function after(){clearTimeout(tm);tm=setTimeout(()=>{draw();badges();drawAbm();kvKick()},120)}
+/* ---------- Karte in „Einstellungen → Links“ ---------- */
+const accOf=(pid)=>K.acc.filter((a)=>a.pid===pid);
+const spLink=(pid)=>{const e=K.ein.find((x)=>x.pid===pid&&x.aktiv===true&&(!x.bis||x.bis>Date.now()));return e?base()+"#sp/"+e.id:""};
+const mtLink=()=>{const e=K.mt.find((x)=>x.aktiv===true&&(!x.bis||x.bis>Date.now()));return e?base()+"#mt/"+e.id:""};
+function ensureCard(){
+  const host=q("#etp-l");if(!host||q("#kcc"))return;
+  const c=document.createElement("div");c.className="card";c.id="kcc";host.insertBefore(c,host.firstChild);draw()}
+function draw(){
+  const c=q("#kcc");if(!c||!can())return;
+  if(c.contains(document.activeElement)&&/SELECT|INPUT/.test(document.activeElement.tagName))return;
+  const act=((typeof active==="function"&&active())||[]).slice().sort((a,b)=>(a.slot||0)-(b.slot||0)),open=K.acc.length?"":"";
+  const mt=mtLink(),ab=!!(D.config&&D.config.abm);
+  let h='<h3 style="margin-top:0">Konten für Spieler und Eltern</h3><div class="note" style="margin-bottom:8px">Spieler und Eltern legen ein Konto an und sehen damit das Profil, den Terminplan und die Liga ihres Kindes. Ein Konto kann auch mehrere Kinder aus mehreren Mannschaften zeigen.</div>';
+  h+='<div class="kr"><div class="w"><b>Link für die ganze Mannschaft</b><small>Für die Gruppe. Wer ihn öffnet, schickt eine Anfrage, du genehmigst.</small></div>'+(mt?'<input readonly value="'+E(mt)+'" style="flex:2;min-width:200px"> <button class="btn" data-k="mtc">Kopieren</button> <button class="btn" data-k="mtn">Erneuern</button> <button class="btn" data-k="mtx">Beenden</button>':'<button class="btn pr" data-k="mtn">Link erstellen</button>')+'</div>';
+  if(K.anf.length){h+='<div class="kr" style="display:block"><b>'+K.anf.length+(K.anf.length===1?" Anfrage":" Anfragen")+'</b>';
+    K.anf.forEach((a)=>{const guess=act.find((p)=>(p.vorname+" "+p.name).toLowerCase()===String(a.kind||"").toLowerCase().trim())||act.find((p)=>String(a.kind||"").toLowerCase().includes(String(p.vorname||"").toLowerCase()));
+      h+='<div class="kr"><div class="w"><b>'+E(a.name)+'</b> ('+(a.rolle==="spieler"?"Spieler":"Elternteil")+')<small>möchte zu: '+E(a.kind)+' · '+E(a.email)+'</small></div><select data-k="asel" data-id="'+E(a.id)+'"><option value="">Spieler wählen …</option>'+act.map((p)=>'<option value="'+E(p.id)+'"'+((K.sel[a.id]?K.sel[a.id]===p.id:guess&&guess.id===p.id)?" selected":"")+'>'+E(pname(p.id))+'</option>').join("")+'</select><button class="btn pr" data-k="aok" data-id="'+E(a.id)+'">Genehmigen</button><button class="btn" data-k="ano" data-id="'+E(a.id)+'">Ablehnen</button></div>'});
+    h+='</div>'}
+  h+='<div class="kr"><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" data-k="abm" '+(ab?"checked":"")+'><span><b>Abmeldungen in der App erlauben</b><small>Spieler und Eltern melden sich mit Grund ab, bis eine Stunde vor Treffpunkt. Wer nicht absagt, gilt als zugesagt. Du übernimmst die Abmeldungen auf der Startseite.</small></span></label></div>';
+  h+='<div style="margin-top:6px"><b>Spieler</b></div>';
+  act.forEach((p)=>{const a=accOf(p.id),l=spLink(p.id);
+    h+='<div class="kr"><div class="w">'+E(pname(p.id))+' <span class="kcb" data-k="acc" data-pid="'+E(p.id)+'" role="button" tabindex="0" title="Verknüpfte Konten">👤 '+a.length+'</span></div>'
+      +(l?'<button class="btn" data-k="spc" data-pid="'+E(p.id)+'">Spielerlink kopieren</button><button class="btn" data-k="spn" data-pid="'+E(p.id)+'" title="Der alte Link gilt dann nicht mehr">Erneuern</button>':'<button class="btn" data-k="spn" data-pid="'+E(p.id)+'">Spielerlink erstellen</button>')+'</div>'});
+  h+='<div class="note'+(K.msgBad?" er":" ok")+'" id="kcm" style="margin-top:6px">'+E(K.msg)+'</div>';
+  if(c.__h!==h){c.__h=h;c.innerHTML=h}}
+/* ---------- Aktionen ---------- */
+const copy=async(t)=>{try{await navigator.clipboard.writeText(t);say("Kopiert.")}catch(e){const i=document.createElement("input");i.value=t;document.body.appendChild(i);i.select();try{document.execCommand("copy");say("Kopiert.")}catch(x){say("Bitte den Link von Hand kopieren.",1)}i.remove()}};
+async function newEin(coll,data){const id=rnd();await K.fs.doc(coll+"/"+id).set({...data,tid:K.tid,aktiv:true,bis:0,am:new Date().toISOString()});return id}
+async function endEin(coll,list,pid){for(const e of list){if(e.aktiv===true&&(!pid||e.pid===pid))await K.fs.doc(coll+"/"+e.id).set({...(({id,...r})=>r)(e),aktiv:false})}}
+async function openAcc(pid){
+  const a=accOf(pid);let o=q("#kcpop");if(o)o.remove();
+  o=document.createElement("div");o.id="kcpop";
+  o.innerHTML='<div class="c"><h3 style="margin-top:0">'+E(pname(pid))+'</h3>'+(a.length?a.map((x)=>'<div class="kr"><div class="w"><b>'+E(x.name)+'</b> ('+(x.rolle==="spieler"?"Spieler":"Elternteil")+')<small>'+E(x.email)+' · seit '+E(String(x.at||"").slice(0,10))+(x.gesperrt?" · gesperrt":"")+'</small></div><button class="btn" data-k="sp1" data-id="'+E(x.id)+'">'+(x.gesperrt?"Entsperren":"Sperren")+'</button><button class="btn" data-k="rm1" data-id="'+E(x.id)+'">Entfernen</button></div>').join(""):'<div class="note">Noch kein Konto verknüpft.</div>')+'<div style="margin-top:10px"><button class="btn" data-k="cl">Schließen</button></div></div>';
+  document.body.appendChild(o);
+  o.onclick=async(e)=>{const b=e.target.closest("[data-k]");if(!b){if(e.target===o)o.remove();return}
+    const id=b.dataset.id,x=K.acc.find((y)=>y.id===id);
+    if(b.dataset.k==="cl")o.remove();
+    if(b.dataset.k==="sp1"&&x){try{await K.fs.doc("kverkn/"+id).update({gesperrt:!x.gesperrt})}catch(er){}o.remove()}
+    if(b.dataset.k==="rm1"&&x){if(!b.dataset.arm){b.dataset.arm="1";b.textContent="Wirklich entfernen?";return}
+      try{await K.fs.doc("kverkn/"+id).delete();if(x.s){const zr=K.fs.doc("kzaehl/"+K.tid+"~"+x.pid),z=await zr.get();if(z.exists&&z.data().n>0)await zr.update({n:z.data().n-1})}}catch(er){}o.remove()}}}
+document.addEventListener("click",async(e)=>{
+  const b=e.target.closest&&e.target.closest("#kcc [data-k]");if(!b||!can())return;const k=b.dataset.k,pid=b.dataset.pid;
+  try{
+    if(k==="acc"){openAcc(pid);return}
+    if(k==="mtn"){await endEin("mteinl",K.mt);await newEin("mteinl",{});say("Neuer Link ist aktiv. Der alte gilt nicht mehr.");return}
+    if(k==="mtx"){await endEin("mteinl",K.mt);say("Der Link ist beendet.");return}
+    if(k==="mtc"){await copy(mtLink());return}
+    if(k==="spn"){await endEin("spielereinl",K.ein,pid);await newEin("spielereinl",{pid});say("Spielerlink für "+pname(pid)+" ist aktiv.");return}
+    if(k==="spc"){await copy(spLink(pid));return}
+    if(k==="aok"){const a=K.anf.find((x)=>x.id===b.dataset.id),sel=q('#kcc [data-k="asel"][data-id="'+b.dataset.id+'"]'),p=sel&&sel.value;if(!a)return;if(!p){say("Bitte zuerst den Spieler wählen.",1);return}
+      await K.fs.doc("kverkn/"+K.tid+"~"+p+"~"+mkeyOf(a.email)).set({tid:K.tid,pid:p,email:a.email,rolle:a.rolle,name:a.name,at:new Date().toISOString()});
+      await K.fs.doc("kanfr/"+a.id).delete();say(a.name+" ist jetzt mit "+pname(p)+" verknüpft.");return}
+    if(k==="ano"){await K.fs.doc("kanfr/"+b.dataset.id).delete();say("Anfrage abgelehnt.");return}
+  }catch(er){say("Das hat nicht geklappt"+(er&&er.code?" ("+er.code+")":"")+".",1)}
+});
+document.addEventListener("change",async(e)=>{
+  const t=e.target;if(!t||!t.dataset||!can())return;
+  if(t.dataset.k==="asel"){K.sel[t.dataset.id]=t.value}
+  if(t.dataset.k==="abm"){try{await save("config","main",{...D.config,abm:t.checked});kvForce=true;say(t.checked?"Abmeldungen sind eingeschaltet.":"Abmeldungen sind ausgeschaltet.")}catch(er){t.checked=!t.checked;say("Das hat nicht geklappt.",1)}}
+});
+/* ---------- Symbol mit Anzahl in der Spielerliste ---------- */
+function badges(){
+  const tb=q("#tb");if(!tb||!can())return;
+  tb.querySelectorAll("tr[data-pid]").forEach((r)=>{const pid=r.dataset.pid,n=accOf(pid).length,c=r.cells[1];if(!c)return;let b=c.querySelector(".kcb");
+    if(!n){if(b)b.remove();return}
+    if(!b){b=document.createElement("span");b.className="kcb";b.setAttribute("role","button");b.tabIndex=0;b.title="Verknüpfte Konten";c.appendChild(b);b.onclick=(ev)=>{ev.stopPropagation();openAcc(pid)}}
+    const tx="👤 "+n;if(b.textContent!==tx)b.textContent=tx})}
+/* ---------- Abmeldungen auf der Startseite ---------- */
+const STAT=[["e","entschuldigt"],["v","verletzt"],["t","terminlich verhindert"],["u","unentschuldigt"]];
+function evOf(a){const m=/^d(\d{4})(\d{2})(\d{2})_(\d+)$/.exec(a.k||"");if(!m)return null;const day=m[1]+"-"+m[2]+"-"+m[3];let e=null;try{const P=planSnap();e=(P.days[day]||[])[+m[4]]||null}catch(x){}return{day,e}}
+function drawAbm(){
+  if(!can())return;
+  let c=q("#kabc");const host=q("#hsub");if(!host)return;
+  const td=(typeof today==="function"?today():new Date().toISOString().slice(0,10));
+  const list=K.abm.filter((a)=>(a.von||0)>Date.now()-864e5).sort((a,b)=>(a.von||0)-(b.von||0)),ws=K.abw.filter((w)=>w.bis>=td).sort((a,b)=>a.von.localeCompare(b.von));
+  if(!list.length&&!ws.length){if(c)c.remove();return}
+  if(!c){c=document.createElement("div");c.className="card";c.id="kabc";c.style.margin="0 0 14px";host.insertAdjacentElement("afterend",c)}
+  if(c.contains(document.activeElement)&&document.activeElement.tagName==="SELECT")return;
+  let h='<h3 style="margin-top:0">Abmeldungen</h3>';
+  list.forEach((a)=>{const o=evOf(a),isT=o&&o.e&&o.e.ty==="Training",d=o?o.day.slice(8)+"."+o.day.slice(5,7)+".":"";
+    h+='<div class="kr"><div class="w"><b>'+E(pname(a.pid))+'</b> · '+E(o&&o.e?(o.e.tl||o.e.ty):"Termin")+' '+d+(o&&o.e&&o.e.z?" · "+E(o.e.z):"")+'<small>„'+E(a.grund)+'“ · von '+E(a.name||"")+(a.ue?" · übernommen":"")+'</small></div>'
+      +(a.ue?"":(isT?STAT.map((s)=>'<button class="btn" data-a="st" data-id="'+E(a.id)+'" data-s="'+s[0]+'">'+s[1]+'</button>').join(""):'<button class="btn" data-a="ok" data-id="'+E(a.id)+'">Gelesen</button>'))+'</div>'});
+  ws.forEach((w)=>{h+='<div class="kr"><div class="w"><b>'+E(pname(w.pid))+'</b> · abwesend '+w.von.slice(8)+"."+w.von.slice(5,7)+". – "+w.bis.slice(8)+"."+w.bis.slice(5,7)+'.<small>„'+E(w.grund)+'“ · von '+E(w.name||"")+'</small></div></div>'});
+  if(c.__h!==h){c.__h=h;c.innerHTML=h}}
+document.addEventListener("click",async(e)=>{
+  const b=e.target.closest&&e.target.closest("#kabc [data-a]");if(!b||!can())return;
+  const a=K.abm.find((x)=>x.id===b.dataset.id);if(!a)return;
+  try{
+    if(b.dataset.a==="st"){const o=evOf(a);if(!o)return;const id="t"+o.day;let t=(D.trainings||[]).find((x)=>x.id===id||x.datum===o.day),sp;
+      if(t)sp={...(t.spieler||{})};else{sp={};active().forEach((p)=>{sp[p.id]="x"})}
+      sp[a.pid]=b.dataset.s;await save("trainings",t?t.id:id,{id:t?t.id:id,datum:o.day,spieler:sp})}
+    await K.fs.doc("kabm/"+a.id).update({ue:true});
+  }catch(er){}
+});
+/* ---------- Stand für die Konten veröffentlichen (Profil, Terminplan, Liga) ---------- */
+let kvBusy=false,kvForce=false,kvMeta={},kvAt=0;
+async function kvKick(){
+  if(kvBusy||!can()||!W.__lk||!W.__lk.kvBuild||!D.ready||!W.__kvPut)return;
+  const pids=[...new Set(K.acc.filter((a)=>a.gesperrt!==true).map((a)=>a.pid))].filter((p)=>pl(p));
+  if(!pids.length){kvAt=0;return}
+  const now=Date.now();let fp=null;
+  kvBusy=true;
+  try{
+    for(const pid of pids){
+      if(!(pid in kvMeta)){try{const r=await K.fs.doc("kview/"+K.tid+"~"+pid).get();kvMeta[pid]=r.exists?{u:Date.parse(r.data().u||"")||0,fp:r.data().fp||"",abm:r.data().abm===true}:null}catch(e){kvMeta[pid]=null}}
+      const m=kvMeta[pid];if(fp===null)fp=await W.__lk.fingerprint();
+      const abm=!!(D.config&&D.config.abm),due=!m||kvForce||m.abm!==abm||(m.fp!==fp&&now-m.u>=216e5);
+      if(!due)continue;
+      const o=await W.__lk.kvBuild(pid);if(!o)continue;o.fp=fp;await W.__kvPut(K.tid,pid,o);kvMeta[pid]={u:Date.parse(o.u),fp,abm:o.abm};
+    }
+    kvForce=false;
+  }catch(e){K.err=String(e&&(e.stack||e.message||e))}
+  kvBusy=false;
+}
+W.__kontenKick=()=>{kvForce=true;kvKick()};
+/* ---------- Takt ---------- */
+function boot(){css();subscribe();ensureCard();badges();drawAbm();kvKick()}
+setInterval(()=>{try{boot()}catch(e){}},2500);
+const mo=new MutationObserver(()=>{try{badges()}catch(e){}});
+const wt=setInterval(()=>{const tb=q("#tb");if(tb){clearInterval(wt);mo.observe(tb,{childList:true,subtree:true})}},500);
+W.__konten=K;
 })();
 
 </script>
