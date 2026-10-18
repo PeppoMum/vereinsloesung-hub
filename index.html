@@ -346,9 +346,9 @@ nav button .em{display:inline-flex;justify-content:center;align-items:center}
 <div class="bar" style="margin:8px 0 0"><label class="note">Sichtbar ab (optional)<br><input type="date" id="hnv"></label><label class="note">Sichtbar bis (optional)<br><input type="date" id="hnb"></label></div>
 <div id="hnpw" style="display:none;margin:10px 0 0"><div class="note" style="margin-bottom:4px">Nur in diesen Monaten (leer = in allen)</div><div class="chips" id="hnmo" style="flex-wrap:wrap"></div><label class="note" style="display:block;margin-top:8px">Und/oder nur in diesen Kalenderwochen (z. B. 41 oder 43–45, 48)<br><input id="hnkw" style="width:220px" autocomplete="off" placeholder="leer = in allen"></label><p class="note" id="hnph" style="margin:6px 0 0">Der Hinweis erscheint nur, wenn der angezeigte Monat bzw. die angezeigte Woche dazu passt. Beispiel: „November“ → im Novemberplan und in allen Wochen, die in den November fallen.</p></div>
 <div class="bar" style="margin:10px 0 0"><button class="btn" id="hna" style="background:var(--ac);color:#fff;border-color:var(--ac)">＋ Hinweis speichern</button><button class="btn" id="hnc" hidden>Abbrechen</button><span class="note" id="hnm"></span></div></div>
-<div class="card" id="ktc" style="margin-top:12px"><h3>Kontakte (Fußzeile im Wochenplan)</h3><p class="note" style="margin-top:0">Verein, Trainer, Ansprechpartner. Eine Zeile pro Angabe. Im Plan-Link und in den Spielerlinks erscheint eine Änderung bei der nächsten Aktualisierung (alle 6 Stunden, sofort über „Hinweise &amp; Links“).</p><div id="kct"></div></div>
 <div class="card" id="lkp" style="margin-top:12px"><h3>Links veröffentlichen</h3><p class="note" style="margin-top:0">Die Links werden automatisch aktualisiert: neue Daten etwa alle 6 Stunden (solange bei einem Trainer die App geöffnet ist), Änderungen an den Links selbst nach wenigen Sekunden. Der Knopf ist nur für den Fall, dass du sofort etwas veröffentlichen willst.</p><div class="bar" style="margin:0"><button class="btn" id="lku" style="background:var(--ac);color:#fff;border-color:var(--ac)">🔄 Jetzt sofort aktualisieren</button><span class="note" id="lkm"></span></div><p class="note" id="lks" style="margin-bottom:0"></p></div>
-<div class="card" id="lkc" style="margin-top:12px"><h3>Spielerlinks</h3><p class="note" style="margin-top:0">Jeder Spieler bekommt einen persönlichen Link und sieht damit nur sein eigenes Profil – ohne Anmeldung. Die Links bleiben immer gleich. Aktivieren und Deaktivieren gelten nach wenigen Sekunden, neue Daten werden etwa alle 6 Stunden übernommen. Bitte nur mit Einwilligung der Eltern weitergeben.</p>
+<div class="card" id="ktc" style="margin-top:12px"><h3>Kontakte (Fußzeile im Wochenplan)</h3><p class="note" style="margin-top:0">Verein, Trainer, Ansprechpartner. Eine Zeile pro Angabe. Im Plan-Link und in den Spielerlinks erscheint eine Änderung bei der nächsten Aktualisierung (alle 6 Stunden, sofort über „Hinweise &amp; Links“).</p><div id="kct"></div></div>
+<div class="card" id="lkc" style="margin-top:12px;display:none!important"><h3>Spielerlinks</h3><p class="note" style="margin-top:0">Jeder Spieler bekommt einen persönlichen Link und sieht damit nur sein eigenes Profil – ohne Anmeldung. Die Links bleiben immer gleich. Aktivieren und Deaktivieren gelten nach wenigen Sekunden, neue Daten werden etwa alle 6 Stunden übernommen. Bitte nur mit Einwilligung der Eltern weitergeben.</p>
 <div id="kzstd"></div>
 <div class="bar"><button class="btn" data-all="1">Alle aktivieren</button><button class="btn" data-all="0">Alle deaktivieren</button></div>
 <div class="tw"><table id="lkt"></table></div>
@@ -2492,14 +2492,14 @@ function elternShow(o){
   }
   function body(k,d){
     const el=document.getElementById("ebody"),t=ES.tab;
-    if(t==="p"){el.innerHTML=d.h;el.addEventListener("click",(e)=>{const b=e.target.closest("#pmode button");if(!b)return;const w=b.closest("[data-m]");w.dataset.m=b.dataset.pm;w.querySelectorAll("#pmode button").forEach((x)=>x.classList.toggle("on",x===b))});return}
+    if(t==="p"){el.innerHTML=hnHtml(hnItems(d.hn,"alle"))+d.h;el.addEventListener("click",(e)=>{const b=e.target.closest("#pmode button");if(!b)return;const w=b.closest("[data-m]");w.dataset.m=b.dataset.pm;w.querySelectorAll("#pmode button").forEach((x)=>x.classList.toggle("on",x===b))});return}
     if(t==="t"){if(d.t)vPlan(el,{...d.t,s:d.s,lg:d.l,hn:d.hn});else el.innerHTML='<div class="card"><div class="note">Noch kein Terminplan veröffentlicht.</div></div>';return}
     if(t==="e"){settings(el,k,d);return}
     /* Übersicht: Hinweise, nächste Termine mit Abmeldung, Liga */
-    const td=new Date(),iso=td.getFullYear()+"-"+String(td.getMonth()+1).padStart(2,"0")+"-"+String(td.getDate()).padStart(2,"0"),days=Object.keys((d.t&&d.t.days)||{}).filter((x)=>x>=iso).sort();
-    const items=[];for(const day of days){(d.t.days[day]||[]).forEach((e,i)=>{if(e.ty==="Ferien")return;items.push({day,e,i})});if(items.length>=8)break}
-    let h=hnHtml(hnItems(d.hn,"alle"))+'<div class="card"><h3 style="margin-top:0">Nächste Termine</h3>';
-    if(!items.length)h+='<div class="note">Im Moment sind keine Termine eingetragen.</div>';
+    const td=new Date(),iso=td.getFullYear()+"-"+String(td.getMonth()+1).padStart(2,"0")+"-"+String(td.getDate()).padStart(2,"0"),lim=new Date(td.getFullYear(),td.getMonth(),td.getDate()+6),isoL=lim.getFullYear()+"-"+String(lim.getMonth()+1).padStart(2,"0")+"-"+String(lim.getDate()).padStart(2,"0"),days=Object.keys((d.t&&d.t.days)||{}).filter((x)=>x>=iso&&x<=isoL).sort();
+    const items=[];for(const day of days){(d.t.days[day]||[]).forEach((e,i)=>{if(e.ty==="Ferien")return;items.push({day,e,i})});}
+    let h=hnHtml(hnItems(d.hn,"alle"))+'<div class="card"><h3 style="margin-top:0">Termine der nächsten 7 Tage</h3>';
+    if(!items.length)h+='<div class="note">In den nächsten 7 Tagen sind keine Termine eingetragen. Alle weiteren stehen unter „Termine“.</div>';
     items.forEach((it)=>{const key=ekey(it.day,it.i),ab=ES.abm[key],von=k.ev[key]||it.e.v||0,can=k.abm&&von&&von-36e5>Date.now(),late=k.abm&&von&&!can&&von>Date.now(),inW=ES.abw.some((w)=>it.day>=w.von&&it.day<=w.bis);
       h+='<div class="ek'+(ab||inW?" ab":"")+'" data-k="'+key+'"><div class="w"><span class="t">'+wdOf(it.day)+", "+dfmt(it.day).slice(0,6)+'</span> · '+esc(it.e.tl||it.e.ty)+'<small>'+esc(it.e.tx||"")+(it.e.z?" · "+esc(it.e.z):"")+'</small></div>'
         +(ab?'<span class="note">Abgemeldet: '+esc(ab.grund)+'</span>'+(von-36e5>Date.now()?' <button class="btn" data-un="'+key+'">Zurücknehmen</button>':""):inW?'<span class="note">Abwesenheit eingetragen</span>':can?'<button class="btn" data-ab="'+key+'" data-v="'+von+'">Abmelden</button>':late?'<span class="note">Zu spät für eine Absage, bitte persönlich beim Trainer melden.</span>':"")+'</div>'});
@@ -3072,7 +3072,7 @@ function planSnap(){
   const all=evAllM(),sa=String((D.config&&D.config.saison)||""),y=+sa.slice(0,4)||+today().slice(0,4),st=y+"-07-01",en=(y+1)+"-06-30",days={};
   for(let d=st;d<=en;d=addD(d,1)){const E=xEv(all,d,d,"Eltern");if(!E.length)continue;
     days[d]=E.map((e)=>{if(e.typ==="Ferien")return{ty:"Ferien",tx:e.titel||"Ferien",f1:e.datum,f2:e.bis&&e.bis>e.datum?e.bis:e.datum};
-      const o={ty:e.typ,tl:typL(e)!==e.typ?typL(e):undefined,g:xIsGame(e)?1:0,tx:xEvText0(e),u:e.unsicher?unsTx(e):undefined,z:xEvTime(e),b:xBul(e).map((x)=>[x[0],x[1]])},dn=dienstSub(e,d);{const hm=/^(\d{1,2}):(\d{2})/.exec(String(e.treffen||e.beginn||""));if(hm&&d>=today()){const dd=d.split("-").map(Number);o.v=new Date(dd[0],dd[1]-1,dd[2],+hm[1],+hm[2]).getTime()}}if(dn.length)o.dn=dn;const tk=xIsGame(e)?trikotsOf(e,d):"";if(tk)o.tk=tk;return o})}
+      const o={ty:e.typ,tl:typL(e)!==e.typ?typL(e):undefined,g:xIsGame(e)?1:0,tx:xEvText0(e),u:e.unsicher?unsTx(e):undefined,z:xEvTime(e),b:xBul(e).map((x)=>[x[0],x[1]])},dn=dienstSub(e,d);{const hm=/^(\d{1,2}):(\d{2})/.exec(String(e.treffen||e.beginn||""))||[0,10,0];/* ohne Uhrzeit gilt 10:00 Uhr: Absagen sind dann bis 9:00 Uhr am Tag möglich */if(hm&&d>=today()){const dd=d.split("-").map(Number);o.v=new Date(dd[0],dd[1]-1,dd[2],+hm[1],+hm[2]).getTime()}}if(dn.length)o.dn=dn;const tk=xIsGame(e)?trikotsOf(e,d):"";if(tk)o.tk=tk;return o})}
   const dn=(D.dienste||[]).filter((x)=>x.art!=="Trikots"&&(x.bis||x.datum||"")>=st).map((x)=>({a:x.art,d:x.datum,b:x.bis||null,l:x.label||"",x:dienstText(x)}));
   return{st:today(),days,dn,k:kontakte().map((k)=>({t:k.titel,z:String(k.zeilen||"")}))};
 }
@@ -7989,7 +7989,7 @@ const spLink=(pid)=>{const e=K.ein.find((x)=>x.pid===pid&&x.aktiv===true&&(!x.bi
 const mtLink=()=>{const e=K.mt.find((x)=>x.aktiv===true&&(!x.bis||x.bis>Date.now()));return e?base()+"#mt/"+e.id:""};
 function ensureCard(){
   const host=q("#etp-l");if(!host||q("#kcc"))return;
-  const c=document.createElement("div");c.className="card";c.id="kcc";host.insertBefore(c,host.firstChild);draw()}
+  const c=document.createElement("div");c.className="card";c.id="kcc";{const lkp=q("#lkp"),lkh=q("#lkh"),ref=lkp&&lkp.parentNode===host?lkp:lkh&&lkh.parentNode===host?lkh:null;host.insertBefore(c,ref?ref.nextSibling:host.firstChild)}draw()}
 function draw(){
   const c=q("#kcc");if(!c||!can())return;
   if(c.contains(document.activeElement)&&/SELECT|INPUT/.test(document.activeElement.tagName))return;

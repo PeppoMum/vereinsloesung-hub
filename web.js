@@ -300,14 +300,14 @@ async function myLinks(em){try{const r=await fs.collection("kverkn").where("emai
 function kForm(em,title,text,fields,btn){
   return new Promise((res)=>{
     const o=overlay('<div class="ms" style="font-size:16px;font-weight:600;color:inherit">'+E(title)+'</div><p class="sb">Angemeldet als <b>'+E(em)+'</b>. '+text+'</p>'
-      +'<div class="ivh">Dein Name</div><input id="kfn" maxlength="60" placeholder="Vor- und Nachname" autocomplete="name" value="'+E((auth.currentUser&&auth.currentUser.displayName)||"")+'">'
-      +(fields.kind?'<div class="ivh">Für welchen Spieler?</div><input id="kfk" maxlength="60" placeholder="Vor- und Nachname des Spielers">':"")
+      +'<div class="ivh">Dein Vor- und Nachname</div><input id="kfn" maxlength="60" placeholder="Vor- und Nachname" autocomplete="name" value="'+E((auth.currentUser&&auth.currentUser.displayName)||"")+'">'
+      +(fields.kind?'<div class="ivh">Vor- und Nachname des Spielers</div><input id="kfk" maxlength="60" placeholder="Vor- und Nachname des Spielers">':"")
       +'<div class="ivh">Ich bin</div><label class="ivc"><input type="radio" name="kfr" value="eltern" checked>Elternteil</label><label class="ivc"><input type="radio" name="kfr" value="spieler">der Spieler selbst</label>'
       +'<div class="ms" id="kfm"></div><button class="pr" id="kfgo">'+E(btn)+'</button><button id="u13so">Abmelden</button>');
     o.querySelector("#u13so").onclick=()=>signOutClean();
     o.querySelector("#kfgo").onclick=()=>{const name=o.querySelector("#kfn").value.trim(),kind=fields.kind?o.querySelector("#kfk").value.trim():"",rolle=o.querySelector('[name="kfr"]:checked').value,m=o.querySelector("#kfm");
-      if(!name){m.className="ms er";m.textContent="Bitte deinen Namen eintragen.";return}
-      if(fields.kind&&!kind){m.className="ms er";m.textContent="Bitte den Namen des Spielers eintragen.";return}
+      if(name.split(/\s+/).filter(Boolean).length<2){m.className="ms er";m.textContent="Bitte deinen Vor- und Nachnamen eintragen.";return}
+      if(fields.kind&&kind.split(/\s+/).filter(Boolean).length<2){m.className="ms er";m.textContent="Bitte Vor- und Nachnamen des Spielers eintragen.";return}
       res({name,kind,rolle})};
   });
 }
@@ -344,6 +344,8 @@ async function elternStart(em){
     if(r==="bad"&&!links.length)await kMsg(em,"Dieser Link gilt nicht mehr.","Der Link ist abgelaufen oder wurde beendet. Bitte den Trainer um einen neuen Link.");
     if(r==="gesendet"||r==="offen")await kMsg(em,r==="gesendet"?"Danke, deine Anfrage ist angekommen.":"Deine Anfrage wartet noch auf Bestätigung.","Der Trainer prüft sie und schaltet dich frei. Danach öffnest du die App einfach wieder über den normalen Link.");
     if(r==="fehler")await kMsg(em,"Das hat nicht geklappt.","Bitte öffne den Link noch einmal.")}
+  /* Ist das Konto verknüpft, wird der lange Einladungsteil aus der Adresszeile entfernt: Lesezeichen und Startbildschirm speichern dann die normale Adresse */
+  if(links.length&&(SPKEY||MTKEY)){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
   return links.length?{links}:null;
 }
 async function clubInit(u){
