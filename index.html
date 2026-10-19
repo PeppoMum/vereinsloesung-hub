@@ -788,22 +788,33 @@ const artDauer=(a)=>+a.dauer>0?+a.dauer:/twin/i.test((a.form||"")+" "+(a.name||"
 const HAL={H:"Heim",A:"Auswärts",N:"Neutral"};
 const ergTag=(g)=>{const e=U13.ergebnis(g);return e?'<span class="s '+({S:"x",U:"e",N:"u"})[e.art]+'" style="cursor:default;width:auto;padding:0 8px">'+e.text+"</span>":(g.wertung?'<span class="note" title="Gewertet, aber ohne Ergebnis">offen</span>':'<span class="note">nicht gewertet</span>')};
 const dfmt=(iso)=>iso?iso.slice(8)+"."+iso.slice(5,7)+".":"";
-let gArmed=false,gOpen=null;
+let gArmed=false,gOpen=null,gRenumSig="";
+const gSort=(a,b)=>String(a.datum||"9999").localeCompare(String(b.datum||"9999"))||(a.nr-b.nr);
+function gNewId(){return "g"+(Math.max(0,...D.spiele.map((g)=>+String(g.id).replace(/\D/g,"")||0))+1)}
+/* Spiel-Nummern laufen nach Datum (nicht nach Anlegereihenfolge); bei Änderung werden sie einmal neu vergeben */
+function gRenumber(){if(!D.ready||document.body.classList.contains("ro")||window.__PUB||window.__DEMO)return;
+  const s=D.spiele.slice().sort(gSort),sig=s.map((g)=>g.id+":"+g.nr).join();if(sig===gRenumSig)return;
+  s.forEach((g,i)=>{if(g.nr!==i+1){const n={...g,nr:i+1};g.nr=i+1;save("games",g.id,n)}});
+  gRenumSig=D.spiele.slice().sort(gSort).map((g)=>g.id+":"+g.nr).join()}
+/* Spiel-Termine ohne Spiel-Eintrag (zum Beispiel ein im Terminplan angelegtes Testspiel) */
+function gPending(){const have=new Set(D.spiele.map((g)=>g.id));
+  return (D.events||[]).filter((e)=>e.datum&&isGameTyp(e.typ)&&!(e.spielId&&have.has(e.spielId))&&!D.spiele.some((g)=>g.datum===e.datum&&g.art===e.typ&&!(D.events||[]).some((x)=>x.spielId===g.id&&x.id!==e.id)))}
 function renderGames(){
-  const G=D.spiele.slice().sort((a,b)=>a.nr-b.nr);
+  gRenumber();
+  const G=D.spiele.slice().sort(gSort),PE=D.ready?gPending():[];
   renderGM();gFill();
-  $("#gsub").textContent=D.ready?G.length+" Spiele · Klick auf ein Spiel öffnet die Erfassung":"";
+  $("#gsub").textContent=D.ready?G.length+" Spiele"+(PE.length?" · "+PE.length+" im Terminplan noch ohne Erfassung":"")+" · Klick auf ein Spiel öffnet die Erfassung":"";
   if(!D.ready){$("#gl").innerHTML='<tr><td class="empty" style="text-align:center">Daten werden geladen …</td></tr>';return}
-  if(!G.length){$("#gl").innerHTML='<tr><td class="empty" style="text-align:center">Noch keine Spiele. Oben „Neues Spiel“ wählen.</td></tr>';return}
-  const td0=today(),pa=G.filter((g)=>(g.datum||"")<td0),fu=G.filter((g)=>(g.datum||"")>=td0),foc=G.length>4?pa.slice(-1).concat(fu.slice(0,2)):[];
-  const L=foc.length?foc.map((g)=>({g,f:1})).concat([{sep:1}],G.map((g)=>({g}))):G.map((g)=>({g}));
-  $("#gl").innerHTML='<tr><th>#</th><th style="text-align:left">Gegner</th><th>Datum</th><th>Spielart</th><th>H/A</th><th>Ergebnis</th><th>Form</th><th>Dauer</th><th>Gewichtung</th><th>Im Kader</th><th>Minuten gesamt</th></tr>'+L.map((x)=>{if(x.sep)return'<tr><td colspan="11" style="padding:0;height:0;border-top:3px solid var(--mu)"></td></tr>';const g=x.g,v=Object.values(g.spieler||{}),k=v.filter((x)=>x.status==="k");return'<tr data-g="'+g.id+'"><td'+(x.f?' style="color:var(--ac);font-weight:700"':"")+'>'+g.nr+"</td><td>"+esc(g.gegner)+vidIcon(g)+"</td><td>"+dfmt(g.datum)+"</td><td>"+esc(g.art||"–")+"</td><td>"+(g.ha||"–")+"</td><td>"+ergTag(g)+"</td><td>"+esc(g.form)+"</td><td>"+g.dauer+" Min.</td><td><span class=\""+(g.gewichtet?"tagj":"tagn")+'">'+(g.gewichtet?"Ja":"Nein")+"</span></td><td>"+k.length+"</td><td>"+mn(k.reduce((a,x)=>a+(x.minuten||0),0))+"</td></tr>"}).join("");
+  if(!G.length&&!PE.length){$("#gl").innerHTML='<tr><td class="empty" style="text-align:center">Noch keine Spiele. Oben „Neues Spiel“ wählen.</td></tr>';return}
+  const td0=today(),AL=G.map((g)=>({g})).concat(PE.map((ev)=>({ev,g:{datum:ev.datum,nr:0}}))).sort((a,b)=>gSort(a.g,b.g)),pa=AL.filter((x)=>(x.g.datum||"")<td0),fu=AL.filter((x)=>(x.g.datum||"")>=td0),foc=AL.length>4?pa.slice(-1).concat(fu.slice(0,2)):[];
+  const L=foc.length?foc.map((x)=>({...x,f:1})).concat([{sep:1}],AL):AL;
+  $("#gl").innerHTML='<tr><th>#</th><th style="text-align:left">Gegner</th><th>Datum</th><th>Spielart</th><th>H/A</th><th>Ergebnis</th><th>Form</th><th>Dauer</th><th>Gewichtung</th><th>Im Kader</th><th>Minuten gesamt</th></tr>'+L.map((x)=>{if(x.sep)return'<tr><td colspan="11" style="padding:0;height:0;border-top:3px solid var(--mu)"></td></tr>';if(x.ev){const e=x.ev;return'<tr data-ev="'+esc(e.id)+'" style="opacity:.85"><td'+(x.f?' style="color:var(--ac);font-weight:700"':"")+'>–</td><td>'+esc(e.gegner||"Gegner offen")+'</td><td>'+dfmt(e.datum)+'</td><td>'+esc(e.typ||"–")+'</td><td>'+(e.ha||"–")+'</td><td colspan="6" class="note" style="text-align:left">aus dem Terminplan · noch nicht erfasst · anklicken zum Anlegen</td></tr>'}const g=x.g,v=Object.values(g.spieler||{}),k=v.filter((x)=>x.status==="k");return'<tr data-g="'+g.id+'"><td'+(x.f?' style="color:var(--ac);font-weight:700"':"")+'>'+g.nr+"</td><td>"+esc(g.gegner)+vidIcon(g)+"</td><td>"+dfmt(g.datum)+"</td><td>"+esc(g.art||"–")+"</td><td>"+(g.ha||"–")+"</td><td>"+ergTag(g)+"</td><td>"+esc(g.form)+"</td><td>"+g.dauer+" Min.</td><td><span class=\""+(g.gewichtet?"tagj":"tagn")+'">'+(g.gewichtet?"Ja":"Nein")+"</span></td><td>"+k.length+"</td><td>"+mn(k.reduce((a,x)=>a+(x.minuten||0),0))+"</td></tr>"}).join("");
 }
 const GORD=["","k","t","v","n"];let gmOpen=false;
 function renderGM(){
   const box=$("#gm"),nt=$("#gmn");box.hidden=nt.hidden=!gmOpen;$("#gmb").textContent=gmOpen?"☑ Übersicht schließen":"☑ Kader-Übersicht";
   if(!gmOpen||!D.ready)return;
-  const G=D.spiele.slice().sort((a,b)=>a.nr-b.nr),P=active();
+  const G=D.spiele.slice().sort(gSort),P=active();
   if(!G.length||!P.length){$("#gmt").innerHTML='<tr><td class="empty" style="text-align:center">Noch keine Spiele oder Spieler.</td></tr>';return}
   const dm=(d)=>d?d.slice(8)+"."+d.slice(5,7)+".":"";
   const td0=today(),pa=G.filter((g)=>(g.datum||"")<td0),fu=G.filter((g)=>(g.datum||"")>=td0);
@@ -832,8 +843,8 @@ function gFill(){
   D.spiele.filter((g)=>g.datum&&g.datum>=t&&!Object.keys(g.spieler||{}).length).forEach((g)=>{const sp={};P.forEach((p)=>sp[p.id]={status:"k",minuten:0});save("games",g.id,{...g,spieler:sp})});
 }
 function openGame(id){
-  const P=active(),old=id?D.spiele.find((g)=>g.id===id):null,nr=old?old.nr:Math.max(0,...D.spiele.map((g)=>g.nr))+1,last=D.spiele.slice().sort((a,b)=>b.nr-a.nr)[0];
-  const g=old||{id:"g"+nr,nr,datum:today(),gegner:"",art:"Testspiel",ha:"H",wertung:true,tore:null,gt:null,form:(arten().find((x)=>x.name==="Testspiel")||{}).form||"9gg9",dauer:60,gewichtet:true,spielerzahl:(arten().find((x)=>x.name==="Testspiel")||{}).spielerzahl||9,spieler:{}};
+  const P=active(),old=id?D.spiele.find((g)=>g.id===id):null,nr=old?old.nr:Math.max(0,...D.spiele.map((g)=>g.nr))+1,gid=old?old.id:gNewId(),last=D.spiele.slice().sort((a,b)=>b.nr-a.nr)[0];
+  const g=old||{id:gid,nr,datum:today(),gegner:"",art:"Testspiel",ha:"H",wertung:true,tore:null,gt:null,form:(arten().find((x)=>x.name==="Testspiel")||{}).form||"9gg9",dauer:60,gewichtet:true,spielerzahl:(arten().find((x)=>x.name==="Testspiel")||{}).spielerzahl||9,spieler:{}};
   gOpen=g.id;gArmed=false;
   $("#gd").hidden=false;
   $("#gd").innerHTML='<div class="card" style="margin-top:14px"><div class="bar"><b style="font-size:16px">'+(old?"Spiel "+g.nr+" · "+esc(g.gegner):"Neues Spiel (Nr. "+nr+")")+'</b><span style="flex:1"></span>'+(old?'<button class="btn" id="glv" title="Aufstellung, Ansprache, Skizzen, Live-Spielzeit und Notizblatt für diesen Spieltag">🏟 Spieltag</button><button class="btn" id="glvl" title="Direkt zur Live-Spielzeit-Erfassung">⏱ Live-Spielzeit</button><span class="note">A4-Export</span><div class="seg" id="xg1"><button data-f="png">PNG</button><button data-f="jpg">JPG</button><button data-f="pdf">PDF</button></div><button class="btn" id="gdel">Spiel löschen</button>':"")+'<button class="btn" id="gcl">Schließen</button><button class="btn" id="gsv" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button></div>'
@@ -857,12 +868,12 @@ function gCalc(){
   $("#gsum").textContent=mn(sum)+" Min.";
 }
 function gRead(){
-  const old=D.spiele.find((g)=>g.id===gOpen),nr=old?old.nr:+gOpen.slice(1),sp={};
+  const old=D.spiele.find((g)=>g.id===gOpen),nr=old?old.nr:Math.max(0,...D.spiele.map((g)=>g.nr))+1,sp={};
   document.querySelectorAll("#gpl tr[data-p]").forEach((r)=>{const st=r.querySelector(".gs").value;if(st){const o={status:st,minuten:st==="k"?(+r.querySelector(".gm").value||0):0},fv=r.querySelector(".gf");if(st==="k"&&fv&&fv.value!=="")o.fit=Math.max(0,+fv.value||0);sp[r.dataset.p]=o}});
   const num=(q)=>$(q).value===""?null:Math.max(0,Math.round(+$(q).value));return{id:gOpen,nr,datum:$("#gdt").value,gegner:$("#gop").value.trim(),art:$("#gar").value,ha:$("#gha").value,wertung:$("#gwt").value==="Ja",tore:num("#gto"),gt:num("#ggt"),form:$("#gfm").value,dauer:+$("#gdu").value||0,gewichtet:$("#gw").value==="Ja",spielerzahl:+$("#gsz").value||null,video:vidOk($("#gvid").value.trim())?$("#gvid").value.trim():"",spieler:sp,...(old&&old.live?{live:old.live}:{})};
 }
 $("#ng").onclick=()=>openGame(null);
-$("#gl").addEventListener("click",(e)=>{if(e.target.closest("[data-vid]"))return;const r=e.target.closest("tr[data-g]");if(r)openGame(r.dataset.g)});
+$("#gl").addEventListener("click",(e)=>{if(e.target.closest("[data-vid]"))return;const pv=e.target.closest("tr[data-ev]");if(pv){const ev=(D.events||[]).find((x)=>x.id===pv.dataset.ev);if(ev&&!document.body.classList.contains("ro")){const o={...ev};syncEv(o,ev);save("events",o.id,o);if(o.spielId)openGame(o.spielId)}return}const r=e.target.closest("tr[data-g]");if(r)openGame(r.dataset.g)});
 $("#gd").addEventListener("input",(e)=>{if(e.target.id==="gvid"){const u=e.target.value.trim(),a=$("#gvo");a.hidden=!vidOk(u);a.href=vidOk(u)?u:"#"}});
 $("#gd").addEventListener("input",gCalc);
 $("#gd").addEventListener("change",(e)=>{
@@ -933,6 +944,8 @@ $("#ps").onchange=(e)=>{PID=e.target.value;renderProfile()};$("#pmode").onclick=
 const step=(d)=>{const P=active(),k=P.findIndex((p)=>p.id===PID);if(P.length){PID=P[(k+d+P.length)%P.length].id;renderProfile()}};
 $("#pprev").onclick=()=>step(-1);$("#pnext").onclick=()=>step(1);
 function go(x){document.querySelectorAll("nav button").forEach((b)=>b.classList.toggle("on",b.dataset.s===x));SECS.forEach((k)=>$("#"+k).hidden=k!==x);try{window.scrollTo(0,0)}catch(e){}typeof bkwRender==="function"&&bkwRender()}
+/* Klick auf die Titelzeile („D1 · 2026/27“) führt zur Startseite */
+{const tt=$("#mann2")&&$("#mann2").parentNode;if(tt){tt.style.cursor="pointer";tt.setAttribute("role","button");tt.tabIndex=0;tt.title="Zur Startseite";const gh=()=>{try{if(window.__V&&window.__V.go)window.__V.go("mannschaft")}catch(e){}const b=document.querySelector('nav button[data-s="h"]');if(b)b.click()};tt.onclick=gh;tt.onkeydown=(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();gh()}}}}
 $("#tb").addEventListener("click",(e)=>{const r=e.target.closest("tr[data-pid]");if(r){PID=r.dataset.pid;renderProfile();go("p")}});
 /* ---------- Logo und Fotos (als kleine Bilder direkt in der Datenbank) ---------- */
 function shrink(file,max,square,type){return new Promise((res)=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{let sx=0,sy=0,sw=im.width,sh=im.height;if(square){const m=Math.min(sw,sh);sx=(sw-m)/2;sy=(sh-m)/2;sw=sh=m}const sc=Math.min(1,max/Math.max(sw,sh)),c=document.createElement("canvas");c.width=Math.round(sw*sc);c.height=Math.round(sh*sc);const x=c.getContext("2d");if(type==="image/jpeg"){x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height)}x.drawImage(im,sx,sy,sw,sh,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL(type,.85))};im.onerror=()=>res(null);im.src=u})}
@@ -2513,18 +2526,23 @@ function elternShow(o){
     /* Übersicht: Hinweise, nächste Termine mit Abmeldung, Liga */
     const td=new Date(),iso=td.getFullYear()+"-"+String(td.getMonth()+1).padStart(2,"0")+"-"+String(td.getDate()).padStart(2,"0"),lim=new Date(td.getFullYear(),td.getMonth(),td.getDate()+6),isoL=lim.getFullYear()+"-"+String(lim.getMonth()+1).padStart(2,"0")+"-"+String(lim.getDate()).padStart(2,"0"),days=Object.keys((d.t&&d.t.days)||{}).filter((x)=>x>=iso&&x<=isoL).sort();
     const items=[];for(const day of days){(d.t.days[day]||[]).forEach((e,i)=>{if(e.ty==="Ferien")return;items.push({day,e,i})});}
+    const lim2=new Date(td.getFullYear(),td.getMonth(),td.getDate()+90),isoL2=lim2.getFullYear()+"-"+String(lim2.getMonth()+1).padStart(2,"0")+"-"+String(lim2.getDate()).padStart(2,"0"),later=[],DD=(d.t&&d.t.days)||{};
+    Object.keys(DD).filter((x)=>x>isoL&&x<=isoL2).sort().forEach((day)=>DD[day].forEach((e,i)=>{if(e.ty!=="Ferien")later.push({day,e,i})}));
     let h=hnHtml(hnItems(d.hn,"alle"))+'<div class="card"><h3 style="margin-top:0">Termine der nächsten 7 Tage</h3>';
-    if(!items.length)h+='<div class="note">In den nächsten 7 Tagen sind keine Termine eingetragen. Alle weiteren stehen unter „Termine“.</div>';
-    items.forEach((it)=>{const key=ekey(it.day,it.i),ab=ES.abm[key],von=k.ev[key]||it.e.v||0,can=k.abm&&von&&von-36e5>Date.now(),late=k.abm&&von&&!can&&von>Date.now(),inW=ES.abw.some((w)=>it.day>=w.von&&it.day<=w.bis);
-      h+='<div class="ek'+(ab||inW?" ab":"")+'" data-k="'+key+'"><div class="w"><span class="t">'+wdOf(it.day)+", "+dfmt(it.day).slice(0,6)+'</span> · '+esc(it.e.tl||it.e.ty)+'<small>'+esc(it.e.tx||"")+(it.e.z?" · "+esc(it.e.z):"")+'</small></div>'
-        +(ab?'<span class="note">Abgemeldet: '+esc(ab.grund)+'</span>'+(von-36e5>Date.now()?' <button class="btn" data-un="'+key+'">Zurücknehmen</button>':""):inW?'<span class="note">Abwesenheit eingetragen</span>':can?'<button class="btn" data-ab="'+key+'" data-v="'+von+'">Abmelden</button>':late?'<span class="note">Zu spät für eine Absage, bitte persönlich beim Trainer melden.</span>':"")+'</div>'});
+    if(!items.length)h+='<div class="note">In den nächsten 7 Tagen sind keine Termine eingetragen.'+(later.length?" Spätere Termine kannst du unten absagen, eine Abwesenheit (zum Beispiel Urlaub) trägst du weiter unten ein.":" Alle weiteren stehen unter „Termine“.")+'</div>';
+    const rowH=(it)=>{const key=ekey(it.day,it.i),ab=ES.abm[key],von=k.ev[key]||it.e.v||0,can=k.abm&&von&&von-36e5>Date.now(),late=k.abm&&von&&!can&&von>Date.now(),inW=ES.abw.some((w)=>it.day>=w.von&&it.day<=w.bis);
+      return '<div class="ek'+(ab||inW?" ab":"")+'" data-k="'+key+'"><div class="w"><span class="t">'+wdOf(it.day)+", "+dfmt(it.day).slice(0,6)+'</span> · '+esc(it.e.tl||it.e.ty)+'<small>'+esc(it.e.tx||"")+(it.e.z?" · "+esc(it.e.z):"")+'</small></div>'
+        +(ab?'<span class="note">Abgemeldet: '+esc(ab.grund)+'</span>'+(von-36e5>Date.now()?' <button class="btn" data-un="'+key+'">Zurücknehmen</button>':""):inW?'<span class="note">Abwesenheit eingetragen</span>':can?'<button class="btn" data-ab="'+key+'" data-v="'+von+'">Abmelden</button>':late?'<span class="note">Zu spät für eine Absage, bitte persönlich beim Trainer melden.</span>':"")+'</div>'};
+    items.forEach((it)=>{h+=rowH(it)});
     h+='</div>';
-    if(k.abm){h+='<div class="card"><h3 style="margin-top:0">Abwesenheit (zum Beispiel Urlaub)</h3>';
-      ES.abw.sort((a,b)=>a.von.localeCompare(b.von)).forEach((w)=>{h+='<div class="ek"><div class="w"><span class="t">'+dfmt(w.von)+" – "+dfmt(w.bis)+'</span><small>'+esc(w.grund)+'</small></div><button class="btn" data-uw="'+esc(w.id)+'">Entfernen</button></div>'});
-      h+='<div class="ek"><form id="eabw"><input type="date" id="ewv" aria-label="von" required><input type="date" id="ewb" aria-label="bis" required><input id="ewg" maxlength="200" placeholder="Grund (Pflicht)" required><button class="btn pr" type="submit">Eintragen</button></form></div><div class="emsg" id="ewm"></div></div>'}
+    if(k.abm&&later.length)h+='<details class="card" id="elat"'+(ES.lo?" open":"")+'><summary style="cursor:pointer;font-weight:700">Spätere Termine absagen ('+later.length+')</summary>'+later.map(rowH).join("")+'</details>';
+    if(k.abm){h+='<div class="card"><h3 style="margin-top:0">Nicht dabei? Abwesenheit eintragen</h3><div class="note" style="margin:0 0 8px">Zum Beispiel Urlaub oder Krankheit. Bei nur einem Tag genügt das Datum bei „Von“.</div>';
+      ES.abw.sort((a,b)=>a.von.localeCompare(b.von)).forEach((w)=>{h+='<div class="ek"><div class="w"><span class="t">'+dfmt(w.von)+(w.bis&&w.bis!==w.von?" – "+dfmt(w.bis):"")+'</span><small>'+esc(w.grund)+'</small></div><button class="btn" data-uw="'+esc(w.id)+'">Entfernen</button></div>'});
+      h+='<div class="ek"><form id="eabw"><label class="note" style="display:flex;flex-direction:column;gap:2px">Von<input type="date" id="ewv" required></label><label class="note" style="display:flex;flex-direction:column;gap:2px">Bis (leer = nur dieser Tag)<input type="date" id="ewb"></label><input id="ewg" maxlength="200" placeholder="Grund (Pflicht)" required><button class="btn pr" type="submit">Eintragen</button></form></div><div class="emsg" id="ewm"></div></div>'}
     if(d.li&&window.__FD)h+='<div class="card"><h3 style="margin-top:0">Liga</h3><div id="eli"></div></div>';
     el.innerHTML=h+'<div class="emsg" id="eam"></div>';
     const li=document.getElementById("eli");if(li)li.innerHTML=window.__FD.view(d.li);
+    const lt=document.getElementById("elat");if(lt)lt.addEventListener("toggle",()=>{ES.lo=lt.open});
     const say=(t,c)=>{const m=document.getElementById("eam");if(m){m.className="emsg "+(c||"");m.textContent=t}};
     el.onclick=async(e)=>{
       const b=e.target.closest("[data-ab]");
@@ -2536,9 +2554,9 @@ function elternShow(o){
     el.onsubmit=async(e)=>{e.preventDefault();const f=e.target;
       if(f.dataset.f){const key=f.dataset.f,grund=f.querySelector("input").value.trim(),von=k.ev[key]||0;if(!grund){say("Bitte einen Grund angeben.","er");return}if(von-36e5<=Date.now()){say("Zu spät für eine Absage, bitte melde dich persönlich beim Trainer.","er");return}
         try{await fs.doc("kabm/"+k.l.tid+"~"+k.l.pid+"~"+key).set({tid:k.l.tid,pid:k.l.pid,k:key,von,grund,email:em,at:new Date().toISOString(),name:k.l.name||""});await myAbm(k);draw()}catch(x){say("Das hat nicht geklappt. Bitte später noch einmal versuchen.","er")}return}
-      if(f.id==="eabw"){const von=document.getElementById("ewv").value,bis=document.getElementById("ewb").value,grund=document.getElementById("ewg").value.trim(),m=document.getElementById("ewm");
+      if(f.id==="eabw"){const von=document.getElementById("ewv").value,bis=document.getElementById("ewb").value||document.getElementById("ewv").value,grund=document.getElementById("ewg").value.trim(),m=document.getElementById("ewm");
         const er=(t)=>{m.className="emsg er";m.textContent=t};
-        if(!von||!bis){er("Bitte von und bis eintragen.");return}if(von>bis){er("Das Enddatum liegt vor dem Anfang.");return}if(bis<iso){er("Der Zeitraum liegt in der Vergangenheit.");return}if(!grund){er("Bitte einen Grund angeben.");return}
+        if(!von){er("Bitte das Datum eintragen (bei „Von“).");return}if(von>bis){er("Das Enddatum liegt vor dem Anfang.");return}if(bis<iso){er("Der Zeitraum liegt in der Vergangenheit.");return}if(!grund){er("Bitte einen Grund angeben.");return}
         try{await fs.doc("kabw/"+k.l.tid+"~"+k.l.pid+"~"+Date.now().toString(36)).set({tid:k.l.tid,pid:k.l.pid,von,bis,grund,email:em,at:new Date().toISOString(),name:k.l.name||""});await myAbm(k);draw()}catch(x){er("Das hat nicht geklappt. Bitte später noch einmal versuchen.")}}};
   }
   function settings(el,k,d){
@@ -2771,7 +2789,7 @@ function openEv(id){
   $("#med").scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 function mkGame(o,art){const a=arten().find((x)=>x.name===o.typ)||{},f=forms().find((x)=>x.kuerzel===(o.form||a.form||"9gg9"))||{},nr=Math.max(0,...D.spiele.map((g)=>g.nr))+1;
-  const g={id:"g"+nr,nr,datum:o.datum,gegner:o.gegner||"",art:o.typ,ha:o.ha||"",wertung:a.gewertet!==false,tore:null,gt:null,form:o.form||a.form||"9gg9",dauer:o.dauer||a.dauer||60,gewichtet:f.gewichtet!==false,spielerzahl:a.spielerzahl||null,spieler:{}};save("games",g.id,g);D.spiele.push(g);return g}
+  const g={id:gNewId(),nr,datum:o.datum,gegner:o.gegner||"",art:o.typ,ha:o.ha||"",wertung:a.gewertet!==false,tore:null,gt:null,form:o.form||a.form||"9gg9",dauer:o.dauer||a.dauer||60,gewichtet:f.gewichtet!==false,spielerzahl:a.spielerzahl||null,spieler:{}};save("games",g.id,g);D.spiele.push(g);return g}
 /* Termin -> Training / Spiele: anlegen bzw. angleichen */
 /* Training mit schon eingetragener Anwesenheit? */
 function trAtt(e){if(!e||!e.trainId)return false;const t=D.trainings.find((x)=>x.id===e.trainId);return !!t&&Object.values(t.spieler||{}).some((v)=>v)}
@@ -7774,12 +7792,12 @@ function panelHtml(){
   let h='<div class="card fdp"><div class="fdh"><span class="fdbadge">FUSSBALL.DE</span>'+(pl?'<span class="fdchip">Platz '+pl.p+' von '+pl.n+'</span>':"")+'<span class="note" style="flex:1">Stand '+E(standTxt(d.abgeholt))+(d.fehler?' · <span style="color:var(--o)">letzter Abruf mit Problem</span>':"")+'</span><button class="btn" data-fda="tog" aria-expanded="'+(FD.open?"true":"false")+'">Mit FUSSBALL.DE abgleichen'+(n?'<span class="fdn">'+n+'</span>':"")+'</button></div>';
   if(FD.open){
     h+='<div class="fdl">';
-    if(!n)h+='<div class="note">Alles abgeglichen – keine Unterschiede zu FUSSBALL.DE.'+(df.hidden?' ('+df.hidden+' ausgeblendet)':"")+'</div>';
+    if(!n)h+='<div class="note">Alles abgeglichen – keine Unterschiede zu FUSSBALL.DE.'+(df.hidden?' ('+df.hidden+' entfernt)':"")+'</div>';
     const neuN=df.items.filter((x)=>x.kind==="neu").length;
     if(neuN>1&&can)h+='<div class="bar" style="margin:0"><button class="btn" data-fda="alle">Alle '+neuN+' neuen Spiele anlegen</button><span class="note">Spielart wird nach dem Wettbewerb gewählt, Meisterschaft ist gewertet.</span></div>';
-    df.items.forEach((it,i)=>{h+='<div class="fdi'+(it.kind==="konflikt"||it.kind==="verlegt"||it.kind==="verlegt-neu"||it.kind==="status"?" o":"")+'"><div class="fdit">'+it.html+'</div>'+(can?'<div class="fdib">'+it.btn.map((b)=>'<button class="btn" data-fda="'+E(b[0])+'" data-k="'+E(it.key)+'">'+E(b[1])+'</button>').join("")+'<button class="btn" data-fda="ign" data-k="'+E(it.key)+'" title="Diesen Hinweis ausblenden">Ausblenden</button></div>':"")+'</div>'});
-    if(df.hidden&&n)h+='<div class="note">'+df.hidden+' ausgeblendet · <a href="#" data-fda="show">wieder einblenden</a></div>';
-    else if(df.hidden&&!n)h+='<div class="note"><a href="#" data-fda="show">Ausgeblendete Hinweise wieder einblenden</a></div>';
+    df.items.forEach((it,i)=>{h+='<div class="fdi'+(it.kind==="konflikt"||it.kind==="verlegt"||it.kind==="verlegt-neu"||it.kind==="status"?" o":"")+'"><div class="fdit">'+it.html+'</div>'+(can?'<div class="fdib">'+it.btn.map((b)=>'<button class="btn" data-fda="'+E(b[0])+'" data-k="'+E(it.key)+'">'+E(b[1])+'</button>').join("")+'<button class="btn" data-fda="ign" data-k="'+E(it.key)+'" title="Diesen Hinweis entfernen">Entfernen</button></div>':"")+'</div>'});
+    if(df.hidden&&n)h+='<div class="note">'+df.hidden+' entfernt · <a href="#" data-fda="show">zurückholen</a></div>';
+    else if(df.hidden&&!n)h+='<div class="note"><a href="#" data-fda="show">Entfernte Hinweise zurückholen</a></div>';
     h+='</div>'}
   FD.items=df.items;return h+'</div>'}
 function renderPanel(){const el=q("#fdg");if(!el)return;if(!D.ready){setHtml(el,"");return}const h=panelHtml();if(!FD.open||!focusIn(el))setHtml(el,h)}
@@ -8088,7 +8106,7 @@ function drawAbm(){
   if(!can())return;
   let c=q("#kabc");const host=q("#hsub");if(!host)return;
   const td=(typeof today==="function"?today():new Date().toISOString().slice(0,10));
-  const list=K.abm.filter((a)=>(a.von||0)>Date.now()-864e5).sort((a,b)=>(a.von||0)-(b.von||0)),ws=K.abw.filter((w)=>w.bis>=td).sort((a,b)=>a.von.localeCompare(b.von));
+  const list=K.abm.filter((a)=>(a.von||0)>Date.now()-864e5&&!a.ue).sort((a,b)=>(a.von||0)-(b.von||0)),ws=K.abw.filter((w)=>w.bis>=td&&!w.ue).sort((a,b)=>a.von.localeCompare(b.von));
   if(!list.length&&!ws.length){if(c)c.remove();return}
   if(!c){c=document.createElement("div");c.className="card";c.id="kabc";c.style.margin="0 0 14px";host.insertAdjacentElement("afterend",c)}
   if(c.contains(document.activeElement)&&document.activeElement.tagName==="SELECT")return;
@@ -8096,10 +8114,11 @@ function drawAbm(){
   list.forEach((a)=>{const o=evOf(a),isT=o&&o.e&&o.e.ty==="Training",d=o?o.day.slice(8)+"."+o.day.slice(5,7)+".":"";
     h+='<div class="kr"><div class="w"><b>'+E(pname(a.pid))+'</b> · '+E(o&&o.e?(o.e.tl||o.e.ty):"Termin")+' '+d+(o&&o.e&&o.e.z?" · "+E(o.e.z):"")+'<small>„'+E(a.grund)+'“ · von '+E(a.name||"")+(a.ue?" · übernommen":"")+'</small></div>'
       +(a.ue?"":(isT?STAT.map((s)=>'<button class="btn" data-a="st" data-id="'+E(a.id)+'" data-s="'+s[0]+'">'+s[1]+'</button>').join(""):'<button class="btn" data-a="ok" data-id="'+E(a.id)+'">Gelesen</button>'))+'</div>'});
-  ws.forEach((w)=>{h+='<div class="kr"><div class="w"><b>'+E(pname(w.pid))+'</b> · abwesend '+w.von.slice(8)+"."+w.von.slice(5,7)+". – "+w.bis.slice(8)+"."+w.bis.slice(5,7)+'.<small>„'+E(w.grund)+'“ · von '+E(w.name||"")+'</small></div></div>'});
+  ws.forEach((w)=>{h+='<div class="kr"><div class="w"><b>'+E(pname(w.pid))+'</b> · abwesend '+w.von.slice(8)+"."+w.von.slice(5,7)+"."+(w.bis&&w.bis!==w.von?" – "+w.bis.slice(8)+"."+w.bis.slice(5,7)+".":"")+'<small>„'+E(w.grund)+'“ · von '+E(w.name||"")+'</small></div><button class="btn" data-a="okw" data-id="'+E(w.id)+'">Gelesen</button></div>'});
   if(c.__h!==h){c.__h=h;c.innerHTML=h}}
 document.addEventListener("click",async(e)=>{
   const b=e.target.closest&&e.target.closest("#kabc [data-a]");if(!b||!can())return;
+  if(b.dataset.a==="okw"){try{await K.fs.doc("kabw/"+b.dataset.id).update({ue:true})}catch(er){}return}
   const a=K.abm.find((x)=>x.id===b.dataset.id);if(!a)return;
   try{
     if(b.dataset.a==="st"){const o=evOf(a);if(!o)return;const id="t"+o.day;let t=(D.trainings||[]).find((x)=>x.id===id||x.datum===o.day),sp;
