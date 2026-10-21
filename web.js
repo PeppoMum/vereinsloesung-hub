@@ -72,8 +72,8 @@ const kjCache={t:0,v:null};
 async function kjAll(){
   if(kjCache.v&&Date.now()-kjCache.t<3e5)return kjCache.v;
   const idx=await restDoc("kj_idx"),tids=((idx&&idx.t)||"").split(",").filter(Boolean),out={};
-  await Promise.all(tids.map(async(t)=>{try{const j=await restDoc("kj_"+t);if(j&&j.j)out[t]=String(j.j).split(",").filter(Boolean)}catch(e){}}));
-  kjCache.v=out;kjCache.t=Date.now();return out}
+  let bad=0;await Promise.all(tids.map(async(t)=>{try{const j=await restDoc("kj_"+t);if(j&&j.j)out[t]=String(j.j).split(",").filter(Boolean)}catch(e){bad++}}));
+  if(!bad&&Object.keys(out).length){kjCache.v=out;kjCache.t=Date.now()}return out}   /* Fehlgeschlagene Abrufe nicht zwischenspeichern, sonst bleibt die Jahrgangsliste fünf Minuten leer */
 window.__clubYears=async()=>{try{const a=await kjAll(),s=new Set();Object.keys(a).forEach((t)=>a[t].forEach((y)=>s.add(y)));return Array.from(s).sort().reverse()}catch(e){return[]}};
 async function postInbox(coll,id,f){
   const r=await fetch(FSB()+coll+"?documentId="+encodeURIComponent(id)+"&key="+encodeURIComponent(CFG.apiKey),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:f})});
