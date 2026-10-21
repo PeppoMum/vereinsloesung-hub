@@ -140,7 +140,7 @@ TEAMS.forEach(([tid,name],ti)=>{
 
   /* Kennzahlen: nächste Spiele (mit Ort) für Übersicht und Wochenende */
   TEAMS.forEach(([tid])=>{const vs=store.get(tid+"__vstat/main");if(!vs)return;
-    vs.naechste=gamesOf(tid).filter((g)=>g.datum>=TODAY).slice(0,8).map((g)=>({d:g.datum,z:"10:30",g:g.gegner,h:g.ha,o:"Sportanlage Musterstadt",a:"Meisterschaft"}));put(tid+"__vstat/main",vs)});
+    vs.naechste=gamesOf(tid).filter((g)=>g.datum>=TODAY).slice(0,8).map((g)=>({d:g.datum,z:"10:30",g:g.gegner,h:g.ha,o:"Sportanlage Musterstadt",a:"Meisterschaft"}));if(tid==="a1"||tid==="d1"){const g0=vs.naechste.find((g)=>g.h==="H");if(g0)g0.p=tid==="a1"?"Kunstrasen":"Naturrasen"}put(tid+"__vstat/main",vs)});
 }
 
 /* ---------- Verein, Rollen, Personen ---------- */
@@ -158,6 +158,16 @@ const sl=(tid,platz,tag,von,bis,teil)=>slots.push({id:"s"+(++sn),tid,art:"Traini
 [["m1",1,"15:30","16:30",[1]],["g1",1,"16:00","17:00",[1]],["c2",1,"18:30","20:00",[1,2,3,4]],["f1",1,"16:00","17:00",[2]],["f2",1,"16:00","17:00",[3,4]],["e1",1,"17:00","18:30",[1,2]],["e2",1,"17:00","18:30",[3,4]],["d1",2,"17:30","19:00",[1,2]],["d2",2,"17:30","19:00",[3,4]],["c1",1,"18:30","20:00",[1,2,3,4]],["b1",2,"19:00","20:30",[1,2]],["a1",2,"19:00","20:30",[3,4]]].forEach(([t,p,v,b,te],i)=>{[1,3].forEach((tg)=>sl(t,"p"+p,tg+(i%2),v,b,te))});
 sl("g1","h1",5,"16:00","17:30",[1]);sl("f1","h1",5,"16:00","17:30",[2]);sl("f2","h1",5,"16:00","17:30",[3]);sl("e1","h1",5,"17:30","19:00",[1,2,3]);
 put("plaene/platz",{plaetze:PL,kabinen:["0","1","2","3","4"],extern:[],stdKabine:{m1:"1",c2:"4",g1:"1",f1:"1",f2:"2",e1:"2",e2:"3",d1:"3",d2:"4",c1:"4",b1:"0",a1:"0"},stdKabineTag:{},slots,plans:[{id:"sommer",name:"Sommerplan"},{id:"winter",name:"Winterplan"}],aktiv:"sommer",aus:[]});
+/* Platz frei / übernommen: E1 sagt das nächste Training auf dem Kunstrasen ab, D1 übernimmt ein Viertel zusätzlich, ein Viertel bleibt frei */
+{const e1=slots.find((x)=>x.tid==="e1"&&x.platz==="p1"&&x.art==="Training");
+  if(e1){let d=TODAY;for(let i=0;i<8&&dow(d)!==e1.tag;i++)d=addD(d,1);if(d===TODAY&&e1.bis<new Date().toTimeString().slice(0,5))d=addD(d,7);
+    const up=new Date().toISOString();
+    put("pfrei/f~"+e1.id+"~"+d,{slot:e1.id,datum:d,tid:"e1",platz:"p1",teil:e1.teil.slice(),von:e1.von,bis:e1.bis,up,by:"Lena Muster"});
+    put("pnahme/"+d+"~"+e1.id+"~1",{datum:d,tid:"d1",platz:"p1",v:1,von:e1.von,bis:e1.bis,art:"Zusätzlich",qs:e1.id,up,by:"Jonas Probe"})}}
+/* To-Dos und ein Anliegen */
+put("todos/demo1",{text:"Lorem ipsum: Trikotsatz für die Saison bestellen",von:EMAIL,vname:"Demo-Person",fuer:EMAIL,fname:"",bis:addD(TODAY,5),done:false,at:new Date().toISOString()});
+put("todos/demo2",{text:"Dolor sit amet: Hallenzeiten im Winter abstimmen",von:EMAIL,vname:"Demo-Person",fuer:EMAIL,fname:"",bis:"",done:false,at:new Date().toISOString()});
+put("anliegen/demoa1",{id:"demoa1",von:"erika.beispiel@beispiel.test",vname:"Erika Beispiel",r_jl:true,r_ad:true,r_sl:false,art:"platz",betreff:"Rasenplatz am Freitag",text:"Lorem ipsum: Dürfen wir am Freitag zusätzlich den Rasenplatz nutzen?",at:new Date().toISOString(),st:"offen",msgs:[]});
 /* Zwei Spiele an Wochentagen (heute bzw. morgen), damit der Hinweis in der Demo zu sehen ist */
 let hd=TODAY;if(dow(hd)>5)hd=addD(hd,8-dow(hd));
 put("kabinen/"+hd,{datum:hd,eintraege:[{id:"k1",kabine:"1",art:"Heim",tid:"d1",von:"18:00",bis:"20:15",txt:"gegen "+CL[0]},{id:"k2",kabine:"2",art:"Gast",fremd:CL[0],von:"18:00",bis:"20:15",txt:"bei D1"}]});
@@ -179,7 +189,7 @@ function docRef(path){path=norm(path);return{path,id:path.split("/").pop(),
   collection(n){return colRef(path+"/"+n)}}}
 function colRef(path,flt){path=norm(path);flt=flt||[];
   const rows=()=>{const out=[],dep=path.split("/").length+1;store.forEach((v,k)=>{const p=k.split("/");if(k.indexOf(path+"/")===0&&p.length===dep&&flt.every(([f,o,x])=>{const y=v[f];return o==="=="?y===x:o===">="?y>=x:o==="<="?y<=x:o===">"?y>x:o==="<"?y<x:o==="in"?x.indexOf(y)>=0:true}))out.push({id:p[p.length-1],data:v})});return out};
-  const snap=()=>{const docs=rows().map((r)=>snapDoc(path+"/"+r.id,r.data));return{docs,empty:!docs.length,size:docs.length,forEach:(f)=>docs.forEach(f)}};
+  const snap=()=>{const docs=rows().map((r)=>snapDoc(path+"/"+r.id,r.data));return{docs,empty:!docs.length,size:docs.length,forEach:(f)=>docs.forEach(f),docChanges:()=>docs.map((d)=>({type:"added",doc:d}))}};
   return{path,doc:(id)=>docRef(path+"/"+id),where:(f,o,x)=>colRef(path,flt.concat([[f,o,x]])),orderBy(){return this},limit(){return this},
     async get(){if(path==="mitglieder"&&P.rolle!=="admin"&&P.rolle!=="jugendleiter"){throw denyErr()}return snap()},
     onSnapshot(a,b){const cb=typeof a==="function"?a:a&&a.next;let last=null;const run=()=>{const s=JSON.stringify(rows());if(s!==last){last=s;cb&&cb(snap())}};L.add(run);setTimeout(run,0);return()=>L.delete(run)}}}

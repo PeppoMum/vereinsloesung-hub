@@ -2654,6 +2654,11 @@ function evAll(){
   if(window.__kobsEv)window.__kobsEv().forEach((x)=>E.push(x));
   return E.sort((a,b)=>a.datum.localeCompare(b.datum)||(a.beginn||a.treffen||"99").localeCompare(b.beginn||b.treffen||"99"));
 }
+const platzNamen=()=>{const l=["Kunstrasen","Naturrasen","Hauptplatz"];try{((window.__V&&window.__V.plan&&window.__V.plan.plaetze)||[]).filter((p)=>p.typ!=="halle"&&p.name).forEach((p)=>{if(l.indexOf(p.name)<0)l.push(p.name)})}catch(e){}return l};
+/* Wurde ein Platz übernommen, steht er im Training dieses Tages (Eltern sehen ihn im Terminplan, ohne eigene Benachrichtigung) */
+window.__platzOrt=function(date,name){try{const ev=(D.events||[]).find((e)=>e.datum===date&&e.typ==="Training"&&!e.virt);
+  if(ev){save("events",ev.id,{...ev,ort:name});return}
+  const t=(D.trainings||[]).find((x)=>x.datum===date);if(!t)return;const id="e"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);save("events",id,{id,datum:date,typ:"Training",trainId:t.id,ort:name,eltern:true})}catch(e){}};
 function evAllM(){const out=[],idx={};evAll().forEach((e)=>{if(!isGameTyp(e.typ)||!e.gegner){out.push(e);return}
   const k=e.datum+"|"+String(e.gegner).trim().toLowerCase()+"|"+(e.ha||""),m=idx[k];
   if(m&&m.typ!==e.typ&&!(m.alt||[]).includes(e.typ)){(m.alt=m.alt||[]).push(e.typ);(m._m=m._m||[]).push(e);return}
@@ -2677,7 +2682,7 @@ const inMonth=(e,m)=>e.datum<=monthEnd(m)&&(e.bis||e.datum)>=m+"-01";
 const evTypRes=(v)=>{v=String(v||"").trim().toLowerCase();if(!v)return null;const T=evTypes(),ex=T.find((t)=>t.toLowerCase()===v);if(ex)return ex;let m=T.filter((t)=>t.toLowerCase().startsWith(v));if(m.length===1)return m[0];m=T.filter((t)=>t.toLowerCase().includes(v));return m.length===1?m[0]:null};
 document.addEventListener("focusin",(e)=>{if(e.target.id==="ed_typ"){e.target.dataset.prev=e.target.value;e.target.placeholder=e.target.value||"tippen oder wählen";e.target.value=""}});
 const evSnap=(el)=>{const r=evTypRes(el.value);el.value=r||el.dataset.prev||el.value};
-const edArt=()=>{const t=evTypRes($("#ed_typ").value)||$("#ed_typ").value,g=$("#ed_gm"),sw=$("#ed_spw");if(sw)sw.style.display=NFB.includes(t)?"none":"contents";if(!g)return;const gm=isGameTyp(t);g.hidden=!gm;if(!gm)return;const a=arten().find((x)=>x.name===t)||{};if($("#ed_fo")&&!$("#ed_fo").dataset.t)$("#ed_fo").value=a.form||"";if($("#ed_da")&&!$("#ed_da").dataset.t)$("#ed_da").value=a.dauer||""};
+const edArt=()=>{const t=evTypRes($("#ed_typ").value)||$("#ed_typ").value,g=$("#ed_gm"),sw=$("#ed_spw");if(sw)sw.style.display=NFB.includes(t)?"none":"contents";{const pw=$("#ed_plw");if(pw)pw.hidden=!isGameTyp(t)}if(!g)return;const gm=isGameTyp(t);g.hidden=!gm;if(!gm)return;const a=arten().find((x)=>x.name===t)||{};if($("#ed_fo")&&!$("#ed_fo").dataset.t)$("#ed_fo").value=a.form||"";if($("#ed_da")&&!$("#ed_da").dataset.t)$("#ed_da").value=a.dauer||""};
 document.addEventListener("change",(e)=>{if(e.target.id==="ed_typ"){evSnap(e.target);edArt()}if(e.target.id==="ed_fo"||e.target.id==="ed_da")e.target.dataset.t="1"});
 document.addEventListener("focusout",(e)=>{if(e.target.id==="ed_typ"){evSnap(e.target);edArt()}});
 document.addEventListener("keydown",(e)=>{if(e.target.id==="ed_typ"&&e.key==="Enter"){e.preventDefault();evSnap(e.target)}});
@@ -2820,7 +2825,7 @@ function openEv(id){
    +'<span id="ed_gm" style="display:contents"'+(isGameTyp(d.typ)?"":" hidden")+">"+fld("","Spielform",'<select id="ed_fo"><option value="">–</option>'+forms().map((f)=>'<option value="'+esc(f.kuerzel)+'"'+(f.kuerzel===gf?" selected":"")+">"+esc(f.kuerzel)+"</option>").join("")+"</select>")+fld("","Spielzeit (Min.)",'<input id="ed_da" type="number" min="1" step="1" value="'+esc(gd||"")+'" style="width:90px" placeholder="–">')+fld("","Twin Games davor (Min.)",'<input id="ed_tw" type="number" min="0" step="1" value="'+esc(gg&&gg.tw?gg.tw.d:"")+'" style="width:90px" placeholder="keine">')+fld("","Spieler auf dem Platz (Twin)",'<input id="ed_tws" type="number" min="2" max="30" step="1" value="'+esc(gg&&gg.tw?gg.tw.sz:"")+'" style="width:90px" placeholder="12">')+fld("","Fahrzeit (Min., leer = automatisch)",'<input id="ed_fz" type="number" min="1" step="1" value="'+esc(d.fzm||"")+'" style="width:90px" placeholder="auto">'+((typeof gcOrt==="function"&&!gcOrt(d)&&d.ha==="A")?'<br><span style="color:var(--o)">Adresse fehlt – Fahrzeit geschätzt (20 Min.)</span>':""))+"</span>"
    +fld("","Gegner",inp("ed_geg",d.gegner,170))+fld("","Heim/Auswärts",'<select id="ed_ha"><option value="">–</option><option value="H"'+(d.ha==="H"?" selected":"")+'>Heim</option><option value="A"'+(d.ha==="A"?" selected":"")+'>Auswärts</option><option value="N"'+(d.ha==="N"?" selected":"")+">Neutral</option></select>")
    +fld("","Titel / Aktion",inp("ed_tit",d.titel,220))+fld("","Treffen",inp("ed_tr",d.treffen,100,"time"))+fld("","Beginn / Anstoß",inp("ed_be",d.beginn,100,"time"))+fld("","Ende",inp("ed_en",d.ende,100,"time"))
-   +fld("","Zeit als Text (überschreibt, z. B. „Offen“)",inp("ed_zt",d.zeit,190))+fld("","Ort",inp("ed_ort",d.ort,190))
+   +fld("","Zeit als Text (überschreibt, z. B. „Offen“)",inp("ed_zt",d.zeit,190))+fld("","Ort",inp("ed_ort",d.ort,190))+(window.__V?'<span id="ed_plw" style="display:contents"'+(isGameTyp(d.typ)?"":" hidden")+'>'+fld("","Platz (für die Platzbelegung)",'<input id="ed_pl" list="ed_pll" value="'+esc(d.platz||"")+'" placeholder="z. B. Kunstrasen" autocomplete="off" style="width:170px"><datalist id="ed_pll">'+platzNamen().map((t)=>'<option value="'+esc(t)+'">').join("")+"</datalist>")+"</span>":"")
    +'<span id="ed_spw" style="display:'+(NFB.includes(d.typ)?"none":"contents")+'">'+fld("","Schwerpunkt (nur Trainer)",inp("ed_sp",d.schwerpunkt,240))+fld("","Detail zum Schwerpunkt",inp("ed_de",d.detail,240))+"</span>"
    +'<label class="note" style="display:flex;gap:8px;align-items:flex-end;padding-bottom:6px"><input type="checkbox" id="ed_el"'+(d.eltern===false?"":" checked")+"> im Elternexport zeigen</label>"+'<label class="note" style="display:flex;gap:8px;align-items:flex-end;padding-bottom:6px"><input type="checkbox" id="ed_un"'+(d.unsicher?" checked":"")+"> Verlegung wahrscheinlich (Tag oder Zeit)</label>"+fld("","Hinweis dazu (optional)",inp("ed_ug",d.unsGrund,230))+"</div>"
    +(()=>{const ev0=e&&!e.virt?(D.events||[]).find((x)=>x.id===e.id):null,sm=ev0?serieMatches(ev0):[],sw=ev0?serieMatches(ev0,true):[];return(sm.length?'<label class="note" style="display:block;margin:0 0 10px">Wofür soll das gelten?<br><select id="ed_ser"><option value="">Nur dieser Termin</option><option value="alle">Dieser und alle '+sm.length+" späteren "+(ev0.serie?"der Serie":"mit der bisherigen Uhrzeit")+"</option>"+(sw.length&&sw.length<sm.length?'<option value="wd">Dieser und nur die '+sw.length+" späteren "+WKP[wday(ev0.datum)]+"</option>":"")+'</select><br><span class="note">Gilt fürs Speichern (Treffen, Beginn, Ende, Ort, Titel) und fürs Löschen. Einzeln angepasste Termine bleiben beim Ändern unverändert.</span></label>':"")+(e?'<div class="bar" style="margin:0 0 10px"><button class="btn" id="edx" style="color:var(--r)">Löschen</button></div>':"")})()
@@ -2858,6 +2863,7 @@ $("#med").addEventListener("click",(e)=>{
   const vv=$("#med").dataset.virt?evAll().find((x)=>x.id===$("#med").dataset.virt):null;
   const id=$("#med").dataset.id||"e"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),old=(D.events||[]).find((x)=>x.id===id)||(vv?{spielId:vv.spielId,trainId:vv.trainId}:{});
   const o={...old,id,datum:dat,bis:g("ed_bis")&&g("ed_bis")>dat?g("ed_bis"):null,typ:evTypRes($("#ed_typ").value)||(old&&old.typ)||evTypes()[0],gegner:g("ed_geg"),ha:$("#ed_ha").value,titel:g("ed_tit"),treffen:g("ed_tr"),beginn:g("ed_be"),ende:g("ed_en"),zeit:g("ed_zt"),ort:g("ed_ort"),schwerpunkt:g("ed_sp"),detail:g("ed_de"),unsicher:$("#ed_un").checked||undefined,unsGrund:$("#ed_un").checked?g("ed_ug"):undefined,eltern:$("#ed_el").checked};
+  if($("#ed_pl")){const pv=$("#ed_pl").value.trim();if(pv&&isGameTyp(o.typ))o.platz=pv.slice(0,40);else delete o.platz}
   if($("#ed_fo")){o.form=$("#ed_fo").value;o.dauer=Math.round(+$("#ed_da").value)||0}if($("#ed_tw")&&!$("#ed_tw").closest("#ed_gm").hidden)o.twd=Math.max(0,Math.round(+$("#ed_tw").value)||0);if($("#ed_tws"))o.tws=Math.round(+$("#ed_tws").value)||0;if($("#ed_fz")){const fzv=Math.round(+$("#ed_fz").value);if(fzv>0)o.fzm=fzv;else delete o.fzm}
   let serN=0;if($("#ed_ser")&&$("#ed_ser").value&&old&&old.id){const F=["treffen","beginn","ende","ort","titel"];serSel(old).forEach((x)=>{const y={...x};let ch=false;F.forEach((f)=>{if((o[f]||"")!==(old[f]||"")&&(x[f]||"")===(old[f]||"")){y[f]=o[f];ch=true}});if(ch){syncEv(y,x);delete y.form;delete y.dauer;delete y.twd;delete y.tws;save("events",x.id,y);serN++}})}
   syncEv(o,old);delete o.form;delete o.dauer;delete o.twd;delete o.tws;save("events",id,o);if(serN)setSt(serN+" weitere Termine angepasst","ok");mMonth=dat.slice(0,7);$("#med").hidden=true;$("#med").innerHTML="";renderTermine();
@@ -5992,7 +5998,7 @@ V.formHtml=(f)=>{f=String(f||"");if(!f)return"";const nm={S:"Sieg",U:"Unentschie
 function statDoc(){
   const P=D.spieler.filter((p)=>p.aktiv!==false&&p.name);
   const S=U13.saison({spieler:P,spiele:D.spiele,trainings:D.trainings,einstellungen:D.config||{zaehlendeAbwesenheiten:{e:true,u:true,v:false,t:false}}}),T=S.team,td=V.today();
-  const ev=(typeof evAll==="function"?evAll():[]).filter((e)=>typeof isGameTyp==="function"&&isGameTyp(e.typ)&&e.datum>=td).slice(0,8).map((e)=>{const m=/(\d{1,2}):(\d{2})/.exec(e.beginn||e.zeit||e.treffen||"");return{d:e.datum,z:m?m[1].padStart(2,"0")+":"+m[2]:"",g:String(e.gegner||e.titel||"").slice(0,60),h:e.ha||"",o:String(e.ort||"").slice(0,70),a:String(e.typ||"").slice(0,30)}});
+  const ev=(typeof evAll==="function"?evAll():[]).filter((e)=>typeof isGameTyp==="function"&&isGameTyp(e.typ)&&e.datum>=td).slice(0,8).map((e)=>{const m=/(\d{1,2}):(\d{2})/.exec(e.beginn||e.zeit||e.treffen||"");return{d:e.datum,z:m?m[1].padStart(2,"0")+":"+m[2]:"",g:String(e.gegner||e.titel||"").slice(0,60),h:e.ha||"",o:String(e.ort||"").slice(0,70),a:String(e.typ||"").slice(0,30),p:String(e.platz||"").slice(0,40)}});
   const lt=D.trainings.filter(U13.erreicht).map((t)=>t.datum).sort().pop()||null,ls=D.spiele.filter(U13.erreicht).map((g)=>g.datum).sort().pop()||null;
   const low=S.rows.filter((r)=>r.warnSpielzeit).length;
   return{tid:W.__TID,ak:(W.__TEAM&&W.__TEAM.ak)||"",n:P.length,tr:T.trainings,sp:T.spiele,bet:T.avgBeteiligung,betl:T.avgL2mBeteiligung,zeit:T.avgGewichtet,min:T.avgMinuten,low,lt,ls,ax:(typeof axList==="function"?axList().length:0),naechste:ev,
@@ -6059,7 +6065,7 @@ const CSS='html.vclub,html.vclub body{height:auto;min-height:100%}#vnav{position
 +'.rolpick{display:none}@media(max-width:700px){.rolpick{display:block;margin:0 0 10px}.rpc{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.rpc .btn.on{background:var(--acs);color:var(--ac);border-color:var(--ac);font-weight:600}#rolt .rc{display:none}#rolt[data-rs="0"] .rc[data-rc="0"]{display:table-cell}#rolt[data-rs="1"] .rc[data-rc="1"]{display:table-cell}#rolt[data-rs="2"] .rc[data-rc="2"]{display:table-cell}#rolt[data-rs="3"] .rc[data-rc="3"]{display:table-cell}#rolt[data-rs="4"] .rc[data-rc="4"]{display:table-cell}#rolt[data-rs="5"] .rc[data-rc="5"]{display:table-cell}#rolt[data-rs="6"] .rc[data-rc="6"]{display:table-cell}#rolt[data-rs="7"] .rc[data-rc="7"]{display:table-cell}#rolt[data-rs="8"] .rc[data-rc="8"]{display:table-cell}#rolt[data-rs="9"] .rc[data-rc="9"]{display:table-cell}#rolt[data-rs="10"] .rc[data-rc="10"]{display:table-cell}#rolt[data-rs="11"] .rc[data-rc="11"]{display:table-cell}#rolt[data-rs="12"] .rc[data-rc="12"]{display:table-cell}#rolt[data-rs="13"] .rc[data-rc="13"]{display:table-cell}#rolt[data-rs="14"] .rc[data-rc="14"]{display:table-cell}#rolt[data-rs="15"] .rc[data-rc="15"]{display:table-cell}#rolt[data-rs="16"] .rc[data-rc="16"]{display:table-cell}#rolt[data-rs="17"] .rc[data-rc="17"]{display:table-cell}#rolt[data-rs="18"] .rc[data-rc="18"]{display:table-cell}#rolt[data-rs="19"] .rc[data-rc="19"]{display:table-cell}#rolt{width:100%}#rolt td.rc,#rolt th.rc{text-align:center;width:90px}}'
 +'@media(max-width:760px){#vnav .vr{gap:8px!important}#vnav .vr>*:not(#vdrop){height:34px!important;box-sizing:border-box!important;border-radius:17px!important;font-size:13px!important;line-height:1!important}#vnav .vr #vteamb,#vnav #vacc{display:inline-flex!important;align-items:center;padding:0 14px!important;background:transparent!important;border:1px solid var(--ln)!important;color:var(--tx)!important;box-shadow:none!important}#vnav .vr #vteamb{margin-right:auto}#vnav .vr #vteamb[hidden],#vnav #vacc[hidden]{display:none!important}#vnav .vr #vsync{background:none!important;border:0!important;box-shadow:none!important;padding:0 2px!important;min-width:0!important;display:inline-flex;align-items:center}#vnav .vr #vsync::before{font-size:12px!important}}'
 +'@media(max-width:760px){#vnav .vr{margin-left:0}#vp{bottom:0}#vbody{padding:14px 12px 90px}#vbody .card.vc,#vbody .vc{padding:12px 10px}#vbody .vrow .vseg{width:100%;display:flex}#vbody .vrow .vseg .btn{flex:1}}'
-+'@media(max-width:760px){#vnav{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:6px!important;padding:5px 10px!important}#vnav .vpill{flex:1 1 auto!important;min-width:0!important;width:auto!important;max-width:none!important;justify-self:auto!important;justify-content:flex-start!important;gap:0!important;padding:3px!important;overflow:hidden!important}#vnav .vpill button{padding:6px 9px!important;font-size:13px!important}#vnav .vpill button.on{max-width:112px}#vnav .vbrand{padding:2px 6px 2px 2px!important}#vnav .vpill #vmore{margin-left:2px!important;padding:3px 10px!important;font-size:22px!important;line-height:1;color:var(--tx)!important}html[data-design="kobalt"] #vnav .vpill #vmore{color:#fff!important}#vnav .vr{flex:none!important;width:auto!important;gap:6px!important;margin:0!important}#vnav .vr #vteamb{margin:0!important;height:32px!important;padding:0 11px!important;background:var(--ac)!important;border:0!important;color:#fff!important;font-weight:700;gap:3px}#vnav .vr #vteamb *{color:#fff!important}#vnav .vr>#vsync:not(#vdrop){font-size:0!important}#vnav .vr>#vteamb:not(#vdrop){font-size:13px!important;height:32px!important;padding:0 11px!important;background:var(--ac)!important;color:#fff!important;border:0!important}html[data-design="kobalt"] #vnav .vr>#vteamb:not(#vdrop){background:#004AAD!important}html[data-design="kobalt"] #vnav .vr>#vacc:not(#vdrop){color:#fff!important;border:1px solid rgba(255,255,255,.4)!important}#vnav #vmenu button[data-m="uebersicht"]:not(.on){display:none!important}#vnav .vr>#vacc:not(#vdrop){width:32px!important;height:32px!important;padding:0!important;border-radius:50%!important;display:inline-flex!important}#vnav .vr>#vacc:not(#vdrop),#vnav #vacc{font-size:0!important;width:32px!important;height:32px!important;padding:0!important;justify-content:center;border-radius:50%!important;color:var(--tx)!important}#vnav #vacc::before{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27><circle cx=%2712%27 cy=%278%27 r=%274.5%27/><path d=%27M3 21c0-5 4-8 9-8s9 3 9 8z%27/></svg>") center/contain no-repeat;mask:url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27><circle cx=%2712%27 cy=%278%27 r=%274.5%27/><path d=%27M3 21c0-5 4-8 9-8s9 3 9 8z%27/></svg>") center/contain no-repeat}html[data-design="kobalt"] #vnav #vacc{color:#fff!important;border-color:rgba(255,255,255,.4)!important}html[data-design="kobalt"] #vnav .vr #vteamb{background:#004AAD!important}}';
++'@media(max-width:760px){#vnav{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:6px!important;padding:5px 10px!important}#vnav .vpill{flex:1 1 auto!important;min-width:0!important;width:auto!important;max-width:none!important;justify-self:auto!important;justify-content:flex-start!important;gap:0!important;padding:3px!important;overflow:hidden!important}#vnav .vpill button{padding:6px 9px!important;font-size:13px!important}#vnav .vpill button.on{max-width:112px}#vnav .vbrand{padding:2px 6px 2px 2px!important}@media(max-width:760px){#vnav .vr #vteamb[data-ak] b{display:none!important}}#vnav .vpill #vmore{margin-left:2px!important;padding:3px 10px!important;font-size:22px!important;line-height:1;color:var(--tx)!important}html[data-design="kobalt"] #vnav .vpill #vmore{color:#fff!important}#vnav .vr{flex:none!important;width:auto!important;gap:6px!important;margin:0!important}#vnav .vr #vteamb{margin:0!important;height:32px!important;padding:0 11px!important;background:var(--ac)!important;border:0!important;color:#fff!important;font-weight:700;gap:3px}#vnav .vr #vteamb *{color:#fff!important}#vnav .vr>#vsync:not(#vdrop){font-size:0!important}#vnav .vr>#vteamb:not(#vdrop){font-size:13px!important;height:32px!important;padding:0 11px!important;background:var(--ac)!important;color:#fff!important;border:0!important}html[data-design="kobalt"] #vnav .vr>#vteamb:not(#vdrop){background:#004AAD!important}html[data-design="kobalt"] #vnav .vr>#vacc:not(#vdrop){color:#fff!important;border:1px solid rgba(255,255,255,.4)!important}#vnav .vr>#vacc:not(#vdrop){width:32px!important;height:32px!important;padding:0!important;border-radius:50%!important;display:inline-flex!important}#vnav .vr>#vacc:not(#vdrop),#vnav #vacc{font-size:0!important;width:32px!important;height:32px!important;padding:0!important;justify-content:center;border-radius:50%!important;color:var(--tx)!important}#vnav #vacc::before{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27><circle cx=%2712%27 cy=%278%27 r=%274.5%27/><path d=%27M3 21c0-5 4-8 9-8s9 3 9 8z%27/></svg>") center/contain no-repeat;mask:url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27><circle cx=%2712%27 cy=%278%27 r=%274.5%27/><path d=%27M3 21c0-5 4-8 9-8s9 3 9 8z%27/></svg>") center/contain no-repeat}html[data-design="kobalt"] #vnav #vacc{color:#fff!important;border-color:rgba(255,255,255,.4)!important}html[data-design="kobalt"] #vnav .vr #vteamb{background:#004AAD!important}}';
 function css(){if(q("#vcss"))return;const s=document.createElement("style");s.id="vcss";s.textContent=CSS;document.head.appendChild(s)}
 V.css=css;
 const ini=(n)=>{n=String(n||"Verein").trim();const w=n.split(/\s+/);return w[0].length<=4?w[0]:w.slice(0,3).map((x)=>x[0]).join("").toUpperCase()};
@@ -6164,8 +6170,8 @@ function mountNav(){
     const more0=nav.querySelector("#vmore");if(more0)more0.remove();
     const sh=mk("mobsheetT");
     if(!ph()||bs.length<=2){sh.hidden=true;return}
-    const act=bs.find((b)=>b.classList.contains("on"));let keep=bs.slice(0,2);if(act&&keep.indexOf(act)<0)keep.push(act);
-    const rest=bs.filter((b)=>keep.indexOf(b)<0);rest.forEach((b)=>b.classList.add("mobx"));
+    const act=bs.find((b)=>b.classList.contains("on"));const ue=bs.find((b)=>b.dataset.m==="uebersicht"),ma=bs.find((b)=>b.dataset.m==="mannschaft");let keep=[];if(ue)keep.push(ue);if(act&&keep.indexOf(act)<0)keep.push(act);else if(ma&&keep.indexOf(ma)<0)keep.push(ma);if(!keep.length)keep=bs.slice(0,2);
+    const rest=bs.filter((b)=>keep.indexOf(b)<0);if(!rest.length){sh.hidden=true;return}rest.forEach((b)=>b.classList.add("mobx"));
     const m=document.createElement("button");m.type="button";m.id="vmore";m.textContent="⋯";m.setAttribute("aria-label","Weitere Menüpunkte");m.style.cssText="flex:none;border:0;background:none;color:var(--mu);font:inherit;font-size:18px;padding:5px 14px;border-radius:99px;cursor:pointer";
     q(".vpill",nav).appendChild(m);
     const IC=(k)=>(W.__dz&&W.__dz.icon)?W.__dz.icon(k):"";
@@ -6197,7 +6203,7 @@ function refreshNav(){
   const kEl=document.getElementById("k"),kOn=!V.cur&&kEl&&!kEl.hidden&&!document.body.classList.contains("scoutonly"),cur=V.cur?(menuOf(V.cur)||{}).id:(kOn?"kader":"mannschaft");document.documentElement.classList.toggle("vinkader",!!kOn);
   q("#vmenu",nav).innerHTML=menuVis().map((m)=>'<button type="button" role="tab" data-m="'+m.id+'" class="'+(m.id===cur?"on":"")+'">'+E(typeof m.label==="function"?m.label():m.label)+'</button>').join("");
   q("#vteamb",nav).hidden=!!V.cur&&V.cur!=="fach";
-  q("#vteamb",nav).innerHTML='<b>'+E((W.__TEAM||{}).name||"")+'</b><span class="note">'+E((W.__TEAM||{}).ak||"")+'</span> ▾';
+  {const tb=q("#vteamb",nav),T=W.__TEAM||{};tb.innerHTML='<b>'+E(T.name||"")+'</b><span class="note">'+E(T.ak||"")+'</span> ▾';if(T.ak)tb.setAttribute("data-ak","1");else tb.removeAttribute("data-ak")}
   q("#vrole",nav).innerHTML='<b class="vn">'+E((W.__VME&&(W.__VME.name||W.__VME.email.split("@")[0]))||"")+'</b><span class="vd"> · </span>'+E(V.roleLabel());
   q("#vrole",nav).title=(W.__VME&&W.__VME.email)||"";
   {const t0=document.getElementById("th"),t1=q("#vth",nav);if(t0&&t1&&document.activeElement!==t1&&t1.value!==t0.value)t1.value=t0.value}
@@ -6506,7 +6512,7 @@ V.tab({id:"teams",label:"Mannschaften",show:()=>V.isAll(),render(el){
 
 /* ---------- Start ---------- */
 function init(){
-  css();mountNav();syncTitles();hookSave();subPlan();subHinweise();subStats();subGames();
+  css();mountNav();syncTitles();hookSave();subPlan();subHinweise();subStats();subGames();try{V.subFrei&&V.subFrei()}catch(e){}
   setInterval(()=>pubStat(false),15000);setTimeout(()=>pubStat(false),4000);
 }
 if(!W.__WEB)return;
@@ -6536,12 +6542,18 @@ let pAusSrc="",pGroup=null,pDay=null,pEdit=null,pEditDay=null,pF=null,pMsg="",pM
 const PXM=1.05;
 const planOn=(s,date)=>{if(!s.pid)return true;const P=V.plan||{};if(P.aktiv)return s.pid===P.aktiv;const pl=(P.plans||[]).find((x)=>x.id===s.pid);return !pl||((!pl.von||date>=pl.von)&&(!pl.bis||date<=pl.bis))};
 const sameK=(a,b)=>!a.datum&&!b.datum&&a.tid===b.tid&&a.art===b.art&&a.platz===b.platz&&a.von===b.von&&a.bis===b.bis&&(a.txt||"")===(b.txt||"")&&(a.pid||"")===(b.pid||"")&&JSON.stringify(a.teil||[])===JSON.stringify(b.teil||[])&&!!a.teilen===!!b.teilen&&(a.gv||"")===(b.gv||"")&&(a.gb||"")===(b.gb||"");
-const isAbs=(s,date)=>((V.plan&&V.plan.aus)||[]).indexOf(s.id+"|"+date)>=0;
+V.pf=V.pf||{};V.pn=V.pn||{};
+const pfId=(s,date)=>"f~"+s.id+"~"+date;
+const pnKey=(d,sid,v)=>d+"~"+sid+"~"+v;
+const isAbs=(s,date)=>((V.plan&&V.plan.aus)||[]).indexOf(s.id+"|"+date)>=0||!!V.pf[pfId(s,date)];
+/* Übernommene Viertel eines Tages als eigene (nur für diesen Tag geltende) Einträge */
+function nahmeSlots(date){const g={};Object.keys(V.pn).forEach((k)=>{const n=V.pn[k];if(!n||n.datum!==date)return;const kk=[n.tid,n.platz,n.von,n.bis,n.art,n.qs].join("|");(g[kk]=g[kk]||{n,v:[],ids:[]});g[kk].v.push(n.v);g[kk].ids.push(k)});
+  return Object.keys(g).map((kk)=>{const x=g[kk],n=x.n;return{id:"n~"+x.ids[0],tid:n.tid,art:"Training",platz:n.platz,von:n.von,bis:n.bis,datum:date,teil:x.v.slice().sort(),txt:n.art+" (übernommen)",nahme:true,nart:n.art,nids:x.ids}})}
 /* Einträge eines Tages; abgesagte nur auf Wunsch (dann mit Markierung) */
 function slotsOn(date,withAbs){
   const pl=V.plan||{slots:[]};
   return (pl.slots||[]).filter((s)=>(s.datum?s.datum===date:(s.tag===V.dow(date)&&(!s.gv||date>=s.gv)&&(!s.gb||date<=s.gb)))&&planOn(s,date))
-    .map((s)=>isAbs(s,date)?{...s,abgesagt:true}:s).filter((s)=>withAbs||!s.abgesagt);
+    .map((s)=>isAbs(s,date)?{...s,abgesagt:true}:s).filter((s)=>withAbs||!s.abgesagt).concat(nahmeSlots(date));
 }
 V.slotsOn=slotsOn;
 const platzOn=(p,date)=>(!p.von||date>=p.von)&&(!p.bis||date<=p.bis);
@@ -6617,6 +6629,102 @@ function gridHtml(M,o){
 }
 function newForm(day){const p0=(V.plan.plaetze||[])[0]||{};return{id:"",tid:(V.teams().find((t)=>t.aktiv!==false)||{}).id||"",art:"Training",platz:p0.id||"",pid:V.plan.aktiv||"",teil:allTeil(p0),teilen:false,verdr:true,mode:"w",tage:[V.dow(day)],datum:day,von:"17:00",bis:"18:30",gv:"",gb:"",txt:""}}
 const sendHint=(tid,text)=>V.fs().doc(tid+"__vhinweise/"+V.id("h")).set({text,von:(W.__VME&&(W.__VME.name||W.__VME.email))||"",at:new Date().toISOString(),erledigt:false,art:"hinweis"});
+/* ============ Frei gewordene Viertel: Absage, Übernehmen, Zurückgeben ============ */
+let pTake=null;
+const myTeams=()=>clubTeams().filter((t)=>t.aktiv!==false&&(V.canPlan()||V.has(t.id,"bearbeiten")));
+V.myPlatzTeams=myTeams;
+const whoAmI=()=>(W.__VME&&(W.__VME.name||W.__VME.email))||"";
+const nowMin=()=>{const n=new Date();return n.getHours()*60+n.getMinutes()};
+const vTxt=(p,vs)=>p.typ==="halle"?(nCols(p)>1?(vs.length===nCols(p)?"ganze Halle":"Feld "+vs.join("+")):"Halle"):(nCols(p)>1?(vs.length===4?"ganzer Platz":"Viertel "+vs.join("+")):"Platz");
+/* alle abgesagten Einträge der nächsten 14 Tage mit den Vierteln, die noch niemand übernommen hat */
+function freeItems(){const T=V.today(),out=[],P=(V.plan&&V.plan.plaetze)||[];
+  for(let i=0;i<14;i++){const d=V.add(T,i);
+    slotsOn(d,true).filter((s)=>s.abgesagt&&!s.nahme&&s.art!=="Spiel").forEach((s)=>{const p=P.find((x)=>x.id===s.platz);if(!p)return;if(d===T&&V.min(s.bis)!=null&&V.min(s.bis)<=nowMin())return;
+      const all=teilOf(s,p);out.push({key:s.id+"|"+d,d,s,p,all,rest:all.filter((v)=>!V.pn[pnKey(d,s.id,v)])})})}
+  return out}
+V.freeItems=freeItems;
+function myTrainings(){const T=V.today(),mt=myTeams().map((t)=>t.id),out=[];
+  for(let i=0;i<14;i++){const d=V.add(T,i);slotsOn(d,true).filter((s)=>!s.nahme&&s.art==="Training"&&mt.indexOf(s.tid)>=0).forEach((s)=>out.push({d,s}))}
+  return out}
+function nahmeGroups(){const T=V.today(),g={};
+  Object.keys(V.pn).forEach((k)=>{const n=V.pn[k];if(!n||n.datum<T)return;const kk=[n.datum,n.tid,n.platz,n.qs,n.art].join("|");(g[kk]=g[kk]||{n,ks:[],vs:[]});g[kk].ks.push(k);g[kk].vs.push(n.v)});
+  return Object.keys(g).map((k)=>g[k]).sort((a,b)=>a.n.datum.localeCompare(b.n.datum)||a.n.von.localeCompare(b.n.von))}
+function freiHtml(){
+  const P=(V.plan&&V.plan.plaetze)||[],pb=(id)=>P.find((x)=>x.id===id)||{},mt=myTeams(),mtIds=mt.map((t)=>t.id);
+  const items=freeItems().filter((f)=>f.rest.length&&!V.isHid("pfh_"+f.key)&&!V.isHid("td_pfr_"+f.key));
+  const mine=mt.length?myTrainings():[],taken=nahmeGroups();
+  const lead=V.canPlan()?V.spielPlatzHints().filter((x)=>!V.isHid("td_"+x.key)).map((x)=>({k:x.key,d:x.g.d,t:x.txt})).concat(V.platzClashes(14).filter((c)=>!V.isHid("td_pcl_"+c.d+c.x.id+c.y.id)).map((c)=>({k:"pcl_"+c.d+c.x.id+c.y.id,d:c.d,t:"Doppelbelegung am "+V.fd(c.d)+": "+teamName(c.x.tid)+" und "+teamName(c.y.tid)+" ("+((V.plan.plaetze||[]).find((p)=>p.id===c.x.platz)||{}).name+"). Bitte klären, zum Beispiel die Übernahme zurücknehmen."}))):[];
+  if(!items.length&&!mine.length&&!taken.length&&!lead.length)return"";
+  const dt=(d,von,bis)=>E(V.fd(d))+" "+E(von)+"–"+E(bis);
+  let h='<div class="card vc" id="pfreibox"><h3>Frei gewordene Plätze</h3><div class="note" style="margin-bottom:8px">Sagt eine Mannschaft ihr Training ab, werden genau ihre Viertel frei. Andere Mannschaften können sie für diesen einen Tag übernehmen – wer zuerst kommt, bekommt sie. Der Standardplan bleibt unverändert.</div>';
+  if(lead.length)h+='<div class="vrow" style="flex-direction:column;align-items:stretch;gap:6px;margin-bottom:10px">'+lead.slice(0,6).map((x)=>'<div class="vrow" style="border:1px solid var(--o);background:var(--os);border-radius:10px;padding:8px 10px"><span style="flex:1;min-width:200px">'+E(x.t)+'</span><button class="btn" data-pgd="'+E(x.d)+'">Diesen Tag ansehen</button><button class="btn" data-pld="'+E(x.k)+'">Ausblenden</button></div>').join("")+(lead.length>6?'<div class="note">… und '+(lead.length-6)+' weitere Hinweise (siehe To-Dos)</div>':"")+'</div>';
+  if(!items.length)h+='<div class="note">Zurzeit ist in den nächsten 14 Tagen kein Platz frei.</div>';
+  items.forEach((f)=>{const can=mt.some((t)=>t.id!==f.s.tid);
+    h+='<div class="vrow"><span style="flex:1;min-width:200px"><b>'+dt(f.d,f.s.von,f.s.bis)+'</b> · '+E(f.p.name||"")+' · '+E(vTxt(f.p,f.rest))+' frei <span class="note">('+E(teamName(f.s.tid))+' hat abgesagt)</span></span>'+(can?'<button class="btn" data-ptake="'+E(f.key)+'">Übernehmen</button>':"")+'<button class="btn" data-pfh="'+E(f.key)+'" title="Der Hinweis kommt nicht wieder">Ausblenden</button></div>';
+    if(pTake&&pTake.key===f.key){
+      const cand=mt.filter((t)=>t.id!==f.s.tid),own=slotsOn(f.d).filter((s)=>!s.nahme&&s.art==="Training"&&s.tid===pTake.tid);
+      h+='<div class="vrow" style="flex-direction:column;align-items:flex-start;gap:8px;padding:10px;border:1px solid var(--ac);border-radius:10px;background:var(--acs)">';
+      if(cand.length>1)h+='<div><div class="note">Für welche Mannschaft?</div>'+cand.map((t)=>'<span class="vch'+(t.id===pTake.tid?" on":"")+'" data-ptm="'+E(t.id)+'" role="button" tabindex="0">'+E(t.name)+'</span>').join("")+'</div>';
+      else h+='<div class="note">Für '+E((cand[0]||{}).name||"")+'</div>';
+      h+='<div><div class="note">Welche Viertel (antippen)?</div>'+f.rest.map((v)=>'<span class="vch'+(pTake.vs.indexOf(v)>=0?" on":"")+'" data-pv="'+v+'" role="button" tabindex="0">'+E(f.p.typ==="halle"?"Feld "+v:"Viertel "+v)+'</span>').join("")+'</div>';
+      h+='<div><div class="note">Gibst du dafür dein eigenes Training an anderer Stelle zurück?</div><span class="vch'+(!pTake.own?" on":"")+'" data-pown="" role="button" tabindex="0">Nein, zusätzlich zu meinem Training</span>'+own.map((s)=>'<span class="vch'+(pTake.own===s.id?" on":"")+'" data-pown="'+E(s.id)+'" role="button" tabindex="0">Ja: '+E(pb(s.platz).name||"")+" "+E(s.von)+"–"+E(s.bis)+" zurückgeben</span>").join("")+'</div>';
+      h+='<div class="vrow"><button class="btn" id="pgo" style="background:var(--ac);color:#fff;border-color:var(--ac)"'+(pTake.vs.length?"":" disabled")+'>Verbindlich übernehmen</button><button class="btn" id="pcx">Abbrechen</button></div></div>'}
+  });
+  if(mine.length){
+    h+='<h4 style="margin:14px 0 6px">Meine Trainings in den nächsten 14 Tagen</h4>';
+    h+=mine.map((m)=>{const s=m.s,own=!!V.pf[pfId(s,m.d)],lead=s.abgesagt&&!own;
+      return'<div class="vrow"><span style="flex:1;min-width:200px"><b>'+dt(m.d,s.von,s.bis)+'</b> · '+E(teamName(s.tid))+' · '+E(pb(s.platz).name||"")+(s.abgesagt?' <span class="vbad o">abgesagt</span>':"")+'</span>'+(lead?'<span class="note">von der Leitung abgesagt</span>':s.abgesagt?'<button class="btn" data-pwi="'+E(s.id+"@"+m.d)+'">Training findet doch statt</button>':'<button class="btn" data-pab="'+E(s.id+"@"+m.d)+'">Training absagen (Viertel werden frei)</button>')+'</div>'}).join("")}
+  if(taken.length){
+    h+='<h4 style="margin:14px 0 6px">Übernommene Viertel</h4>'+taken.map((g)=>{const n=g.n,p=pb(n.platz),can=V.canPlan()||mtIds.indexOf(n.tid)>=0;
+      return'<div class="vrow"><span style="flex:1;min-width:200px"><b>'+dt(n.datum,n.von,n.bis)+'</b> · '+E(teamName(n.tid))+' · '+E(p.name||"")+' · '+E(vTxt(p,g.vs.slice().sort()))+' <span class="note">('+E(n.art)+')</span></span>'+(can?'<button class="btn" data-pbk="'+E(g.ks.join(","))+'">'+(mtIds.indexOf(n.tid)>=0?"Zurückgeben":"Übernahme zurücknehmen")+'</button>':"")+'</div>'}).join("")}
+  return h+'<div class="vmsg" id="pfmsg"></div></div>'}
+async function pfAbsage(sid,d,on){
+  const s=((V.plan&&V.plan.slots)||[]).find((x)=>x.id===sid);if(!s)return;const p=((V.plan.plaetze)||[]).find((x)=>x.id===s.platz)||{},id=pfId(s,d);
+  try{
+    if(on){const o={slot:s.id,datum:d,tid:s.tid,platz:s.platz,teil:teilOf(s,p),von:s.von,bis:s.bis,up:new Date().toISOString(),by:whoAmI()};await V.fs().doc("pfrei/"+id).set(o);V.pf[id]=o;V.log("Platz frei: "+teamName(s.tid)+" sagt am "+d+" ab",s.tid);V.toast("Abgesagt. Die Viertel sind frei; andere Mannschaften sehen einen Hinweis.")}
+    else{await V.fs().doc("pfrei/"+id).delete();delete V.pf[id];V.log("Platz wieder belegt: "+teamName(s.tid)+" am "+d,s.tid);V.toast("Training findet statt. Wurde ein Viertel schon übernommen, bekommt die Leitung einen Hinweis.")}
+  }catch(e){V.toast("Das hat nicht geklappt.",true)}
+  V.render()}
+async function pfTake(){
+  const t=pTake;if(!t||!t.tid||!t.vs.length)return;const f=freeItems().find((x)=>x.key===t.key);if(!f){V.toast("Das ist nicht mehr frei.",true);pTake=null;V.render();return}
+  const vs=t.vs.filter((v)=>f.rest.indexOf(v)>=0),tm=clubTeams().find((x)=>x.id===t.tid)||{};
+  const conflict=()=>{pTake=null;V.toast("Leider schon vergeben.",true);
+    if(V.anlNew)V.anlNew({art:"platz",betreff:"Platz nicht mehr frei: "+(tm.name||"")+" am "+V.fd(f.d),text:(tm.name||"Unsere Mannschaft")+" wollte am "+V.fd(f.d)+" "+f.s.von+"–"+f.s.bis+" auf „"+(f.p.name||"")+"“ ("+vTxt(f.p,t.vs)+") trainieren. Das war schon von einer anderen Mannschaft übernommen. Bitte um Klärung.",emp:{jl:true}});else V.render()};
+  if(!vs.length||vs.length<t.vs.length)return conflict();
+  const ownS=t.own?slotsOn(f.d).find((x)=>x.id===t.own&&!x.nahme):null;
+  const art=ownS?"Wechseln":(slotsOn(f.d).some((x)=>!x.nahme&&x.tid===t.tid&&x.platz===f.s.platz&&x.art==="Training")?"Erweitern":"Zusätzlich");
+  const made=[];
+  try{
+    for(const v of vs){const id=pnKey(f.d,f.s.id,v),o={datum:f.d,tid:t.tid,platz:f.s.platz,v,von:f.s.von,bis:f.s.bis,art,qs:f.s.id,up:new Date().toISOString(),by:whoAmI()};await V.fs().doc("pnahme/"+id).set(o);V.pn[id]=o;made.push(id)}
+    if(ownS){await pfAbsage(ownS.id,f.d,true)}
+    V.log("Platz übernommen: "+(tm.name||"")+" am "+f.d+" ("+f.p.name+", "+vTxt(f.p,vs)+", "+art+")",t.tid);
+    try{if(t.tid===W.__TID&&window.__platzOrt)window.__platzOrt(f.d,f.p.name||"")}catch(x){}
+    V.toast("Übernommen: "+(f.p.name||"")+", "+vTxt(f.p,vs)+" am "+V.fd(f.d)+".");pTake=null;V.render()
+  }catch(e){for(const id of made){try{await V.fs().doc("pnahme/"+id).delete()}catch(x){}delete V.pn[id]}conflict()}}
+async function pfBack(ks){
+  try{for(const k of ks){await V.fs().doc("pnahme/"+k).delete();delete V.pn[k]}V.log("Platz zurückgegeben");V.toast("Zurückgegeben. Die Viertel sind wieder frei.")}catch(e){V.toast("Das hat nicht geklappt.",true)}V.render()}
+/* Hinweise für die Leitung: Überschneidungen durch Übernahmen und Spiele mit Platzangabe */
+V.platzDay=(d)=>{pDay=d;pMode="tag"};
+V.platzClashes=function(days){const out=[],T=V.today(),P=(V.plan&&V.plan.plaetze)||[];
+  for(let i=0;i<days;i++){const d=V.add(T,i),live=slotsOn(d).map((s)=>({...s,a:V.min(s.von),b:V.min(s.bis)})).filter((s)=>s.a!=null&&s.b!=null);
+    for(let x=0;x<live.length;x++)for(let y=x+1;y<live.length;y++)if((live[x].nahme||live[y].nahme)&&clashOf(live[x],live[y],P.find((p)=>p.id===live[x].platz)||{}))out.push({d,x:live[x],y:live[y]})}
+  return out};
+V.spielPlatzHints=function(){const out=[],T=V.today(),P=(V.plan&&V.plan.plaetze)||[],sl=(V.plan&&V.plan.slots)||[];
+  Object.keys(V.st).forEach((k)=>{const st=V.st[k];if(!st||!st.naechste||!st.tid)return;
+    st.naechste.forEach((g)=>{if(!g.p||g.d<T||g.d>V.add(T,21))return;
+      const pn=g.p.toLowerCase(),ids=P.filter((x)=>{const n=(x.name||"").toLowerCase();return n&&(n===pn||n.indexOf(pn)>=0||pn.indexOf(n)>=0)}).map((x)=>x.id);
+      if(sl.some((x)=>x.datum===g.d&&x.tid===st.tid&&x.art==="Spiel"&&ids.indexOf(x.platz)>=0))return;
+      const a=V.min(g.z)==null?10*60:V.min(g.z),b=a+120;
+      const conf=slotsOn(g.d).filter((x)=>x.tid!==st.tid&&x.art!=="Spiel"&&ids.indexOf(x.platz)>=0&&V.min(x.von)!=null&&V.min(x.von)<b&&V.min(x.bis)>a);
+      const names=Array.from(new Set(conf.map((x)=>teamName(x.tid))));
+      out.push({key:"sp_"+st.tid+"_"+g.d+"_"+(g.z||"")+"_"+g.p,g:{...g,tid:st.tid},txt:"Spiel "+teamName(st.tid)+" am "+V.fd(g.d)+(g.z?" um "+g.z:"")+" auf „"+g.p+"“: Bitte Platz- und Kabinenbelegung anpassen."+(names.length?" Das überschneidet sich mit dem Training von "+names.join(", ")+".":"")})})});
+  return out.sort((x,y)=>x.g.d.localeCompare(y.g.d))};
+/* Daten dazu abonnieren */
+function subFrei(){const T=V.today(),fs=V.fs();if(!fs||V.__pfsub)return;V.__pfsub=true;
+  const lis=(name,st)=>{let c=fs.collection(name);try{c=c.where("datum",">=",V.add(T,-1))}catch(e){}
+    try{c.onSnapshot((s)=>{const o={};s.docs.forEach((d)=>{o[d.id]=d.data()});V[st]=o;try{V.refreshNav&&V.refreshNav()}catch(e){}if(V.cur&&/platz|todos|uebersicht/.test(V.cur)&&!V.typing())V.render()},()=>{})}catch(e){}};
+  lis("pfrei","pf");lis("pnahme","pn")}
+V.subFrei=subFrei;
 V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(el){
   if(V.typing())return;
   const plan=V.plan;if(!plan){el.innerHTML='<div class="note">Lädt …</div>';return}
@@ -6656,6 +6764,7 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
   }
   h+='<div class="vrow" style="margin-top:8px"><button class="btn" id="pexp">Standardwoche als A4-Bild speichern</button><span class="note">Der Plan zeigt Montag bis Freitag.</span></div><div class="vmsg" id="pxm"></div>';
   h+='</div>';
+  h+=freiHtml();
   /* Spiele an diesem Tag und Heimspiele ohne Platz */
   const games=[];Object.keys(V.st).forEach((k)=>{const s=V.st[k];if(s&&s.naechste&&s.tid)s.naechste.forEach((g)=>games.push({...g,tid:s.tid}))});
   const gday=games.filter((g)=>g.d===day);
@@ -6712,6 +6821,18 @@ V.tab({id:"platz",label:"Platzbelegung",show:()=>V.rolle()!=="platzwart",render(
     const d=t.closest("[data-d]");if(d){pDay=d.dataset.d;if(d.dataset.gotoday)pMode="tag";redraw();return}
     if(t.id==="pexp"){exportWeek(el);return}
     const ap=t.closest("[data-ap]");if(ap){if(!ed)return;try{await V.savePlan({aktiv:ap.dataset.ap});V.log("Platzplan: gültiger Plan = "+(ap.textContent||""))}catch(x){}return}
+    const pgd=t.closest("[data-pgd]");if(pgd){pDay=pgd.dataset.pgd;pMode="tag";redraw();return}
+    const pld=t.closest("[data-pld]");if(pld){V.hide("td_"+pld.dataset.pld,21);redraw();return}
+    const ptk=t.closest("[data-ptake]");if(ptk){const f=freeItems().find((x)=>x.key===ptk.dataset.ptake);if(f){const c=myTeams().filter((x)=>x.id!==f.s.tid);pTake={key:f.key,tid:(c[0]||{}).id,vs:f.rest.slice(),own:""};redraw()}return}
+    const ptm=t.closest("[data-ptm]");if(ptm&&pTake){pTake.tid=ptm.dataset.ptm;pTake.own="";redraw();return}
+    const pv=t.closest("[data-pv]");if(pv&&pTake){const n=+pv.dataset.pv,i=pTake.vs.indexOf(n);if(i>=0)pTake.vs.splice(i,1);else pTake.vs.push(n);pTake.vs.sort();redraw();return}
+    const pow=t.closest("[data-pown]");if(pow&&pTake){pTake.own=pow.dataset.pown;redraw();return}
+    if(t.id==="pcx"){pTake=null;redraw();return}
+    if(t.id==="pgo"){await pfTake();return}
+    const pfh=t.closest("[data-pfh]");if(pfh){V.hide("pfh_"+pfh.dataset.pfh,14);redraw();return}
+    const pab=t.closest("[data-pab]");if(pab){const [sid,d]=pab.dataset.pab.split("@");await pfAbsage(sid,d,true);return}
+    const pwi=t.closest("[data-pwi]");if(pwi){const [sid,d]=pwi.dataset.pwi.split("@");await pfAbsage(sid,d,false);return}
+    const pbk=t.closest("[data-pbk]");if(pbk){await pfBack(pbk.dataset.pbk.split(","));return}
     if(!ed)return;
     const ch=t.closest("[data-c]");if(ch){readForm();const n=+ch.dataset.c.slice(1),i=pF.tage.indexOf(n);if(i>=0)pF.tage.splice(i,1);else pF.tage.push(n);redraw();return}
     const qc=t.closest("[data-q]");if(qc&&pF){readForm();const n=+qc.dataset.q,i=pF.teil.indexOf(n);if(i>=0)pF.teil.splice(i,1);else pF.teil.push(n);pF.teil.sort();redraw();return}
@@ -8471,7 +8592,7 @@ V.kfSL=SL;V.kfEndMs=endMs;V.kfIso=msIso;V.kfSeasonEnd=seasonEnd;
 (function(){
 "use strict";
 const W=window;
-if(!W.__WEB||W.__DEMO||!W.__V)return;
+if(!W.__WEB||!W.__V)return;
 const V=W.__V,E=V.E,q=V.q;
 const ART={kader:"Zugriff auf eine Kaderplanung",rechte:"Rechte oder Zugang ändern",platz:"Platz- oder Kabinenbelegung",spieler:"Spieler eintragen",sonst:"Etwas anderes"};
 const EMP=[["sl","Sportliche Leitung"],["jl","Jugendleitung"],["ad","Administrator"]];
@@ -8494,17 +8615,19 @@ function sub(){
   if(V.rolle()==="admin")subs.push(fs.collection("anliegen").where("r_ad","==",true).onSnapshot(put,err));
   if(isSL())subs.push(fs.collection("anliegen").where("r_sl","==",true).onSnapshot(put,err));
 }
-let tm=null;function after(){clearTimeout(tm);tm=setTimeout(()=>{try{V.refreshNav&&V.refreshNav()}catch(e){}if(V.cur==="anliegen"&&!V.typing())V.render()},150)}
+let tm=null;function after(){clearTimeout(tm);tm=setTimeout(()=>{try{V.refreshNav&&V.refreshNav()}catch(e){}if((V.cur==="anliegen"||V.cur==="todos")&&!V.typing())V.render()},150)}
 /* ---------- Menü ---------- */
 V.tab({id:"anliegen",label:"Anliegen",show:()=>true,stop(){},render(el){sub();draw(el)}});
-if(V.MENU&&!V.MENU.some((m)=>m.id==="anliegen")){const i=V.MENU.findIndex((m)=>m.id==="personen");V.MENU.splice(i<0?V.MENU.length:i,0,{id:"anliegen",label:()=>{const n=openForMe();return"Anliegen"+(n?" ("+n+")":"")},tabs:["anliegen"]})}
+/* Kein eigener Menüpunkt mehr: Anliegen stehen unter „To-Dos“ */
+if(V.MENU){const i=V.MENU.findIndex((m)=>m.id==="anliegen");if(i>=0)V.MENU.splice(i,1)}
+V.anlEmbed=(el)=>{if(!el)return;sub();draw(el,true)};
 setTimeout(sub,2500);
 /* ---------- Ansicht ---------- */
-function say(t,bad){ui.msg=t;ui.bad=!!bad;if(V.toast)V.toast(t,bad);if(V.cur==="anliegen")V.render()}
+function say(t,bad){ui.msg=t;ui.bad=!!bad;if(V.toast)V.toast(t,bad);if(V.cur==="anliegen"||V.cur==="todos")V.render()}
 function empfLabel(a){return EMP.filter((e)=>a["r_"+e[0]]).map((e)=>e[1]).join(", ")}
-function draw(el){
+function draw(el,emb){
   const css=q("#anlcss");if(!css){const s=document.createElement("style");s.id="anlcss";s.textContent='.anl .ar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--ln)}.anl .ar:first-of-type{border-top:0}.anl .ar .w{flex:1;min-width:180px}.anl .st{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;background:var(--ys);color:var(--y)}.anl .st.ok{background:var(--gs);color:var(--g)}.anl .msgb{padding:8px 10px;border-radius:10px;background:var(--bg2,rgba(127,127,127,.12));margin:6px 0}.anl .msgb small{display:block;color:var(--mut,gray)}.anl textarea{width:100%;min-height:90px}.anl .ms{min-height:18px;margin-top:6px}';document.head.appendChild(s)}
-  let h='<div class="anl"><h2>Anliegen</h2><p class="sub note">Schreibe der Leitung, wenn dir ein Recht fehlt oder du etwas brauchst. Es wird keine E-Mail verschickt: Die Empfänger sehen die Anfrage hier in der App.</p>';
+  let h='<div class="anl">'+(emb?'<h3 style="margin:22px 0 4px">Anliegen an die Leitung</h3>':'<h2>Anliegen</h2>')+'<p class="sub note">Schreibe der Leitung, wenn dir ein Recht fehlt oder du etwas brauchst. Es wird keine E-Mail verschickt: Die Empfänger sehen die Anfrage hier in der App.</p>';
   if(ui.view==="new")h+=formHtml();
   else if(ui.view==="one"&&L[ui.sel])h+=oneHtml(L[ui.sel]);
   else h+=listHtml();
@@ -8513,7 +8636,7 @@ function draw(el){
 function listHtml(){
   const all=list(),inb=all.filter(forMe),out=all.filter(mine);
   const row=(a)=>'<div class="ar" data-open="'+E(a.id)+'" role="button" tabindex="0"><div class="w"><b>'+E(a.betreff)+'</b><div class="note">'+(mine(a)?"An: "+E(empfLabel(a)):"Von: "+E(a.vname||a.von))+" · "+E(ART[a.art]||"")+" · "+E(fdt(a.up||a.at))+'</div>'+(a.byn&&a.st==="erledigt"?'<div class="note">bearbeitet von '+E(a.byn)+'</div>':'')+'</div><span class="st'+(a.st==="erledigt"?" ok":"")+'">'+(a.st==="erledigt"?"erledigt":"offen")+'</span></div>';
-  let h='<div class="bar" style="margin:0 0 10px"><button class="btn" id="anew" style="background:var(--ac);color:#fff;border-color:var(--ac)">＋ Neue Anfrage</button></div>';
+  let h='<div class="bar" style="margin:0 0 10px"><button class="btn" id="anew" style="background:var(--ac);color:#fff;border-color:var(--ac)">＋ Anliegen an die Leitung</button></div>';
   if(inb.length)h+='<div class="card"><h3>An mich'+(openForMe()?' <span class="st">'+openForMe()+' offen</span>':"")+'</h3>'+inb.map(row).join("")+'</div>';
   h+='<div class="card" style="margin-top:12px"><h3>Von mir</h3>'+(out.length?out.map(row).join(""):'<p class="note">Du hast noch keine Anfrage gestellt.</p>')+'</div>';
   return h}
@@ -8580,8 +8703,8 @@ async function send(el){
 }
 /* Kurzwege aus anderen Stellen der App */
 V.anlN=openForMe;
-V.anlNew=(o)=>{o=o||{};ui.view="new";ui.draft={art:o.art||"sonst",betreff:o.betreff||"",text:o.text||"",emp:o.emp||{jl:true},sp:{}};ui.msg="";sub();if(V.go)V.go("anliegen");else V.open&&V.open("anliegen")};
-document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.closest("[data-anl]");if(!b)return;e.preventDefault();const k=b.dataset.anl;if(k==="x"){ui.view="list";sub();V.go&&V.go("anliegen");return}
+V.anlNew=(o)=>{o=o||{};ui.view="new";ui.draft={art:o.art||"sonst",betreff:o.betreff||"",text:o.text||"",emp:o.emp||{jl:true},sp:{}};ui.msg="";sub();if(V.go)V.go("todos");else V.open&&V.open("todos")};
+document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.closest("[data-anl]");if(!b)return;e.preventDefault();const k=b.dataset.anl;if(k==="x"){ui.view="list";sub();V.go&&V.go("todos");return}
   V.anlNew(k==="kader"?{art:"kader",betreff:"Zugriff auf die Kaderplanung "+((W.__TEAM||{}).name||""),emp:{jl:true,sl:true}}:{art:k})});
 })();
 
@@ -8589,7 +8712,7 @@ document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.close
 (function(){
 "use strict";
 const W=window;
-if(!W.__WEB||W.__DEMO||!W.__V)return;
+if(!W.__WEB||!W.__V)return;
 const V=W.__V,E=V.E,q=V.q;
 const em=()=>String((W.__VME&&W.__VME.email)||"").toLowerCase();
 const myName=()=>(W.__VME&&(W.__VME.name||W.__VME.email))||"";
@@ -8623,10 +8746,19 @@ function autos(){
     const vz=(W.__VEREIN||{}).sw&&W.__VEREIN.sw.vollzug;
     if(mo>=6&&mo<=8&&(!vz||!vz.at||new Date(vz.at)<new Date(now.getFullYear(),5,1)))add("sw"+now.getFullYear(),"Der Saisonwechsel steht an.",'<button class="btn" data-goteams="1">Vorbereiten</button>');
   }
+  /* Platz: frei gewordene Viertel (für Trainer anderer Mannschaften), Spiele mit Platzangabe und Doppelbelegungen (für die Leitung) */
+  try{
+    const mt=V.myPlatzTeams?V.myPlatzTeams():[];
+    if(mt.length&&V.freeItems)V.freeItems().filter((f)=>f.rest.length&&mt.some((t)=>t.id!==f.s.tid)&&!V.isHid("pfh_"+f.key)).forEach((f)=>add("pfr_"+f.key,"Platz frei: "+V.tname(f.s.tid)+" hat am "+V.fdl(f.d)+" ("+f.s.von+"–"+f.s.bis+") abgesagt. "+(f.p.name||"")+" ist frei.",'<button class="btn" data-gopz="'+E(f.d)+'">Ansehen</button>',14));
+    if(V.canPlan&&V.canPlan()){
+      if(V.spielPlatzHints)V.spielPlatzHints().forEach((x)=>add(x.key,x.txt,'<button class="btn" data-gopz="'+E(x.g.d)+'">Zur Platzbelegung</button>',21));
+      if(V.platzClashes)V.platzClashes(14).forEach((c)=>add("pcl_"+c.d+c.x.id+c.y.id,"Doppelbelegung am "+V.fdl(c.d)+": "+V.tname(c.x.tid)+" und "+V.tname(c.y.tid)+". Bitte klären, zum Beispiel die Übernahme zurücknehmen.",'<button class="btn" data-gopz="'+E(c.d)+'">Ansehen</button>',21))}
+  }catch(e){}
   const kf=(W.__VME&&W.__VME.kf)||{};
   Object.keys(kf).forEach((tid)=>{const b=kf[tid]&&kf[tid].bis;if(b&&b>Date.now()&&b-Date.now()<7*864e5)add("mykf_"+tid+"_"+b,"Dein Zugriff auf die Kaderplanung von "+V.tname(tid)+" läuft am "+V.fdl(V.iso(new Date(b)))+" ab.",'<button class="btn" data-goanl="1">Anliegen schreiben</button>')});
   return out}
 const nOpen=()=>{try{return autos().length+myOpen().length}catch(e){return 0}};
+V.todoN=nOpen;
 /* ---------- Menü ---------- */
 V.tab({id:"todos",label:"To-Dos",show:()=>true,stop(){},render(el){sub();people();draw(el)}});
 if(V.MENU&&!V.MENU.some((m)=>m.id==="todos")){const i=V.MENU.findIndex((m)=>m.id==="mannschaft");V.MENU.splice(i<0?1:i+1,0,{id:"todos",label:()=>{const n=nOpen();return"To-Dos"+(n?" ("+n+")":"")},tabs:["todos"]})}
@@ -8651,7 +8783,7 @@ function draw(el){
   h+=open.map(row).join("")+'</div>';
   if(given.length)h+='<div class="card vc"><h3>Von dir an andere</h3>'+given.map(row).join("")+'</div>';
   if(done.length)h+='<div class="card vc"><h3>Erledigt <button class="btn" data-vtdshow="1" style="margin-left:8px">'+(showDone?"Verbergen":"Anzeigen")+'</button></h3>'+(showDone?done.map(row).join(""):"")+'</div>';
-  h+='</div>';el.innerHTML=h}
+  h+='<div id="anlbox"></div></div>';el.innerHTML=h;try{if(V.anlEmbed)V.anlEmbed(q("#anlbox",el))}catch(e){}}
 async function add(el){
   const t=q("#vtdt",el),d=q("#vtdd",el),w=q("#vtdw",el),text=(t.value||"").trim();
   if(!text){ui={msg:"Bitte erst das To-Do eintragen.",bad:true};V.render();return}
@@ -8660,13 +8792,14 @@ async function add(el){
   try{await V.fs().doc("todos/"+id).set(o);L[id]={id,...o};ui={msg:"",bad:false};V.toast(fuer?"To-Do für "+(o.fname||fuer)+" angelegt. Die Person sieht es unter „To-Dos“.":"To-Do angelegt.");V.render();const n=q("#vtdt");if(n)n.focus()}
   catch(e){ui={msg:"Das konnte nicht gespeichert werden.",bad:true};V.render()}}
 document.addEventListener("click",async(e)=>{
-  const b=e.target.closest&&e.target.closest("#panel [data-vtdok],[data-vtdok],[data-vtddel],[data-vtdshow],#vtdadd,[data-goanf],[data-gotm],[data-goteams],[data-goanl]");if(!b)return;
+  const b=e.target.closest&&e.target.closest("#panel [data-vtdok],[data-vtdok],[data-vtddel],[data-vtdshow],#vtdadd,[data-goanf],[data-gotm],[data-goteams],[data-goanl],[data-gopz]");if(!b)return;
   if(b.id==="vtdadd"){add(b.closest(".vtd"));return}
   if(b.dataset.vtdshow){showDone=!showDone;V.render();return}
+  if(b.dataset.gopz){V.platzDay&&V.platzDay(b.dataset.gopz);V.go("platz");return}
   if(b.dataset.goanf!==undefined){V.go("personen");return}
   if(b.dataset.gotm){V.setTeam&&V.setTeam(b.dataset.gotm);return}
   if(b.dataset.goteams!==undefined){V.go("teams","saison");return}
-  if(b.dataset.goanl!==undefined){V.go("anliegen");return}
+  if(b.dataset.goanl!==undefined){V.anlNew?V.anlNew({art:"kader",betreff:"Zugriff auf die Kaderplanung",emp:{jl:true,sl:true}}):V.go("todos");return}
   if(b.dataset.vtdok){const t=L[b.dataset.vtdok];if(!t)return;const done=!t.done,u={done,doneAt:done?new Date().toISOString():""};
     try{await V.fs().doc("todos/"+t.id).update(u);L[t.id]={...t,...u};if(done)V.toast("Erledigt: "+t.text.slice(0,60));V.render()}catch(x){V.toast("Das konnte nicht gespeichert werden.",true)}return}
   if(b.dataset.vtddel){const t=L[b.dataset.vtddel];if(!t)return;
