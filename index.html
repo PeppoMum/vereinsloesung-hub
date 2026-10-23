@@ -2214,6 +2214,7 @@ const saveLink=(pid,o)=>{
   return save("links",pid,d)};
 /* ---------- Kurzlinks (Trainer) ---------- */
 const kzVid=(pid)=>{const v=["xfull","xanon","xplan","xdemo"].includes(pid)?pid.slice(1):pid;return window.__TID?window.__TID+"~"+v:v},kzA={};
+window.__kzAids=()=>Object.values(kzA);
 async function kzPre(){await Promise.all(Object.keys(L).filter((k)=>L[k].alias&&!kzA[L[k].alias]).map(async(k)=>{kzA[L[k].alias]=await kzId(L[k].alias)}))}
 async function kzSet(pid,alias,key,aktiv,open,pw0){
   const Tr=window.__kurzTr,aid=await kzId(alias),t=newKey();
@@ -2354,6 +2355,7 @@ function renderCo(){
 /* ---------- Link-Prüfung: Warnung oben, wenn Links nicht (mehr) funktionieren ---------- */
 let lkErr="",lkTok=0,lkBusy=false,lkQuiet=0;const LK_AUSW_TAGE=3;
 const lkMark=(t)=>{const d=new Date(t);d.setHours(23,0,0,0);if(d.getTime()>t)d.setDate(d.getDate()-1);return d.getTime()};/* letzter 23:00-Uhr-Zeitpunkt */
+let lkAutoN=0;
 async function lkHealth(){
   const box=document.getElementById("lkw");if(!box||window.__RO||window.__VIEWER||window.__DEMO||!D.ready||(window.__WEB&&!window.__webSnapReady))return;
   const my=++lkTok,E=[],W=[],P=active(),nm=(p)=>p.vorname+" "+p.name,pubIds=Object.keys(SNAP.k||{});
@@ -2374,7 +2376,10 @@ async function lkHealth(){
   const fpp=await fingerprintParts();if(my!==lkTok)return;
   if(window.__WEB){/* Web-Version: automatisch veröffentlichen (Link-Änderungen sofort, neue Daten alle 6 Stunden) */
     const now=Date.now(),changed=!SNAP.fa||SNAP.fa!==fpp.a||SNAP.fs!==fpp.s,daily=pubIds.length>0&&changed&&now-(Date.parse(SNAP.u||"")||0)>=216e5,dzChg=pubIds.length>0&&SNAP.dzs!==dzSig(),struct=nOn.length>0||xMiss>0||off>0||dzChg;
-    if((struct||daily)&&!lkBusy&&now>lkQuiet&&window.__lkPublish&&window.__ROLE!=="lesen"){lkQuiet=now+9e4;window.__lkPublish(true)}
+    /* Bremse: klappt es nach einem automatischen Veröffentlichen immer noch nicht, wird der Abstand jedes Mal verdoppelt (1,5 Min. … höchstens 6 Std.),
+       damit ein hängender Link nicht den ganzen Tag lang alle Links neu hochlädt und das Tageslimit der Datenbank aufbraucht. */
+    if(!struct&&!daily)lkAutoN=0;
+    else if(!lkBusy&&now>lkQuiet&&window.__lkPublish&&window.__ROLE!=="lesen"){lkQuiet=now+Math.min(9e4*Math.pow(2,lkAutoN),216e5);lkAutoN++;window.__lkPublish(true)}
     for(let i=E.length-1;i>=0;i--)if(/noch nicht online/.test(E[i]))E.splice(i,1);W.length=0}
   /* Warnung nur, wenn Eltern etwas Veraltetes sehen, das wichtig ist: Termine, Hinweise, Kontakte, Notizen sofort;
      eingetragene Anwesenheit/Minuten erst, wenn der Stand in den Links mehrere Tage alt ist. */
@@ -2460,11 +2465,11 @@ if(T("lkt")){
       if(!art)throw{code:"not_granted"};
       const snap=await buildSnap(),html=window.__WEB?snap:composeHtml(snap);
       m.textContent="Wird veröffentlicht … ("+Object.keys(snap.p).length+" Links aktiv"+(window.__WEB?"":", "+Math.round(html.length/1024)+" KB")+")";
-      await art.publish(html);lkErr="";try{setSt("Links aktualisiert","ok")}catch(x){}lkQuiet=Date.now()+9e4;setTimeout(lkHealth,1500);
+      await art.publish(html);lkErr="";try{setSt("Links aktualisiert","ok")}catch(x){}lkQuiet=Math.max(lkQuiet,Date.now()+9e4);setTimeout(lkHealth,1500);
       m.textContent=window.__WEB?(auto?"Automatisch aktualisiert ("+new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr).":"Veröffentlicht. Die Links zeigen jetzt den aktuellen Stand."):"Veröffentlicht. Die Seite lädt gleich neu.";
     }catch(e){
       const c=e&&e.code,map={conflict:"Zwischenzeitlich wurde eine neuere Version veröffentlicht. Die Seite lädt neu – bitte danach erneut aktualisieren.",not_writer:"Nur der Eigentümer der Seite kann veröffentlichen.",not_granted:"Veröffentlichen ist in dieser Ansicht nicht freigegeben.",not_declared:"Veröffentlichen ist für diese Seite nicht freigegeben.",capability_disabled:"Veröffentlichen ist für diese Seite nicht möglich (evtl. wegen der öffentlichen Freigabe).",capability_removed:"Veröffentlichen ist in dieser Ansicht nicht verfügbar.",too_large:"Die Seite ist zu groß (Fotos verkleinern?).",rate_limited:"Zu oft veröffentlicht – bitte kurz warten.",invalid_content:"Die Seite wurde vom System nicht als gültig angenommen."};
-      lkQuiet=Date.now()+6e5;m.className="note warn";lkErr=(map[c]||"Veröffentlichen fehlgeschlagen"+(c?" ("+c+")":""));lkHealth();m.textContent=(map[c]||"Veröffentlichen fehlgeschlagen"+(c?" ("+c+")":"")+".")+(e&&e.message&&!c?" "+e.message:"");
+      lkQuiet=Math.max(lkQuiet,Date.now()+6e5);m.className="note warn";lkErr=(map[c]||"Veröffentlichen fehlgeschlagen"+(c?" ("+c+")":""));lkHealth();m.textContent=(map[c]||"Veröffentlichen fehlgeschlagen"+(c?" ("+c+")":"")+".")+(e&&e.message&&!c?" "+e.message:"");
     }
     b.disabled=false;lkBusy=false;
   };

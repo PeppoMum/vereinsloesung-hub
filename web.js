@@ -503,9 +503,11 @@ async function publishSnap(snap){
   for(const k of Object.keys(snap.x||{}))await put(pre("x")+k,snap.x[k]);
   if(snap.bg){let bg=clean(snap.bg);if(JSON.stringify(bg).length>900000)bg={L:bg.L||"",D:bg.D||"",i:""};keep.add("bg_"+tid);await fs.doc("pub/bg_"+tid).set(bg)}
   keep.add("scout_"+tid);
-  const all=await fs.collection("pub").get();
-  for(const d of all.docs){const mine=d.id.indexOf(pre("p"))===0||d.id.indexOf(pre("x"))===0||d.id==="bg_"+tid;if(mine&&!keep.has(d.id))await fs.doc("pub/"+d.id).delete()}
-  await fs.doc(T("linkmeta/main")).set({u:snap.u,k:snap.k||{},xk:snap.xk||{},fp:snap.fp||"",fa:snap.fa||"",fs:snap.fs||"",dzs:snap.dzs||""});
+  /* Alte Fächer aufräumen: die Liste vom letzten Mal steht in linkmeta (spart das Lesen der ganzen Sammlung aller Mannschaften) */
+  let prev=null;try{const m=await fs.doc(T("linkmeta/main")).get();prev=m.exists&&Array.isArray(m.data().ids)?m.data().ids:null}catch(e){}
+  if(!prev){const all=await fs.collection("pub").get();prev=all.docs.map((d)=>d.id).filter((id)=>id.indexOf(pre("p"))===0||id.indexOf(pre("x"))===0||id==="bg_"+tid)}
+  for(const id of prev)if(!keep.has(id))await fs.doc("pub/"+id).delete();
+  await fs.doc(T("linkmeta/main")).set({u:snap.u,k:snap.k||{},xk:snap.xk||{},fp:snap.fp||"",fa:snap.fa||"",fs:snap.fs||"",dzs:snap.dzs||"",ids:[...keep].filter((id)=>id!=="scout_"+tid)});
 }
 /* Konten: Stand fürs Kind veröffentlichen (kview/<mannschaft>~<spieler>, bei großen Daten in Teilen) */
 if(!isViewerHash&&!isScout)window.__kvPut=async function(tid,pid,m){
@@ -529,8 +531,20 @@ window.__webOwnerSnap=function(cb){
     window.__webSnapReady=true;cb(s);
   };
   const later=()=>{clearTimeout(tm);tm=setTimeout(build,150)};
-  fs.collection("pub").onSnapshot((s)=>{docs=s.docs;later()},()=>{});
-  fs.doc(T("linkmeta/main")).onSnapshot((s)=>{meta=s.exists?s.data():{};later()},()=>{});
+  /* Sparsam: nicht die ganze Sammlung „pub“ (alle Mannschaften) beobachten, sondern nur den eigenen Stand (linkmeta)
+     und nach jeder Veröffentlichung gezielt die eigenen Fächer lesen; Kurzlink-Fächer einzeln beobachten. */
+  const own={},al={},alU={};let tok=0;const tp="_"+window.__TID+"_";
+  const merge=()=>{docs=Object.keys(own).concat(Object.keys(al)).map((id)=>{const v=own[id]||al[id];return{id,data:()=>v}});later()};
+  const one=async(id)=>{try{const s=await fs.doc("pub/"+id).get();return s.exists?s.data():null}catch(e){return null}};
+  const fetchOwn=async(m)=>{const my=++tok,o={},bases=Object.keys(m.k||{}).map((k)=>"p"+tp+k).concat(Object.keys(m.xk||{}).map((k)=>"x"+tp+k));
+    await Promise.all(bases.map(async(id)=>{const d=await one(id);if(!d)return;o[id]=d;for(let i=1;i<(d.n||1);i++){const c=await one(id+"~"+i);if(c)o[id+"~"+i]=c}}));
+    if(my!==tok)return;Object.keys(own).forEach((k)=>delete own[k]);Object.assign(own,o);merge()};
+  const watchA=()=>{const want=new Set(((window.__kzAids&&window.__kzAids())||[]).filter(Boolean));
+    Object.keys(alU).forEach((id)=>{if(!want.has(id)){alU[id]();delete alU[id];delete al[id];merge()}});
+    want.forEach((id)=>{if(alU[id])return;alU[id]=fs.doc("pub/"+id).onSnapshot((s)=>{if(s.exists)al[id]=s.data();else delete al[id];merge()},()=>{})})};
+  watchA();setInterval(watchA,3000);
+  let lastU=null;
+  fs.doc(T("linkmeta/main")).onSnapshot((s)=>{meta=s.exists?s.data():{};const u=JSON.stringify([meta.u,meta.k,meta.xk]);if(u===lastU){later();return}lastU=u;fetchOwn(meta).catch(()=>{})},()=>{});
 };
 
 /* ---------- Schnittstelle zur App ---------- */
