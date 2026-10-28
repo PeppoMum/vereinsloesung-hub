@@ -6,8 +6,23 @@
 if(window.__WEBINIT)return;window.__WEBINIT=true;
 const CFG=window.U13_FIREBASE||{};
 const SDK=(CFG.sdkBase||"https://www.gstatic.com/firebasejs/10.14.1/");
-const XIDS=["full","anon","plan","demo"];
+const XIDS=["full","anon","plan","demo","demosp"];
 window.__WEB=true;
+const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+/* Vorschau für Trainer (?vorschau=s|e, in der Trainer-App eingebettet): Spieler- bzw. Elternansicht ohne Konto.
+   Eigener Speicher nur für dieses Fenster: nichts wird auf dem Gerät gemerkt, Eingaben gehen nicht an den Server (siehe __vidNet unten). */
+const VS=((location.search.match(/[?&]vorschau=([se])(?:&|$)/)||[])[1])||"";
+window.__VORSCHAU=VS;window.__TRAINERDEV=(()=>{try{return!VS&&!!localStorage.getItem("u13role")}catch(e){return false}})();
+if(VS){const M=new Map();try{const t=localStorage.getItem("u13theme");if(t)M.set("u13theme",t)}catch(e){}
+  const pm=location.hash.match(/^#([A-Za-z0-9]+)\./);if(pm)M.set("u13wer."+pm[1],JSON.stringify(VS==="s"?{r:"s"}:{r:"e",n:"Elternteil"}));
+  const mem={getItem:(k)=>M.has(String(k))?M.get(String(k)):null,setItem:(k,v)=>{M.set(String(k),String(v))},removeItem:(k)=>{M.delete(String(k))},clear:()=>M.clear(),key:(i)=>[...M.keys()][i]||null,get length(){return M.size}};
+  try{Object.defineProperty(window,"localStorage",{configurable:true,get:()=>mem})}catch(e){}}
+/* Trainer-Gerät (hier hat sich schon jemand vom Verein angemeldet): Die App startet immer in der Vereinsansicht, nie in einem gemerkten Link */
+const TRAINER=window.__TRAINERDEV;
+/* Start der installierten Link-App („./?link“ ohne Link): den auf diesem Gerät gespeicherten Link wieder einsetzen */
+if(/[?&]link\b/.test(location.search)&&!location.hash){try{const s=localStorage.getItem("u13link");
+  if(TRAINER)history.replaceState(null,"",location.pathname);
+  else if(s&&/^#/.test(s))history.replaceState(null,"",location.pathname+location.search+s)}catch(e){}}
 window.__WEB_BASE0=location.origin+location.pathname.replace(/index\.html$/,"");
 window.__WEB_BASE=window.__WEB_BASE0;
 const H=location.hash;
@@ -19,7 +34,7 @@ window.__KAB=!!KABKEY;
 const TQ=(new URLSearchParams(location.search).get("t")||"").toLowerCase().replace(/[^a-z0-9]/g,"");
 const skt=()=>String(window.__SCOUTKEY||"").split("-")[0].toLowerCase().replace(/[^a-z0-9]/g,"");
 window.__TID="";
-const GLOB=new Set(["verein","mitglieder","plaene","kabinen","kablinks","kabzugang","protokoll","pub","aliasin","aliasauth","ownercheck","prefs","einladungen","anfragen","spielereinl","mteinl","kverkn","kzaehl","kanfr","kview","kabm","kabw","kfrei","kclaim","anliegen"]);
+const GLOB=new Set(["verein","mitglieder","plaene","kabinen","kablinks","kabzugang","protokoll","pub","aliasin","aliasauth","ownercheck","prefs","einladungen","anfragen","spielereinl","mteinl","kverkn","kzaehl","kanfr","kview","kabm","kabw","kfrei","kclaim","anliegen","aufg","antw","aufgauth","antwauth","push","pushq"]);
 const T=(p)=>{const i=p.indexOf("/"),c=i<0?p:p.slice(0,i);return GLOB.has(c)?p:window.__TID+"__"+p};
 window.__T=T;
 const isKurz=/^#k\/[A-Za-z0-9_-]{4,40}$/.test(H);
@@ -35,6 +50,21 @@ const kKey=(n,cur)=>{if(cur)return cur;try{const v=(localStorage.getItem(n)||"")
 const kClear=(n)=>{try{localStorage.removeItem(n)}catch(e){}};
 const mkeyOf=(em)=>String(em||"").toLowerCase().replace(/[.]/g,"_").replace(/@/g,"_at_");
 const isViewerHash=(/^#[A-Za-z0-9]+\.[A-Za-z0-9_-]{16,}$/.test(H)&&!/^#co[A-Za-z0-9]+\./.test(H)&&!isScout&&!KABKEY)||isKurz;
+/* Spieler-, Eltern- und externe Links als eigene App. Rechte ändern sich nicht: Die App zeigt dasselbe wie der Link im Browser.
+   Android/Computer: eigene App-Datei (manifest-link) mit Startadresse „./?link“; beim Start wird der zuletzt geöffnete Link auf diesem Gerät wieder eingesetzt (siehe oben).
+   iPhone/iPad: ohne App-Datei, dann speichert das iPhone genau die geöffnete Adresse samt Link. */
+/* Gemerkter Link: der persönliche Spielerlink geht vor. Wer zwischendurch den Teamlink oder eine Demo öffnet, landet beim nächsten Start trotzdem wieder in seiner eigenen Ansicht. */
+const lRank=(h)=>new RegExp("^#("+XIDS.join("|")+")\\.").test(h)?1:h?2:0;
+if(isViewerHash&&!VS)try{if(lRank(H)>=lRank(localStorage.getItem("u13link")||""))localStorage.setItem("u13link",H)}catch(e){}
+/* Trainer-Gerät in einer Link-Ansicht: Leiste oben mit dem Weg zurück zur eigenen Ansicht */
+if(isViewerHash&&TRAINER)document.addEventListener("DOMContentLoaded",()=>{if(document.getElementById("u13tback"))return;const d=document.createElement("div");d.id="u13tback";
+  d.style.cssText="position:sticky;top:0;z-index:70;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 14px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:#004AAD;color:#fff;font-size:14px";
+  d.innerHTML='<span>Du siehst gerade einen Link wie Spieler und Eltern.</span><button type="button" style="flex:none;border:0;border-radius:99px;padding:6px 14px;background:#fff;color:#004AAD;font:inherit;font-weight:600;cursor:pointer">Zur Trainer-Ansicht</button>';
+  d.querySelector("button").onclick=()=>{location.replace(location.pathname)};document.body.insertAdjacentElement("afterbegin",d)});
+if(VS)document.addEventListener("DOMContentLoaded",()=>{const st=document.createElement("style");st.textContent="#u13vinst,#u13push,#u13tback{display:none!important}";document.head.appendChild(st);
+  if(window.top===window){const d=document.createElement("div");d.style.cssText="padding:8px 14px;background:var(--ys,#fff7e0);color:var(--tx,#111);font-size:14px;text-align:center";d.textContent="Vorschau für Trainer · Eingaben werden nicht gespeichert";document.body.insertAdjacentElement("afterbegin",d)}});
+{const mf=VS?"":isViewerHash?(IOS?"":"manifest-link.webmanifest"):"manifest.webmanifest";   /* App-Datei steht deshalb nicht fest in index.html */
+  if(mf){const l=document.createElement("link");l.rel="manifest";l.href=mf;document.head.appendChild(l)}}
 const cfgOk=()=>!!(CFG.apiKey&&CFG.projectId&&CFG.authDomain&&!/DEIN|EINTRAGEN|XXXX/i.test(CFG.apiKey+CFG.projectId));
 const E=(s)=>String(s==null?"":s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const clean=(o)=>o==null?o:JSON.parse(JSON.stringify(o));
@@ -100,9 +130,29 @@ window.__kurzNet={
     r=await fetch(FSB()+"pub/"+encodeURIComponent(aid)+"?updateMask.fieldPaths=s&updateMask.fieldPaths=w&updateMask.fieldPaths=v&currentDocument.exists=true&"+K(),{method:"PATCH",headers:hd,body:JSON.stringify({fields:{s:{stringValue:o.s},w:{stringValue:o.w},v:{integerValue:String(o.v|0)}}})});
     fetch(FSB()+"aliasin/"+encodeURIComponent(aid)+"?"+K(),{method:"DELETE"}).catch(()=>{});
     if(!r.ok)fail(r)}};}
+/* Spielerlink ohne Anmeldung: Aufgaben abhaken und Antworten (geheimer Pfad, Antworten verschlüsselt). Gleiche Schnittstelle wie in der Mannschafts-App. */
+{const hd={"Content-Type":"application/json"},K=()=>"key="+encodeURIComponent(CFG.apiKey),P=(p)=>p.split("/").map(encodeURIComponent).join("/"),fail=(r)=>{throw{code:r.status===403?"permission-denied":"http-"+r.status}};
+const fromFs=(v)=>v.stringValue!=null?v.stringValue:v.integerValue!=null?+v.integerValue:v.doubleValue!=null?v.doubleValue:v.booleanValue!=null?v.booleanValue:v.timestampValue!=null?v.timestampValue:null;
+window.__vidNet={
+  async list(path){const out=[];let tok="";
+    do{const r=await fetch(FSB()+P(path)+"?pageSize=300&"+K()+(tok?"&pageToken="+encodeURIComponent(tok):""));if(r.status===404)return out;if(!r.ok)fail(r);const j=await r.json();
+      (j.documents||[]).forEach((x)=>{const o={id:x.name.split("/").pop()},F=x.fields||{};Object.keys(F).forEach((k)=>{o[k]=fromFs(F[k])});if(F.at&&F.at.timestampValue!=null){o.server=true;o.at=new Date(F.at.timestampValue).toISOString()}out.push(o)});tok=j.nextPageToken||""}while(tok&&out.length<3000);
+    return out},
+  async create(coll,id,obj,ts){const f={};Object.keys(obj).forEach((k)=>{f[k]=toFs(obj[k])});if(ts)f.at={timestampValue:new Date().toISOString()};
+    const r=await fetch(FSB()+P(coll)+"?documentId="+encodeURIComponent(id)+"&"+K(),{method:"POST",headers:hd,body:JSON.stringify({fields:f})});if(!r.ok)fail(r)},
+  async update(path,obj){const ks=Object.keys(obj),f={};ks.forEach((k)=>{f[k]=toFs(obj[k])});
+    const r=await fetch(FSB()+P(path)+"?"+ks.map((k)=>"updateMask.fieldPaths="+encodeURIComponent(k)).join("&")+"&currentDocument.exists=true&"+K(),{method:"PATCH",headers:hd,body:JSON.stringify({fields:f})});if(!r.ok)fail(r)}};}
+/* Vorschau: Lesen wie gewohnt, Eingaben bleiben nur in diesem Fenster */
+if(VS){const real=window.__vidNet,S={};window.__vidNet={
+  async list(p){const a=await real.list(p),loc=S[p]||[];return a.filter((x)=>!loc.some((y)=>y.id===x.id)).concat(loc.map((x)=>({...x})))},
+  async create(c,id,o){const L=S[c]=(S[c]||[]).filter((x)=>x.id!==id);L.push({...o,id,at:new Date().toISOString(),server:true})},
+  async update(p,o){const q=p.split("/"),id=q.pop(),c=q.join("/"),L=S[c]=S[c]||[],x=L.find((y)=>y.id===id);if(x)Object.assign(x,o)}};
+  window.__kurzNet={get:async()=>null,setPw:async()=>{}}}
+/* Eigentraining: verschlüsselte Datei (pub/f_<mannschaft>_<id>) */
+window.__webFile=(fid)=>{const tt=String(window.__KTID||TQ).toLowerCase().replace(/[^a-z0-9]/g,"");return/^[0-9a-f]{24}$/.test(fid)&&tt?restBlob("f_"+tt+"_"+fid):Promise.resolve(null)};
 window.__webSnap=async function(pid){
   if(!cfgOk())throw new Error("config");
-  const sp=String(pid).split("~"),tt=(sp.length>1?sp[0]:TQ).toLowerCase().replace(/[^a-z0-9]/g,""),pp=sp.length>1?sp[1]:String(pid);
+  const sp=String(pid).split("~"),tt=(sp.length>1?sp[0]:(window.__KTID||TQ)).toLowerCase().replace(/[^a-z0-9]/g,""),pp=sp.length>1?sp[1]:String(pid);
   const x=XIDS.indexOf(pp)>=0,b=await restBlob((x?"x_":"p_")+tt+"_"+pp),bg=await restDoc("bg_"+tt),s={p:{},x:{}};
   if(b)(x?s.x:s.p)[pid]=b;
   if(bg)s.bg={L:bg.L||"",D:bg.D||"",i:bg.i||""};
@@ -116,7 +166,7 @@ const SHARED=(()=>{try{return localStorage.getItem("u13shared")==="1"}catch(e){r
 async function wipeLocal(){
   try{await fs.terminate()}catch(e){}
   try{await fs.clearPersistence()}catch(e){}
-  try{Object.keys(localStorage).filter((k)=>/^(u13v:|u13rolle$|u13role$|u13kz\.)/.test(k)).forEach((k)=>localStorage.removeItem(k))}catch(e){}
+  try{Object.keys(localStorage).filter((k)=>/^(u13v:|u13rolle$|u13role$|u13kz\.|u13wer\.|u13kpid$)/.test(k)).forEach((k)=>localStorage.removeItem(k))}catch(e){}
 }
 async function signOutClean(){try{await auth.signOut()}catch(e){}await wipeLocal();location.reload()}
 
@@ -295,46 +345,70 @@ function chooseTeam(V,me,rolle){
   const first=mine||allowed.find((t)=>t.aktiv!==false)||allowed[0];
   return{allowed,team:hit||first||null};
 }
-/* ---------- Konten für Spieler und Eltern ---------- */
+/* ---------- Konten für Spieler und Eltern ----------
+   Spielerlink (#sp/<Schlüssel>): Konto anlegen, ohne Genehmigung mit dem Spieler verknüpft (höchstens 4 Konten je Spieler).
+   Mannschaftslink (#mt/<Schlüssel>): Konto anlegen und Anfrage schicken, der Trainer ordnet zu und genehmigt.
+   Danach: Der Schlüssel zum verschlüsselten Spielerstand kommt aus „kview/<mannschaft>~<spieler>“ (nur für verknüpfte Konten lesbar),
+   die Ansicht ist dieselbe wie beim Spielerlink (links.js showViewer). Rolle und Name stehen im Konto. Ein Konto kann mehrere Kinder zeigen. */
+const kls={get:(k)=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
+const nm2=(s)=>String(s||"").trim().split(/\s+/).filter(Boolean).length>=2;
 async function myLinks(em){try{const r=await fs.collection("kverkn").where("email","==",em).get();return r.docs.map((d)=>({id:d.id,...d.data()}))}catch(e){return []}}
-function kForm(em,title,text,fields,btn){
+async function myAnfr(em){try{const r=await fs.collection("kanfr").where("email","==",em).get();return r.docs.map((d)=>({id:d.id,...d.data()}))}catch(e){return []}}
+const kSo='<button class="ln" id="u13so" style="margin-top:6px">Abmelden</button>';
+/* Wer bist du? Erst Spieler oder Elternteil, danach nur die Namen, die noch fehlen (nie zweimal derselbe Name).
+   o.sp = Name des Spielers (Spielerlink: Spieler müssen gar nichts eintippen), sonst Mannschaftslink. */
+function kForm(em,o){
   return new Promise((res)=>{
-    const o=overlay('<div class="ms" style="font-size:16px;font-weight:600;color:inherit">'+E(title)+'</div><p class="sb">Angemeldet als <b>'+E(em)+'</b>. '+text+'</p>'
-      +'<div class="ivh">Dein Vor- und Nachname</div><input id="kfn" maxlength="60" placeholder="Vor- und Nachname" autocomplete="name" value="'+E((auth.currentUser&&auth.currentUser.displayName)||"")+'">'
-      +(fields.kind?'<div class="ivh">Vor- und Nachname des Spielers</div><input id="kfk" maxlength="60" placeholder="Vor- und Nachname des Spielers">':"")
-      +'<div class="ivh">Ich bin</div><label class="ivc"><input type="radio" name="kfr" value="eltern" checked>Elternteil</label><label class="ivc"><input type="radio" name="kfr" value="spieler">der Spieler selbst</label>'
-      +'<div class="ms" id="kfm"></div><button class="pr" id="kfgo">'+E(btn)+'</button><button id="u13so">Abmelden</button>');
-    o.querySelector("#u13so").onclick=()=>signOutClean();
-    o.querySelector("#kfgo").onclick=()=>{const name=o.querySelector("#kfn").value.trim(),kind=fields.kind?o.querySelector("#kfk").value.trim():"",rolle=o.querySelector('[name="kfr"]:checked').value,m=o.querySelector("#kfm");
-      if(name.split(/\s+/).filter(Boolean).length<2){m.className="ms er";m.textContent="Bitte deinen Vor- und Nachnamen eintragen.";return}
-      if(fields.kind&&kind.split(/\s+/).filter(Boolean).length<2){m.className="ms er";m.textContent="Bitte Vor- und Nachnamen des Spielers eintragen.";return}
-      res({name,kind,rolle})};
+    const sp=o.sp||"",step=(r)=>{
+      const kid=!sp&&r==="eltern";
+      const ov=overlay('<div style="font-size:17px;font-weight:600;margin:0 0 4px">Wer bist du?</div><p class="sb" style="margin-bottom:12px">Angemeldet als&nbsp;<b>'+E(em)+'</b></p>'
+        +(r?'<div style="margin:0 0 2px;font-weight:600">'+(r==="spieler"?"Ich bin Spieler":"Ich bin Elternteil"+(sp?" von "+E(sp):""))+'</div><button class="ln" id="kfz" style="margin:0 0 12px">Auswahl ändern</button>'
+          +'<label class="sb" for="kfn" style="display:block;margin:0 0 4px">'+(r==="spieler"?"Dein Vor- und Nachname":"Dein Vor- und Nachname (Elternteil)")+'</label><input id="kfn" maxlength="60" autocomplete="name" placeholder="Vor- und Nachname" value="'+E(r==="eltern"?((auth.currentUser&&auth.currentUser.displayName)||""):"")+'">'
+          +(kid?'<label class="sb" for="kfk" style="display:block;margin:0 0 4px">Vor- und Nachname deines Kindes</label><input id="kfk" maxlength="60" placeholder="Vor- und Nachname des Kindes">':"")
+          +'<div class="ms" id="kfm"></div><button class="pr" id="kfgo">'+E(o.btn)+'</button>'
+        :'<button class="pr" data-kr="spieler">Ich bin '+(sp?E(sp):"Spieler")+'</button><button data-kr="eltern">Ich bin Elternteil'+(sp?" von "+E(sp):"")+'</button>')
+        +kSo);
+      ov.querySelector("#u13so").onclick=()=>signOutClean();
+      ov.querySelectorAll("[data-kr]").forEach((b)=>{b.onclick=()=>{const v=b.dataset.kr;if(v==="spieler"&&sp){res({rolle:"spieler",name:sp,kind:sp});return}step(v)}});
+      const z=ov.querySelector("#kfz");if(z)z.onclick=()=>step("");
+      const go=ov.querySelector("#kfgo");if(!go)return;const n=ov.querySelector("#kfn");n.focus();
+      go.onclick=()=>{const name=n.value.trim(),k=kid?ov.querySelector("#kfk").value.trim():"",m=ov.querySelector("#kfm");
+        if(!nm2(name)){m.className="ms er";m.textContent="Bitte Vor- und Nachnamen eintragen.";return}
+        if(kid&&!nm2(k)){m.className="ms er";m.textContent="Bitte Vor- und Nachnamen deines Kindes eintragen.";return}
+        res({rolle:r,name,kind:r==="spieler"?name:k})};
+    };step("");
   });
 }
 async function kMsg(em,title,text){return new Promise(()=>{const o=overlay('<div class="ms ok" style="font-size:15px">'+E(title)+'</div><p class="sb">'+text+'</p><button id="u13so">Abmelden</button>');o.querySelector("#u13so").onclick=()=>signOutClean()})}
+/* Warten auf die Freigabe: alle 15 Sekunden (und beim Zurückkehren auf die Seite) nachsehen; sobald es weitergeht, lädt die Seite von allein neu */
+let kWaitOn=false;
+function kWait(chk){if(kWaitOn)return;kWaitOn=true;const f=async()=>{try{if(await chk())location.reload()}catch(e){}};setInterval(f,window.__KWAIT||15000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)f()})}
 async function claimSpieler(em,tk){
   let e=null;try{const s=await fs.doc("spielereinl/"+tk).get();e=s.exists?s.data():null}catch(x){e=null}
   if(!e||e.aktiv!==true||(e.bis&&e.bis<Date.now())){kClear("vsp");return"bad"}
   const kid=e.tid+"~"+e.pid+"~"+mkeyOf(em);
   try{const ex=await fs.doc("kverkn/"+kid).get();if(ex.exists){kClear("vsp");return"ok"}}catch(x){}
-  const f=await kForm(em,"Willkommen","Du verknüpfst jetzt dein Konto mit einem Spieler. Danach siehst du Profil, Terminplan und Liga.",{},"Verknüpfen");
+  const f=await kForm(em,{sp:e.n||"",btn:"Weiter"});
   const zr=fs.doc("kzaehl/"+e.tid+"~"+e.pid);let n=0;
   try{const z=await zr.get();if(z.exists)n=+z.data().n||0}catch(x){}
   if(n>=4)return"voll";
-  const b=fs.batch();b.set(fs.doc("kverkn/"+kid),{tid:e.tid,pid:e.pid,email:em,rolle:f.rolle,name:f.name,at:new Date().toISOString(),s:tk});
+  const b=fs.batch();b.set(fs.doc("kverkn/"+kid),{tid:e.tid,pid:e.pid,email:em,rolle:f.rolle,name:f.name.slice(0,60),pn:String(e.n||"").slice(0,80),at:new Date().toISOString(),s:tk});
   if(n)b.update(zr,{n:n+1});else b.set(zr,{n:1});
-  try{await b.commit();kClear("vsp");return"ok"}catch(x){return denied(x)?"voll":"fehler"}
+  try{await b.commit();kClear("vsp");kls.set("u13kpid",e.tid+"~"+e.pid);return"ok"}catch(x){return denied(x)?"voll":"fehler"}
 }
 async function anfrageTeam(em,tk){
   let e=null;try{const s=await fs.doc("mteinl/"+tk).get();e=s.exists?s.data():null}catch(x){e=null}
   if(!e||e.aktiv!==true||(e.bis&&e.bis<Date.now())){kClear("vmt");return"bad"}
+  /* Schon freigeschaltet in dieser Mannschaft: direkt in die Ansicht, keine neue Anfrage (ein weiteres Kind geht über „Einstellungen“) */
+  if((await myLinks(em)).some((l)=>l.tid===e.tid&&l.gesperrt!==true)){kClear("vmt");return"drin"}
   let own=null;try{const s=await fs.doc("kanfr/"+e.tid+"~"+mkeyOf(em)).get();own=s.exists?s.data():null}catch(x){}
   if(own){kClear("vmt");return"offen"}
-  const f=await kForm(em,"Willkommen","Gib kurz an, für welchen Spieler du Zugang möchtest. Der Trainer bestätigt deine Anfrage.",{kind:1},"Anfrage senden");
-  try{await fs.doc("kanfr/"+e.tid+"~"+mkeyOf(em)).set({tid:e.tid,email:em,name:f.name,kind:f.kind,rolle:f.rolle,at:new Date().toISOString(),s:tk,status:"offen"});kClear("vmt");return"gesendet"}catch(x){return"fehler"}
+  const f=await kForm(em,{btn:"Anfrage senden"});
+  try{await fs.doc("kanfr/"+e.tid+"~"+mkeyOf(em)).set({tid:e.tid,email:em,name:f.name.slice(0,60),kind:f.kind.slice(0,60),rolle:f.rolle,at:new Date().toISOString(),s:tk,status:"offen"});kClear("vmt");return"gesendet"}catch(x){return"fehler"}
 }
 async function elternStart(em){
   let links=await myLinks(em);const sp=kKey("vsp",SPKEY),mt=kKey("vmt",MTKEY);
+  const waitLinks=async()=>(await myLinks(em)).some((l)=>l.gesperrt!==true);
   if(sp){const r=await claimSpieler(em,sp);
     if(r==="bad"&&!links.length)await kMsg(em,"Dieser Link gilt nicht mehr.","Der Link ist abgelaufen oder wurde erneuert. Bitte den Trainer um einen neuen Link.");
     if(r==="voll")await kMsg(em,"Dieser Link ist schon vergeben.","Pro Spieler können sich höchstens 4 Personen über den Link verknüpfen. Bitte den Trainer, dich freizugeben.");
@@ -342,11 +416,94 @@ async function elternStart(em){
     links=await myLinks(em)}
   if(mt){const r=await anfrageTeam(em,mt);
     if(r==="bad"&&!links.length)await kMsg(em,"Dieser Link gilt nicht mehr.","Der Link ist abgelaufen oder wurde beendet. Bitte den Trainer um einen neuen Link.");
-    if(r==="gesendet"||r==="offen")await kMsg(em,r==="gesendet"?"Danke, deine Anfrage ist angekommen.":"Deine Anfrage wartet noch auf Bestätigung.","Der Trainer prüft sie und schaltet dich frei. Danach öffnest du die App einfach wieder über den normalen Link.");
+    if(r==="gesendet"||r==="offen"){const n0=links.filter((l)=>l.gesperrt!==true).length;kWait(async()=>(await myLinks(em)).filter((l)=>l.gesperrt!==true).length>n0);
+      await kMsg(em,r==="gesendet"?"Danke, deine Anfrage ist angekommen.":"Deine Anfrage wartet noch auf Bestätigung.","Der Trainer prüft sie und schaltet dich frei. Sobald das passiert ist, geht es hier von allein weiter.")}
     if(r==="fehler")await kMsg(em,"Das hat nicht geklappt.","Bitte öffne den Link noch einmal.")}
   /* Ist das Konto verknüpft, wird der lange Einladungsteil aus der Adresszeile entfernt: Lesezeichen und Startbildschirm speichern dann die normale Adresse */
   if(links.length&&(SPKEY||MTKEY)){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
+  if(!links.length&&!sp&&!mt&&(await myAnfr(em)).length){kWait(waitLinks);await kMsg(em,"Deine Anfrage wartet noch auf den Trainer.","Der Trainer prüft sie und schaltet dich frei. Sobald das passiert ist, geht es hier von allein weiter.")}
   return links.length?{links}:null;
+}
+/* Ansicht über das Konto: Schlüssel aus kview holen und den Spielerstand wie beim Spielerlink zeigen */
+let KONTO=false;
+async function kvGet(l){try{const s=await fs.doc("kview/"+l.tid+"~"+l.pid).get();return s.exists?s.data():null}catch(e){return undefined}}
+async function kontoView(links,em){
+  const act=links.filter((l)=>l.gesperrt!==true);
+  if(!act.length)return kMsg(em,"Dein Zugang ist gesperrt.","Bitte wende dich an den Trainer.");
+  const want=kls.get("u13kpid"),ord=act.slice().sort((a,b)=>(b.tid+"~"+b.pid===want)-(a.tid+"~"+a.pid===want));
+  let cur=null,kv=null,off=false;
+  for(const l of ord){const x=await kvGet(l);if(x===undefined){off=true;continue}if(x&&x.k){cur=l;kv=x;break}}
+  if(!cur){if(off)return kMsg(em,"Keine Verbindung.","Bitte die Internetverbindung prüfen und die Seite neu laden.");
+    kWait(async()=>{for(const l of act){const x=await kvGet(l);if(x&&x.k)return true}return false});
+    return kMsg(em,"Gleich geht’s los.","Der Trainer hat die Ansicht für "+E(ord[0].pn||"deinen Spieler")+" noch nicht freigeschaltet. Sobald das passiert ist, geht es hier von allein weiter.")}
+  kls.set("u13kpid",cur.tid+"~"+cur.pid);
+  kls.set("u13wer."+cur.pid,JSON.stringify(cur.rolle==="spieler"?{r:"s"}:{r:"e",n:cur.name}));
+  window.__KTID=cur.tid;KONTO=true;
+  window.__KONTO={email:em,links:act,cur,render:kRender,abm:kv.abm===true?{fs,em,tid:cur.tid,pid:cur.pid,ev:kv.ev||{},name:cur.name||""}:null};
+  hideOverlay();
+  const go=()=>{if(window.__showViewer)window.__showViewer(cur.pid,kv.k);else setTimeout(go,100)};go();
+  viewerInstall();viewerPush();
+}
+/* Karte „App und Benachrichtigungen“ in den Einstellungen: im Browser die Anleitung zum Speichern als App, in der App der Schalter.
+   Benachrichtigungen erst ab Stufe Standard (sonst nur die Anleitung zum Speichern). */
+function kNotif(){
+  const pc=window.__pushCtx&&window.__pushCtx(),h='<div class="card" id="kstp" style="margin:0 0 12px"><h3 style="margin-top:0">'+(pc?"App und Benachrichtigungen":"Als App speichern")+'</h3>',was=pc?'<div class="note" style="margin:0 0 8px">Mit Benachrichtigungen bekommst du Bescheid bei '+pushWas(pc,1)+', auch wenn die App geschlossen ist. In den Nachrichten stehen keine Namen.</div>':"";
+  if(STANDALONE()){
+    if(!pc)return h+'<div class="note">✅ Die App ist auf diesem Gerät eingerichtet.</div></div>';
+    if(!PUSH_OK())return h+'<div class="note">Die App ist auf diesem Gerät eingerichtet. Benachrichtigungen gehen auf diesem Gerät leider nicht.</div></div>';
+    if(pushPerm()==="denied")return h+'<div class="note" style="margin:0 0 6px">✅ Die App ist auf diesem Gerät eingerichtet.</div><div class="note">🔕 Benachrichtigungen sind auf diesem Gerät blockiert. Du kannst sie in den Einstellungen des Handys erlauben (iPhone: Einstellungen → Mitteilungen → diese App → Mitteilungen erlauben). Danach die App neu öffnen.</div></div>';
+    const on=pushApi.on();
+    return h+'<div class="note" style="margin:0 0 6px">✅ Die App ist auf diesem Gerät eingerichtet.</div>'+was+'<div class="bar" style="align-items:center;margin:0"><span style="flex:1">'+(on?"🔔 Benachrichtigungen sind an.":"🔕 Benachrichtigungen sind aus.")+'</span><button class="btn" data-ks="'+(on?"poff":"pon")+'"'+(on?"":' style="background:var(--ac,#2563eb);color:#fff;border-color:var(--ac,#2563eb);font-weight:600"')+'>'+(on?"Ausschalten":"Einschalten")+'</button></div></div>';
+  }
+  const dev=IOS?"ios":/Android/i.test(navigator.userAgent)?"android":"pc",ol=(k)=>'<ol style="margin:4px 0 6px 20px;padding:0">'+VSTEP[k].slice(1).map((t)=>"<li>"+t+"</li>").join("")+"</ol>";
+  return h+was+(pc?'<div style="font-weight:600;margin:6px 0 2px">1. Seite als App speichern</div>':"")+(instEv?'<button class="btn" data-ks="inst" style="margin:4px 0 6px">App jetzt installieren</button>':"")
+    +ol(dev)+'<details style="margin:0 0 6px"><summary class="note" style="cursor:pointer">Anleitung für andere Geräte</summary>'+["ios","android","pc"].filter((k)=>k!==dev).map((k)=>'<b style="font-size:13px">'+VSTEP[k][0]+'</b>'+ol(k)).join("")+'</details>'
+    +(pc?'<div style="font-weight:600;margin:6px 0 2px">2. Benachrichtigungen einschalten</div><div class="note">Die App auf dem Startbildschirm öffnen, einmal mit deinem Konto anmelden und hier unter <b>Einstellungen</b> auf <b>Einschalten</b> tippen. Auf dem iPhone geht das nur in der App, nicht im Browser.</div>':"")+'</div>';
+}
+/* Reiter „Einstellungen“ in der Konto-Ansicht */
+const KS={msg:"",bad:false,arm:"",anf:undefined,r:"",n:null};   /* r, n: gewählte Rolle und eingetippter Name, bis gespeichert */
+function kRender(el){
+  const K=window.__KONTO;if(!K||!el)return;const c=K.cur,rr=KS.r||c.rolle,sp=rr==="spieler",me=(l)=>l.tid===c.tid&&l.pid===c.pid;
+  if(KS.anf===undefined){KS.anf=null;fs.doc("kanfr/"+c.tid+"~"+mkeyOf(K.email)).get().then((a)=>{KS.anf=a.exists?a.data():false;kRender(el)}).catch(()=>{KS.anf=false;kRender(el)})}
+  const pn=(l,i)=>l.pn||(me(l)&&window.__hnCtx&&window.__hnCtx.d&&window.__hnCtx.d.n)||"Kind "+(i+1);
+  const radio=(v,t)=>'<label style="display:flex;gap:8px;align-items:center;margin:4px 0"><input type="radio" name="krl" value="'+v+'"'+(rr===v?" checked":"")+' style="width:auto;margin:0">'+t+'</label>';
+  el.innerHTML='<div class="card" style="margin:0 0 12px"><h3 style="margin-top:0">Dein Konto</h3><div class="note">Angemeldet als <b>'+E(K.email)+'</b></div>'
+    +'<div style="margin:10px 0 4px;font-weight:600">Ich bin</div>'+radio("spieler",(c.pn?E(c.pn):"der Spieler")+" selbst")+radio("eltern","Elternteil"+(c.pn?" von "+E(c.pn):""))
+    +'<div id="kstn"'+(sp?" hidden":"")+'><label class="note" for="kstni">Dein Vor- und Nachname</label><input id="kstni" maxlength="60" autocomplete="name" value="'+E(KS.n!=null?KS.n:c.rolle==="spieler"?"":c.name)+'" style="width:100%;box-sizing:border-box;margin-top:2px"></div>'
+    +'<div class="bar" style="margin:10px 0 0"><button class="btn" data-ks="save">Speichern</button></div></div>'
+    +'<div class="card" style="margin:0 0 12px"><h3 style="margin-top:0">'+(K.links.length>1?"Deine Spieler":"Dein Spieler")+'</h3>'
+    +K.links.map((l,i)=>'<div class="vd-row"><div style="flex:1;min-width:0"><b>'+E(pn(l,i))+'</b><div class="note">'+(l.rolle==="spieler"?"als Spieler":"als Elternteil")+'</div></div>'+(me(l)?'<span class="note">wird gerade angezeigt</span>':'<button class="btn" data-ks="go" data-kp="'+E(l.tid+"~"+l.pid)+'">Anzeigen</button>')+'</div>').join("")
+    +'<div style="margin-top:10px"><b>Weiteres Kind (Geschwister)</b>'
+    +(KS.anf?'<div class="note" style="margin-top:4px">Deine Anfrage für <b>'+E(KS.anf.kind)+'</b> wartet auf den Trainer.</div>'
+      :KS.anf===null?'<div class="note">Wird geladen …</div>'
+      :'<div class="note" style="margin:2px 0 6px">In derselben Mannschaft: Der Trainer bekommt eine Anfrage und schaltet das Kind frei. Für eine andere Mannschaft öffnest du den Link von deren Trainer.</div><input id="kstk" maxlength="60" placeholder="Vor- und Nachname des Kindes" style="width:100%;box-sizing:border-box"><div class="bar" style="margin:6px 0 0"><button class="btn" data-ks="kid">Anfrage senden</button></div>')
+    +'</div></div>'
+    +kNotif()
+    +'<div class="card" style="margin:0 0 12px"><h3 style="margin-top:0">Abmelden oder Konto löschen</h3><div class="bar" style="margin:0"><button class="btn" data-ks="out">Abmelden</button><button class="btn" data-ks="del">'+(KS.arm==="del"?"Wirklich löschen?":"Konto löschen")+'</button></div><div class="note" style="margin-top:6px"><a href="anleitungen/eltern.pdf" target="_blank" rel="noopener">Anleitung für Eltern und Spieler (PDF)</a></div></div>'
+    +'<div class="note'+(KS.bad?" warn":"")+'" id="kstm" role="status">'+E(KS.msg)+'</div>';
+  el.querySelectorAll('[name="krl"]').forEach((r)=>{r.onchange=()=>{if(r.checked)KS.r=r.value;el.querySelector("#kstn").hidden=KS.r==="spieler"}});
+  el.querySelector("#kstni").oninput=(ev)=>{KS.n=ev.target.value};
+  el.onclick=async(ev)=>{const b=ev.target.closest&&ev.target.closest("[data-ks]");if(!b)return;const k=b.dataset.ks,say=(t,bad)=>{KS.msg=t;KS.bad=!!bad;kRender(el)};
+    if(k!=="del")KS.arm="";
+    if(k==="save"){const r=(el.querySelector('[name="krl"]:checked')||{}).value||c.rolle,n=r==="spieler"?(c.rolle==="spieler"?c.name:(c.pn||c.name)):el.querySelector("#kstni").value.trim();
+      if(r==="eltern"&&!nm2(n)){say("Bitte deinen Vor- und Nachnamen eintragen.",1);return}
+      try{await fs.doc("kverkn/"+c.id).update({name:String(n).slice(0,60),rolle:r});kls.set("u13wer."+c.pid,JSON.stringify(r==="spieler"?{r:"s"}:{r:"e",n}));KS.msg="";location.reload()}catch(x){say("Das hat nicht geklappt. Bitte später noch einmal versuchen.",1)}return}
+    if(k==="go"){kls.set("u13kpid",b.dataset.kp);location.reload();return}
+    if(k==="inst"){const e2=instEv;if(!e2)return;instEv=null;try{await e2.prompt()}catch(x){}kRender(el);return}
+    if(k==="pon"||k==="poff"){const pc=window.__pushCtx&&window.__pushCtx();if(!pc)return;b.disabled=true;
+      if(k==="poff"){await pushApi.disable(pc);say("Benachrichtigungen sind aus.");return}
+      let r;try{r=await pushApi.enable(pc)}catch(x){r="fehler"}
+      if(r==="ok")say("Benachrichtigungen sind an.");else say(pushMsg(r),1);return}
+    if(k==="kid"){const n=el.querySelector("#kstk").value.trim();if(!nm2(n)){say("Bitte Vor- und Nachnamen des Kindes eintragen.",1);return}
+      const a={tid:c.tid,email:K.email,name:String(c.rolle==="spieler"?c.pn||c.name:c.name).slice(0,60),kind:n.slice(0,60),rolle:"eltern",at:new Date().toISOString(),via:c.tid+"~"+c.pid,status:"offen"};
+      try{await fs.doc("kanfr/"+c.tid+"~"+mkeyOf(K.email)).set(a);KS.anf=a;say("Anfrage gesendet. Der Trainer schaltet das Kind frei.")}catch(x){say("Das hat nicht geklappt. Bitte später noch einmal versuchen.",1)}return}
+    if(k==="out"){signOutClean();return}
+    if(k==="del"){if(KS.arm!=="del"){KS.arm="del";kRender(el);return}KS.arm="";
+      try{const l=await myLinks(K.email);for(const x of l)await fs.doc("kverkn/"+x.id).delete();for(const x of await myAnfr(K.email)){try{await fs.doc("kanfr/"+x.id).delete()}catch(y){}}}catch(x){say("Das hat nicht geklappt. Bitte später noch einmal versuchen.",1);return}
+      try{await auth.currentUser.delete();signOutClean()}
+      catch(x){say("Deine Verbindungen zu den Spielern sind gelöscht. Um auch das Konto selbst zu löschen, melde dich bitte ab, wieder an und tippe noch einmal auf „Konto löschen“.",1)}
+      return}
+  };
 }
 async function clubInit(u){
   const em=lowC(u&&u.email);
@@ -431,8 +588,7 @@ async function start(){
   window.__webFs=fs;
   const ci=await clubInit(u);
   if(!ci)return new Promise(()=>{});
-  if(ci.eltern){hideOverlay();window.__ELTERN=true;window.__elternFs=fs;
-    const go=()=>{if(window.__eltern)window.__eltern.show({fs,links:ci.eltern.links,email:lowC(u.email),signOut:signOutClean,reload:async()=>{const l=await myLinks(lowC(u.email));return l}});else setTimeout(go,100)};go();return new Promise(()=>{})}
+  if(ci.eltern){window.__ELTERN=true;await kontoView(ci.eltern.links,lowC(u.email));return new Promise(()=>{})}
   if(ci.kabOnly){hideOverlay();document.documentElement.classList.add("kabmode");window.__KAB=true;window.__kabFs=fs;window.__kabOk=true;window.__kabReady=true;document.dispatchEvent(new Event("u13kab"));addSignOut();return new Promise(()=>{})}
   /* Zugriffstest; bei leerer Mannschaft ein Grundgerüst anlegen, damit die Sicherung eingespielt werden kann */
   try{
@@ -457,6 +613,9 @@ async function afterLogin(){
   window.__webOwner=owner;
   window.__ROLE=window.__VMODE;window.__ACCT=(((auth.currentUser&&auth.currentUser.email)||"")+"").toLowerCase().replace(/[^a-z0-9@._-]/g,"_")||"main";
   if(!owner)document.body.classList.add("co");
+  if(!SHARED&&!window.__DEMO)try{localStorage.setItem("u13role",rolle||"team")}catch(e){}
+  instCard();
+  if(window.__ROLE!=="scout")pushCard();
   if(window.__ROLE==="scout")document.body.classList.add("scoutonly");
   const lbl={lesen:"· Nur Ansicht",scout:"· Scouting-Zugang"}[window.__ROLE];
   if(lbl){const t=document.querySelector(".top .note");if(t){const sp=document.createElement("span");sp.style.marginLeft="8px";sp.textContent=lbl;t.appendChild(sp)}}
@@ -501,19 +660,22 @@ async function publishSnap(snap){
   const tid=window.__TID,pre=(k)=>k+"_"+tid+"_";
   for(const pid of Object.keys(snap.p||{}))await put(pre("p")+pid,snap.p[pid]);
   for(const k of Object.keys(snap.x||{}))await put(pre("x")+k,snap.x[k]);
+  /* Eigentraining-Dateien: ändern sich nie (neue Datei = neue ID), deshalb nur neue hochladen; Liste mit Teilezahl in linkmeta */
+  let m0=null;try{const m=await fs.doc(T("linkmeta/main")).get();m0=m.exists?m.data():null}catch(e){}
+  const ff0=(m0&&m0.ff)||{},ff={};
+  for(const fid of Object.keys(snap.f||{})){const id=pre("f")+fid;if(ff0[fid]){ff[fid]=ff0[fid];keep.add(id);for(let i=1;i<ff0[fid];i++)keep.add(id+"~"+i);continue}
+    await put(id,snap.f[fid]);ff[fid]=Math.max(1,Math.ceil(snap.f[fid].length/CH))}
   if(snap.bg){let bg=clean(snap.bg);if(JSON.stringify(bg).length>900000)bg={L:bg.L||"",D:bg.D||"",i:""};keep.add("bg_"+tid);await fs.doc("pub/bg_"+tid).set(bg)}
   keep.add("scout_"+tid);
   /* Alte Fächer aufräumen: die Liste vom letzten Mal steht in linkmeta (spart das Lesen der ganzen Sammlung aller Mannschaften) */
-  let prev=null;try{const m=await fs.doc(T("linkmeta/main")).get();prev=m.exists&&Array.isArray(m.data().ids)?m.data().ids:null}catch(e){}
-  if(!prev){const all=await fs.collection("pub").get();prev=all.docs.map((d)=>d.id).filter((id)=>id.indexOf(pre("p"))===0||id.indexOf(pre("x"))===0||id==="bg_"+tid)}
+  let prev=m0&&Array.isArray(m0.ids)?m0.ids:null;
+  if(!prev){const all=await fs.collection("pub").get();prev=all.docs.map((d)=>d.id).filter((id)=>id.indexOf(pre("p"))===0||id.indexOf(pre("x"))===0||id.indexOf(pre("f"))===0||id==="bg_"+tid)}
   for(const id of prev)if(!keep.has(id))await fs.doc("pub/"+id).delete();
-  await fs.doc(T("linkmeta/main")).set({u:snap.u,k:snap.k||{},xk:snap.xk||{},fp:snap.fp||"",fa:snap.fa||"",fs:snap.fs||"",dzs:snap.dzs||"",ids:[...keep].filter((id)=>id!=="scout_"+tid)});
+  await fs.doc(T("linkmeta/main")).set({u:snap.u,k:snap.k||{},xk:snap.xk||{},fp:snap.fp||"",fa:snap.fa||"",fs:snap.fs||"",dzs:snap.dzs||"",ok:snap.ok?1:0,ff,ids:[...keep].filter((id)=>id!=="scout_"+tid)});
 }
-/* Konten: Stand fürs Kind veröffentlichen (kview/<mannschaft>~<spieler>, bei großen Daten in Teilen) */
+/* Konten: Schlüssel und Terminliste fürs Kind bereitstellen (kview/<mannschaft>~<spieler>, lesen nur verknüpfte Konten) */
 if(!isViewerHash&&!isScout)window.__kvPut=async function(tid,pid,m){
-  await (dbP||(dbP=start()));const b=m.b||"",parts=[];for(let i=0;i<b.length;i+=CH)parts.push(b.slice(i,i+CH));if(!parts.length)parts.push("");
-  const id=tid+"~"+pid;await fs.doc("kview/"+id).set({b:parts[0],n:parts.length,ev:m.ev||{},u:m.u||"",abm:!!m.abm,fp:m.fp||""});
-  for(let i=1;i<parts.length;i++)await fs.doc("kview/"+id+"~~"+i).set({b:parts[i]})};
+  await (dbP||(dbP=start()));await fs.doc("kview/"+tid+"~"+pid).set({k:m.k||"",ev:m.ev||{},u:m.u||"",abm:!!m.abm,fp:m.fp||""})};
 /* Kurzlinks (Trainer): Passwort-Paket veröffentlichen/entfernen; das geheime Zeichen liegt nur für Trainer lesbar in „aliasauth“ */
 if(!isViewerHash&&!isScout)window.__kurzTr={
   async put(aid,o,t){await (dbP||(dbP=start()));await fs.doc("aliasauth/"+aid).set({t});await fs.doc("pub/"+aid).set(o.v===2?{s:"",w:"",v:2,i:o.i,k:o.k}:{s:o.s,w:o.w,v:o.v|0})},
@@ -526,7 +688,7 @@ window.__webOwnerSnap=function(cb){
     if(docs==null||meta==null)return;
     const raw={};docs.forEach((d)=>{raw[d.id]=d.data()});
     const join=(id)=>{const m=raw[id];if(!m||typeof m.b!=="string")return null;let b=m.b;for(let i=1;i<(m.n||1);i++){const c=raw[id+"~"+i];if(!c)return null;b+=c.b}return b};
-    const s={u:meta.u||"",k:meta.k||{},xk:meta.xk||{},fp:meta.fp||"",fa:meta.fa||"",fs:meta.fs||"",dzs:meta.dzs||"",p:{},x:{},a:{}},tp="_"+window.__TID+"_";
+    const s={u:meta.u||"",k:meta.k||{},xk:meta.xk||{},fp:meta.fp||"",fa:meta.fa||"",fs:meta.fs||"",dzs:meta.dzs||"",ok:meta.ok|0,p:{},x:{},a:{}},tp="_"+window.__TID+"_";
     Object.keys(raw).forEach((id)=>{if(id.indexOf("~")>=0)return;if(id.slice(0,2)==="a_"){s.a[id]={s:raw[id].s,w:raw[id].w,v:raw[id].v|0};return}if(id.indexOf("p"+tp)===0){const b=join(id);if(b)s.p[id.slice(tp.length+1)]=b}else if(id.indexOf("x"+tp)===0){const b=join(id);if(b)s.x[id.slice(tp.length+1)]=b}});
     window.__webSnapReady=true;cb(s);
   };
@@ -547,6 +709,157 @@ window.__webOwnerSnap=function(cb){
   fs.doc(T("linkmeta/main")).onSnapshot((s)=>{meta=s.exists?s.data():{};const u=JSON.stringify([meta.u,meta.k,meta.xk]);if(u===lastU){later();return}lastU=u;fetchOwn(meta).catch(()=>{})},()=>{});
 };
 
+/* Karte „Als App installieren“ unter Einstellungen → Hinweise & Links (für alle Angemeldeten, auch eingeschränkte Ansicht) */
+let instEv=null;   /* Installations-Angebot des Browsers (Chrome/Edge/Android), siehe unten */
+const STANDALONE=()=>!!(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+function instCard(){
+  const put=()=>{
+    const pp=document.getElementById("etp-l");if(!pp){setTimeout(put,500);return}
+    if(!document.getElementById("u13inst")){
+      const c=document.createElement("div");c.className="card";c.id="u13inst";c.style.display="block";
+      const done=STANDALONE();
+      c.innerHTML='<h3>Als App installieren</h3>'+(done?'<p class="note" style="margin-top:0">Die App ist auf diesem Gerät schon installiert.</p>':'<button class="btn" id="u13instb" style="display:none;margin:4px 0 8px">App jetzt installieren</button><ul style="margin:6px 0 6px 20px;padding:0"><li><b>iPhone/iPad:</b> in Safari unten auf <b>Teilen</b> (Quadrat mit Pfeil) → <b>Zum Home-Bildschirm</b>.</li><li><b>Android:</b> in Chrome oben rechts auf <b>⋮</b> → <b>App installieren</b> (oder „Zum Startbildschirm hinzufügen“).</li><li><b>Mac/PC:</b> in Chrome oder Edge rechts in der Adresszeile auf das Symbol <b>Installieren</b>. In Safari auf dem Mac: <b>Ablage</b> → <b>Zum Dock hinzufügen</b>.</li></ul><p class="note">Die App startet auch ohne Netz. Ohne Netz kannst du ansehen und ändern, die Änderungen werden geschickt, sobald wieder Netz da ist. Anmelden und Spielerlinks brauchen Netz. Auf einem gemeinsam genutzten Gerät wird nichts gespeichert, dort geht es nur mit Netz.</p>');
+      const b=c.querySelector("#u13instb"),show=()=>{if(b&&instEv)b.style.display=""};show();window.addEventListener("u13inst",show);
+      if(b)b.onclick=async()=>{const ev=instEv;if(!ev)return;instEv=null;b.style.display="none";try{await ev.prompt()}catch(e){}};
+      pp.appendChild(c);
+    }
+  };put();
+}
+/* Hinweis „Als App speichern“ in der Link-Ansicht (nicht in der installierten App): zuerst oben mit Anleitung; ausgeblendet wandert er zugeklappt nach unten */
+const VSTEP={ios:["iPhone/iPad","Unten auf <b>Teilen</b> tippen (Quadrat mit Pfeil nach oben).","Nach unten wischen und <b>Zum Home-Bildschirm</b> wählen.","Oben rechts auf <b>Hinzufügen</b> tippen."],
+  android:["Android","In Chrome oben rechts auf <b>⋮</b> tippen.","<b>App installieren</b> wählen (oder „Zum Startbildschirm hinzufügen“).","Mit <b>Installieren</b> bestätigen."],
+  pc:["Computer","In Chrome oder Edge rechts in der Adresszeile auf das Symbol <b>Installieren</b> klicken.","Mit <b>Installieren</b> bestätigen.","In Safari auf dem Mac stattdessen: <b>Ablage</b> → <b>Zum Dock hinzufügen</b>."]};
+function viewerInstall(){
+  if(STANDALONE())return;
+  const dev=IOS?"ios":/Android/i.test(navigator.userAgent)?"android":"pc",gone=()=>{try{return localStorage.getItem("u13vinstx")==="1"}catch(e){return false}};
+  /* Terminplan-Link (planOnly in links.js setzt data-plan): Hinweis nur zugeklappt unten, keine Benachrichtigungen, kein Passwort */
+  const plan=()=>{const v=document.getElementById("vw2");return!!(v&&v.dataset.plan)};
+  /* Benachrichtigungen gibt es ab Stufe Standard (der Link hat dann den Feedback-Schlüssel der Mannschaft) */
+  const pz=()=>!plan()&&!!(window.__pushCtx&&window.__pushCtx());
+  const ol=(k)=>'<ol style="margin:6px 0 6px 20px;padding:0">'+VSTEP[k].slice(1).map((t)=>"<li>"+t+"</li>").join("")+(pz()?"<li>Die App auf dem Startbildschirm öffnen und oben auf <b>Einschalten</b> (Benachrichtigungen) tippen.</li>":"")+"</ol>";
+  /* Eltern: Rolle aus dem Konto, sonst die im Link gewählte Rolle */
+  const eltern=()=>{const K=window.__KONTO;if(K&&K.cur)return K.cur.rolle==="eltern";const c=window.__pushCtx&&window.__pushCtx();return!!c&&c.ro==="e"};
+  const body=()=>(plan()?'<p style="margin:4px 0 6px;font-size:14.5px">Dann öffnet sich der Terminplan mit einem Tipp vom Startbildschirm, auch ohne Netz (letzter Stand).</p>'
+      :!pz()?'<p style="margin:4px 0 6px;font-size:14.5px">Dann öffnest du deine Seite mit einem Tipp vom Startbildschirm, auch ohne Netz (letzter Stand). Die App zeigt genau das, was du hier siehst.</p>'
+      :(eltern()?'<p style="margin:4px 0 6px;font-size:14.5px">Für Eltern ist das freiwillig. Wer mag, kann die Seite als App speichern und dort die Benachrichtigungen einschalten, zum Beispiel für Antworten vom Trainer und neue Hinweise.</p>'
+        :'<p style="margin:4px 0 6px;font-size:14.5px"><b>Für Spieler: Bitte speichere diese Seite als App auf deinem Handy und schalte danach in der App die Benachrichtigungen ein.</b> Nur dann bekommst du Bescheid, wenn es '+pushWas(window.__pushCtx())+' gibt, auch wenn die App geschlossen ist. Danke!</p><p class="note" style="margin:0 0 6px">Eltern brauchen die App nicht unbedingt, können sie aber natürlich auch speichern.</p>')
+        +'<p class="note" style="margin:0 0 6px">Außerdem öffnest du die Seite dann mit einem Tipp vom Startbildschirm, auch ohne Netz (letzter Stand). Die App zeigt genau das, was du hier siehst.</p>')
+    +'<button class="btn" data-vib style="display:none;margin:2px 0 8px">App jetzt installieren</button><b style="font-size:14px">So geht’s ('+VSTEP[dev][0]+'):</b>'+ol(dev)
+    +'<details style="margin:4px 0"><summary class="note" style="cursor:pointer">Anleitung für andere Geräte</summary>'+["ios","android","pc"].filter((k)=>k!==dev).map((k)=>'<b style="font-size:13px">'+VSTEP[k][0]+'</b>'+ol(k)).join("")+"</details>"
+    +(plan()?"":KONTO?'<p class="note" style="margin:4px 0 0">In der App meldest du dich einmal mit deinem Konto an. Diese Anleitung findest du auch jederzeit unter <b>Einstellungen</b>.</p>':isKurz?'<p class="note" style="margin:4px 0 0">Beim ersten Öffnen der App einmal das Passwort eingeben und „Auf diesem Gerät angemeldet bleiben“ anhaken.</p>':'<p class="note" style="margin:4px 0 0">Den Link bitte nicht weitergeben. Er gehört nur dir.</p>');
+  const wire=(c)=>{const b=c.querySelector("[data-vib]"),show=()=>{if(instEv)b.style.display=""};show();window.addEventListener("u13inst",show);
+    b.onclick=async()=>{const ev=instEv;if(!ev)return;instEv=null;b.style.display="none";try{await ev.prompt()}catch(e){}}};
+  const sig=()=>(pz()?"p":"")+(eltern()?"e":"")+(plan()?"t":"");   /* Rolle und Benachrichtigungen stehen erst nach dem Laden fest: dann neu aufbauen */
+  const top=()=>{const c=document.createElement("div");c.id="u13vinst";c.className="card";c.dataset.k=sig();c.style.cssText="margin:0 0 14px;border-color:var(--ac,#2563eb)";
+    c.innerHTML='<div style="display:flex;gap:8px;align-items:flex-start"><b style="flex:1;font-size:16px">'+(pz()?"📲 Spieler: Bitte als App speichern":"📲 Als App auf dem Handy speichern")+'</b><button type="button" class="xcl" data-vix style="position:static;flex:none;margin:-5px -6px 0 0" aria-label="Ausblenden" title="Ausblenden">✕</button></div>'+body();
+    wire(c);c.querySelector("[data-vix]").onclick=()=>{try{localStorage.setItem("u13vinstx","1")}catch(e){}c.remove();put()};return c};
+  const low=()=>{const c=document.createElement("details");c.id="u13vinst";c.className="card";c.dataset.k=sig();c.style.cssText="margin:14px 0 0";
+    c.innerHTML='<summary style="cursor:pointer;font-weight:600"><span style="display:inline-flex;gap:8px;align-items:center;width:calc(100% - 24px)"><span style="flex:1">📲 Als App auf dem Handy speichern'+(eltern()||plan()?" (freiwillig)":"")+'</span><button type="button" class="xcl" data-vioff style="position:static;flex:none;margin:-5px 0" aria-label="Ausblenden" title="Ausblenden">✕</button></span></summary>'+body();wire(c);
+    c.querySelector("[data-vioff]").onclick=(e)=>{e.preventDefault();e.stopPropagation();try{localStorage.setItem("u13vinstx","2")}catch(x){}c.remove()};return c};
+  const off=()=>{try{return localStorage.getItem("u13vinstx")==="2"}catch(e){return false}};   /* ganz ausgeblendet */
+  const bottom=(v,el)=>{const f=v.querySelector(":scope>.vf");if(f)v.insertBefore(el,f);else v.appendChild(el)};   /* „Stand“ bleibt ganz unten */
+  const put=()=>{const v=document.getElementById("vw2");if(!v||off())return;
+    const was=document.getElementById("u13vinst");if(was){if(was.dataset.k===sig()||was.open)return;was.remove()}
+    if(gone()||eltern()||plan()){bottom(v,low());return}
+    const hd=v.querySelector(".vh");if(!hd)return;   /* erst wenn die Ansicht da ist (nicht auf der Passwortseite) */
+    const kf=document.getElementById("kzf"),at=kf&&kf.parentNode===v?kf:hd;at.insertAdjacentElement("afterend",top())};
+  new MutationObserver(put).observe(document.documentElement,{childList:true,subtree:true});put();
+}
+if(isViewerHash&&!VS)document.addEventListener("DOMContentLoaded",viewerInstall);
+/* ---------- Benachrichtigungen (Web-Push) ----------
+   Das Gerät meldet sich unter einem geheimen Pfad an (push/<mannschaft>_<64 Zeichen>), abgesichert mit dem Feedback-Schlüssel der Mannschaft.
+   Verschickt wird von einem Zeitplan bei GitHub alle paar Minuten (siehe push/LIESMICH.md). Die Nachrichten enthalten keine Namen.
+   Erst ab Stufe Standard (Hinweise, Nachrichten). Spielerlinks: nur in der installierten App (iPhone kann es nur dort). Trainer: Einstellungen → Hinweise & Links. */
+const VAPID="BKiX-60wgm3sN-vhKxj2GYt6_Ro7YioB2CwqE9UILd3nW7G0xiYyMCzC1jZ4l2VsfIbZdgVhltJpmB63jwoROSU";
+const PUSH_OK=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+const pls={get:(k)=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
+const pushSid=()=>{let s=pls.get("u13push");if(!/^[0-9a-f]{64}$/.test(s||"")){const a=new Uint8Array(32);crypto.getRandomValues(a);s=Array.from(a,(x)=>x.toString(16).padStart(2,"0")).join("");pls.set("u13push",s)}return s};
+const pushPerm=()=>{try{return Notification.permission}catch(e){return"default"}};
+const u8=(s)=>Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")+"===".slice((s.length+3)%4)),(c)=>c.charCodeAt(0));
+async function pushSub(ask){
+  if(ask&&pushPerm()!=="granted"&&await Notification.requestPermission()!=="granted")return null;
+  if(pushPerm()!=="granted")return null;
+  const reg=await navigator.serviceWorker.ready,old=await reg.pushManager.getSubscription();
+  return old||(ask?reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID)}):null);
+}
+/* Je Mannschaft ein Eintrag (ein Trainer mit zwei Mannschaften bekommt die Nachrichten beider) */
+const pushId=(c)=>String(c.tid||"").toLowerCase().replace(/[^a-z0-9]/g,"")+"_"+pushSid();
+/* Anmeldung speichern: Trainer über die Datenbank-Verbindung, Links ohne Anmeldung direkt */
+async function pushSave(sub,c){
+  const j=sub.toJSON?sub.toJSON():sub,ky=j.keys||{},id=pushId(c),o={e:j.endpoint,p:ky.p256dh||"",a:ky.auth||"",k:c.k,pid:c.pid||"",ro:c.ro||"",r:c.r||"",at:Date.now(),tid:id.split("_")[0]};
+  if(c.ro==="t"&&fs){await fs.doc("push/"+id).set(o);return}
+  const f={};Object.keys(o).forEach((x)=>{f[x]=toFs(o[x])});
+  const r=await fetch(FSB()+"push/"+id+"?key="+encodeURIComponent(CFG.apiKey),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:f})});
+  if(!r.ok)throw{code:"http-"+r.status};
+}
+/* c: Feedback-Schlüssel k, Mannschaft tid, Spieler pid, Rolle ro (s Spieler, e Elternteil, t Trainer), Antwort-Pfad r */
+const pushApi={
+  on:()=>pls.get("u13pushon")==="1",
+  async enable(c){const s=await pushSub(true);if(!s)return pushPerm()==="denied"?"denied":"no";await pushSave(s,c);pls.set("u13pushon","1");return"ok"},
+  async disable(c){pls.set("u13pushon",null);pls.set("u13pushx","1");try{const reg=await navigator.serviceWorker.ready,s=await reg.pushManager.getSubscription();if(s)await s.unsubscribe()}catch(e){}
+    const id=pushId(c);try{if(c.ro==="t"&&fs)await fs.doc("push/"+id).delete();else await fetch(FSB()+"push/"+id+"?key="+encodeURIComponent(CFG.apiKey),{method:"DELETE"})}catch(e){}},
+  /* beim Öffnen: Anmeldung auffrischen (Rolle oder Adresse des Geräts können sich ändern) */
+  async sync(c){if(!pushApi.on())return;try{const s=await pushSub(false);if(s)await pushSave(s,c);else pls.set("u13pushon",null)}catch(e){}}
+};
+const pushMsg=(r)=>r==="denied"?"Benachrichtigungen wurden nicht erlaubt. Du kannst sie in den Einstellungen des Geräts erlauben.":"Das hat nicht geklappt. Bitte später noch einmal versuchen.";
+/* Wofür es Nachrichten gibt (d: „bei einem …“); Clips nur, wenn der Link Videos hat */
+const pushWas=(c,d)=>(d?"einem neuen Hinweis, einer Antwort vom Trainer":"einen neuen Hinweis, eine Antwort vom Trainer")+(c&&c.v?(d?", einem neuen Clip oder einer Erinnerung an eine Clip-Aufgabe":", einen neuen Clip oder eine Erinnerung an eine Clip-Aufgabe"):"");
+let vpOn=false;
+function viewerPush(){
+  if(vpOn)return;vpOn=true;
+  const ctx=()=>window.__pushCtx&&window.__pushCtx();
+  let synced=false;
+  const put=()=>{
+    const v=document.getElementById("vw2"),c=ctx();if(!v||!c||!c.k||!STANDALONE()||!PUSH_OK()||v.dataset.plan)return;
+    const hd=v.querySelector(".vh");if(!hd)return;
+    if(!synced){synced=true;pushApi.sync(c).then(put)}
+    const x=pls.get("u13pushx")||"",later=/^s\d+$/.test(x)&&Date.now()-+x.slice(1)<7*864e5;   /* „Später“: Bitte erst nach 7 Tagen wieder oben */
+    const st=pushApi.on()?"an":pushPerm()==="denied"?"zu":x==="1"||later||c.ro==="e"?"aus":"frage",old=document.getElementById("u13push");
+    if(old&&old.dataset.st===st)return;if(old)old.remove();
+    const el=document.createElement("div");el.id="u13push";el.className="card";el.dataset.st=st;
+    if(st==="frage"){el.style.cssText="margin:0 0 14px;border-color:var(--ac,#2563eb)";
+      el.innerHTML='<b style="font-size:16px">🔔 Bitte Benachrichtigungen einschalten</b><p class="note" style="margin:4px 0 8px">Dann bekommst du Bescheid, wenn es '+pushWas(c)+' gibt, auch wenn die App geschlossen ist. In den Nachrichten stehen keine Namen.</p><div class="bar"><button class="btn" data-pon style="background:var(--ac,#2563eb);color:#fff;border-color:var(--ac,#2563eb);font-weight:600;min-height:44px">Einschalten</button><button class="btn" data-plater style="min-height:44px">Später</button></div><div class="note" style="margin-top:6px">Einschalten geht auch später jederzeit: ganz unten in der App.</div><div class="note warn" data-pm></div>';
+      const kf=document.getElementById("kzf");(kf&&kf.parentNode===v?kf:hd).insertAdjacentElement("afterend",el)}
+    else{el.style.cssText="margin:14px 0 0";
+      el.innerHTML=st==="zu"?'<div class="note">🔕 Benachrichtigungen sind auf diesem Gerät blockiert. Du kannst sie in den Einstellungen des Handys erlauben (iPhone: Einstellungen → Mitteilungen → diese App → Mitteilungen erlauben). Danach die App neu öffnen.</div>'
+        :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Benachrichtigungen sind an.":"🔕 Benachrichtigungen sind aus. Hier kannst du sie jederzeit einschalten.")+'</span><button class="btn" '+(st==="an"?"data-poff>Ausschalten":"data-pon>Einschalten")+'</button></div><div class="note warn" data-pm></div>';
+      {const f=v.querySelector(":scope>.vf");if(f)v.insertBefore(el,f);else v.appendChild(el)}}
+  };
+  document.addEventListener("click",async(e)=>{const t=e.target.closest&&e.target.closest("#u13push button");if(!t)return;const c=ctx();if(!c)return;
+    if(t.hasAttribute("data-plater")){pls.set("u13pushx","s"+Date.now());put();return}
+    t.disabled=true;
+    if(t.hasAttribute("data-poff")){await pushApi.disable(c);put();return}
+    let r;try{r=await pushApi.enable(c)}catch(x){r="fehler"}
+    if(r!=="ok"){const m=document.querySelector("#u13push [data-pm]");if(m)m.textContent=pushMsg(r);t.disabled=false}
+    put()});
+  new MutationObserver(put).observe(document.documentElement,{childList:true,subtree:true});put();
+}
+if(isViewerHash)document.addEventListener("DOMContentLoaded",viewerPush);
+/* Trainer: Karte unter Einstellungen → Hinweise & Links (neue Nachricht im Eingang). Gibt es erst ab Stufe Standard. */
+function pushCard(){
+  const key=()=>(window.__vid&&window.__vid.fbKey)||"",tid=()=>window.__TID||"";
+  const put=()=>{
+    const pp=document.getElementById("etp-l");if(!pp||!window.__vid){setTimeout(put,500);return}
+    let c=document.getElementById("u13pushc");
+    if(!window.__vid.msgOn()){if(c)c.remove();return}
+    if(!c){c=document.createElement("div");c.className="card";c.id="u13pushc";c.style.display="block";const i=document.getElementById("u13inst");if(i&&i.parentNode===pp)i.insertAdjacentElement("afterend",c);else pp.appendChild(c)}
+    const st=!PUSH_OK()?"nein":IOS&&!STANDALONE()?"ios":!key()?"warte":pushApi.on()?"an":pushPerm()==="denied"?"zu":"aus";
+    if(c.dataset.st===st)return;c.dataset.st=st;
+    c.innerHTML='<h3>Benachrichtigungen</h3><p class="note" style="margin-top:0">Du bekommst eine Nachricht aufs Handy oder den Computer, wenn Spieler oder Eltern dir im Eingang schreiben, auch wenn die App geschlossen ist. Spieler und Eltern schalten es in ihrer Link-App selbst ein und bekommen dann Bescheid bei neuen Hinweisen und Antworten'+(window.__vid.on()?", bei neuen Clips und Erinnerungen an Clip-Aufgaben":"")+'. In den Nachrichten stehen keine Namen. Sie kommen nach etwa 5 bis 15 Minuten.</p>'
+      +(st==="nein"?'<p class="note">Dieser Browser kann keine Benachrichtigungen empfangen.</p>'
+      :st==="ios"?'<p class="note"><b>Auf dem iPhone und iPad geht das nur in der App vom Home-Bildschirm.</b> Bitte zuerst als App installieren (siehe oben) und dort einschalten.</p>'
+      :st==="warte"?'<p class="note">Wird vorbereitet …</p>'
+      :st==="zu"?'<p class="note warn">Benachrichtigungen sind auf diesem Gerät blockiert. Bitte in den Einstellungen des Geräts für diese App erlauben.</p>'
+      :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Auf diesem Gerät eingeschaltet.":"🔕 Auf diesem Gerät aus.")+'</span><button class="btn" id="u13pushb">'+(st==="an"?"Ausschalten":"Einschalten")+'</button></div><div class="note warn" id="u13pushm"></div>');
+    const b=c.querySelector("#u13pushb");
+    if(b)b.onclick=async()=>{b.disabled=true;const cx={k:key(),ro:"t",tid:tid()};let r="ok";
+      if(st==="an")await pushApi.disable(cx);else{try{r=await pushApi.enable(cx)}catch(e){r="fehler"}}
+      if(r!=="ok"){c.querySelector("#u13pushm").textContent=pushMsg(r);b.disabled=false;return}
+      c.dataset.st="";put()};
+    if(st==="warte")setTimeout(put,1000);
+  };put();
+  const syn=()=>{if(!key()){setTimeout(syn,1500);return}if(!window.__vid.msgOn())return;pushApi.sync({k:key(),ro:"t",tid:tid()}).then(()=>{const c=document.getElementById("u13pushc");if(c)c.dataset.st="";put()})};if(PUSH_OK())syn();
+}
 /* ---------- Schnittstelle zur App ---------- */
 let dbP=null;
 window.claude={use:async function(name){
@@ -557,5 +870,7 @@ window.claude={use:async function(name){
 }};
 
 /* ---------- Offline-Start (Service Worker) und Installation ---------- */
+window.addEventListener("beforeinstallprompt",(e)=>{e.preventDefault();instEv=e;window.dispatchEvent(new Event("u13inst"))});
+window.addEventListener("appinstalled",()=>{instEv=null;const b=document.getElementById("u13instb");if(b)b.style.display="none"});
 if("serviceWorker" in navigator&&/^https:|^http:\/\/localhost/.test(location.protocol+"//"+location.hostname)){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})})}
 })();
