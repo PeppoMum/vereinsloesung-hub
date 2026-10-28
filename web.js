@@ -49,6 +49,8 @@ if(MTKEY){try{localStorage.setItem("vmt",MTKEY+"|"+Date.now())}catch(e){}}
 const kKey=(n,cur)=>{if(cur)return cur;try{const v=(localStorage.getItem(n)||"").split("|");return v[0]&&Date.now()-(+v[1]||0)<3*864e5?v[0]:""}catch(e){return ""}};
 const kClear=(n)=>{try{localStorage.removeItem(n)}catch(e){}};
 const mkeyOf=(em)=>String(em||"").toLowerCase().replace(/[.]/g,"_").replace(/@/g,"_at_");
+/* Neue Konto-Anfrage: Benachrichtigung an die Trainer der Mannschaft (ohne Namen) */
+const kanfrPush=(tid)=>{if(tid)fs.doc("pushq/"+tid+"_q"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)).set({art:"kanfr",t:Date.now(),tid}).catch(()=>{})};
 const isViewerHash=(/^#[A-Za-z0-9]+\.[A-Za-z0-9_-]{16,}$/.test(H)&&!/^#co[A-Za-z0-9]+\./.test(H)&&!isScout&&!KABKEY)||isKurz;
 /* Spieler-, Eltern- und externe Links als eigene App. Rechte ändern sich nicht: Die App zeigt dasselbe wie der Link im Browser.
    Android/Computer: eigene App-Datei (manifest-link) mit Startadresse „./?link“; beim Start wird der zuletzt geöffnete Link auf diesem Gerät wieder eingesetzt (siehe oben).
@@ -404,7 +406,7 @@ async function anfrageTeam(em,tk){
   let own=null;try{const s=await fs.doc("kanfr/"+e.tid+"~"+mkeyOf(em)).get();own=s.exists?s.data():null}catch(x){}
   if(own){kClear("vmt");return"offen"}
   const f=await kForm(em,{btn:"Anfrage senden"});
-  try{await fs.doc("kanfr/"+e.tid+"~"+mkeyOf(em)).set({tid:e.tid,email:em,name:f.name.slice(0,60),kind:f.kind.slice(0,60),rolle:f.rolle,at:new Date().toISOString(),s:tk,status:"offen"});kClear("vmt");return"gesendet"}catch(x){return"fehler"}
+  try{await fs.doc("kanfr/"+e.tid+"~"+mkeyOf(em)).set({tid:e.tid,email:em,name:f.name.slice(0,60),kind:f.kind.slice(0,60),rolle:f.rolle,at:new Date().toISOString(),s:tk,status:"offen"});kanfrPush(e.tid);kClear("vmt");return"gesendet"}catch(x){return"fehler"}
 }
 async function elternStart(em){
   let links=await myLinks(em);const sp=kKey("vsp",SPKEY),mt=kKey("vmt",MTKEY);
@@ -453,7 +455,7 @@ function kNotif(){
     if(!PUSH_OK())return h+'<div class="note">Die App ist auf diesem Gerät eingerichtet. Benachrichtigungen gehen auf diesem Gerät leider nicht.</div></div>';
     if(pushPerm()==="denied")return h+'<div class="note" style="margin:0 0 6px">✅ Die App ist auf diesem Gerät eingerichtet.</div><div class="note">🔕 Benachrichtigungen sind auf diesem Gerät blockiert. Du kannst sie in den Einstellungen des Handys erlauben (iPhone: Einstellungen → Mitteilungen → diese App → Mitteilungen erlauben). Danach die App neu öffnen.</div></div>';
     const on=pushApi.on();
-    return h+'<div class="note" style="margin:0 0 6px">✅ Die App ist auf diesem Gerät eingerichtet.</div>'+was+'<div class="bar" style="align-items:center;margin:0"><span style="flex:1">'+(on?"🔔 Benachrichtigungen sind an.":"🔕 Benachrichtigungen sind aus.")+'</span><button class="btn" data-ks="'+(on?"poff":"pon")+'"'+(on?"":' style="background:var(--ac,#2563eb);color:#fff;border-color:var(--ac,#2563eb);font-weight:600"')+'>'+(on?"Ausschalten":"Einschalten")+'</button></div></div>';
+    return h+'<div class="note" style="margin:0 0 6px">✅ Die App ist auf diesem Gerät eingerichtet.</div>'+was+'<div class="bar" style="align-items:center;margin:0"><span style="flex:1">'+(on?"🔔 Benachrichtigungen sind an.":"🔕 Benachrichtigungen sind aus.")+'</span><button class="btn" data-ks="'+(on?"poff":"pon")+'"'+(on?"":' style="background:var(--ac,#2563eb);color:#fff;border-color:var(--ac,#2563eb);font-weight:600"')+'>'+(on?"Ausschalten":"Einschalten")+'</button></div>'+(on?pwHtml(pc):"")+'</div>';
   }
   const dev=IOS?"ios":/Android/i.test(navigator.userAgent)?"android":"pc",ol=(k)=>'<ol style="margin:4px 0 6px 20px;padding:0">'+VSTEP[k].slice(1).map((t)=>"<li>"+t+"</li>").join("")+"</ol>";
   return h+was+(pc?'<div style="font-weight:600;margin:6px 0 2px">1. Seite als App speichern</div>':"")+(instEv?'<button class="btn" data-ks="inst" style="margin:4px 0 6px">App jetzt installieren</button>':"")
@@ -496,7 +498,7 @@ function kRender(el){
       if(r==="ok")say("Benachrichtigungen sind an.");else say(pushMsg(r),1);return}
     if(k==="kid"){const n=el.querySelector("#kstk").value.trim();if(!nm2(n)){say("Bitte Vor- und Nachnamen des Kindes eintragen.",1);return}
       const a={tid:c.tid,email:K.email,name:String(c.rolle==="spieler"?c.pn||c.name:c.name).slice(0,60),kind:n.slice(0,60),rolle:"eltern",at:new Date().toISOString(),via:c.tid+"~"+c.pid,status:"offen"};
-      try{await fs.doc("kanfr/"+c.tid+"~"+mkeyOf(K.email)).set(a);KS.anf=a;say("Anfrage gesendet. Der Trainer schaltet das Kind frei.")}catch(x){say("Das hat nicht geklappt. Bitte später noch einmal versuchen.",1)}return}
+      try{await fs.doc("kanfr/"+c.tid+"~"+mkeyOf(K.email)).set(a);kanfrPush(c.tid);KS.anf=a;say("Anfrage gesendet. Der Trainer schaltet das Kind frei.")}catch(x){say("Das hat nicht geklappt. Bitte später noch einmal versuchen.",1)}return}
     if(k==="out"){signOutClean();return}
     if(k==="del"){if(KS.arm!=="del"){KS.arm="del";kRender(el);return}KS.arm="";
       try{const l=await myLinks(K.email);for(const x of l)await fs.doc("kverkn/"+x.id).delete();for(const x of await myAnfr(K.email)){try{await fs.doc("kanfr/"+x.id).delete()}catch(y){}}}catch(x){say("Das hat nicht geklappt. Bitte später noch einmal versuchen.",1);return}
@@ -709,19 +711,19 @@ window.__webOwnerSnap=function(cb){
   fs.doc(T("linkmeta/main")).onSnapshot((s)=>{meta=s.exists?s.data():{};const u=JSON.stringify([meta.u,meta.k,meta.xk]);if(u===lastU){later();return}lastU=u;fetchOwn(meta).catch(()=>{})},()=>{});
 };
 
-/* Karte „Als App installieren“ unter Einstellungen → Hinweise & Links (für alle Angemeldeten, auch eingeschränkte Ansicht) */
+/* Karte „Als App installieren“ unter Einstellungen → Für mich (für alle Angemeldeten, auch eingeschränkte Ansicht) */
 let instEv=null;   /* Installations-Angebot des Browsers (Chrome/Edge/Android), siehe unten */
 const STANDALONE=()=>!!(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
 function instCard(){
   const put=()=>{
-    const pp=document.getElementById("etp-l");if(!pp){setTimeout(put,500);return}
+    const pp=document.getElementById("etp-p");if(!pp){setTimeout(put,500);return}
     if(!document.getElementById("u13inst")){
       const c=document.createElement("div");c.className="card";c.id="u13inst";c.style.display="block";
       const done=STANDALONE();
       c.innerHTML='<h3>Als App installieren</h3>'+(done?'<p class="note" style="margin-top:0">Die App ist auf diesem Gerät schon installiert.</p>':'<button class="btn" id="u13instb" style="display:none;margin:4px 0 8px">App jetzt installieren</button><ul style="margin:6px 0 6px 20px;padding:0"><li><b>iPhone/iPad:</b> in Safari unten auf <b>Teilen</b> (Quadrat mit Pfeil) → <b>Zum Home-Bildschirm</b>.</li><li><b>Android:</b> in Chrome oben rechts auf <b>⋮</b> → <b>App installieren</b> (oder „Zum Startbildschirm hinzufügen“).</li><li><b>Mac/PC:</b> in Chrome oder Edge rechts in der Adresszeile auf das Symbol <b>Installieren</b>. In Safari auf dem Mac: <b>Ablage</b> → <b>Zum Dock hinzufügen</b>.</li></ul><p class="note">Die App startet auch ohne Netz. Ohne Netz kannst du ansehen und ändern, die Änderungen werden geschickt, sobald wieder Netz da ist. Anmelden und Spielerlinks brauchen Netz. Auf einem gemeinsam genutzten Gerät wird nichts gespeichert, dort geht es nur mit Netz.</p>');
       const b=c.querySelector("#u13instb"),show=()=>{if(b&&instEv)b.style.display=""};show();window.addEventListener("u13inst",show);
       if(b)b.onclick=async()=>{const ev=instEv;if(!ev)return;instEv=null;b.style.display="none";try{await ev.prompt()}catch(e){}};
-      pp.appendChild(c);
+      pp.insertBefore(c,pp.firstChild);
     }
   };put();
 }
@@ -769,7 +771,7 @@ if(isViewerHash&&!VS)document.addEventListener("DOMContentLoaded",viewerInstall)
 /* ---------- Benachrichtigungen (Web-Push) ----------
    Das Gerät meldet sich unter einem geheimen Pfad an (push/<mannschaft>_<64 Zeichen>), abgesichert mit dem Feedback-Schlüssel der Mannschaft.
    Verschickt wird von einem Zeitplan bei GitHub alle paar Minuten (siehe push/LIESMICH.md). Die Nachrichten enthalten keine Namen.
-   Erst ab Stufe Standard (Hinweise, Nachrichten). Spielerlinks: nur in der installierten App (iPhone kann es nur dort). Trainer: Einstellungen → Hinweise & Links. */
+   Erst ab Stufe Standard (Hinweise, Nachrichten). Spielerlinks: nur in der installierten App (iPhone kann es nur dort). Trainer: Einstellungen → Für mich. */
 const VAPID="BKiX-60wgm3sN-vhKxj2GYt6_Ro7YioB2CwqE9UILd3nW7G0xiYyMCzC1jZ4l2VsfIbZdgVhltJpmB63jwoROSU";
 const PUSH_OK=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
 const pls={get:(k)=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
@@ -786,7 +788,7 @@ async function pushSub(ask){
 const pushId=(c)=>String(c.tid||"").toLowerCase().replace(/[^a-z0-9]/g,"")+"_"+pushSid();
 /* Anmeldung speichern: Trainer über die Datenbank-Verbindung, Links ohne Anmeldung direkt */
 async function pushSave(sub,c){
-  const j=sub.toJSON?sub.toJSON():sub,ky=j.keys||{},id=pushId(c),o={e:j.endpoint,p:ky.p256dh||"",a:ky.auth||"",k:c.k,pid:c.pid||"",ro:c.ro||"",r:c.r||"",at:Date.now(),tid:id.split("_")[0]};
+  const j=sub.toJSON?sub.toJSON():sub,ky=j.keys||{},id=pushId(c),o={e:j.endpoint,p:ky.p256dh||"",a:ky.auth||"",k:c.k,pid:c.pid||"",ro:c.ro||"",r:c.r||"",at:Date.now(),tid:id.split("_")[0],x:pwAus().join(",")};
   if(c.ro==="t"&&fs){await fs.doc("push/"+id).set(o);return}
   const f={};Object.keys(o).forEach((x)=>{f[x]=toFs(o[x])});
   const r=await fetch(FSB()+"push/"+id+"?key="+encodeURIComponent(CFG.apiKey),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:f})});
@@ -801,6 +803,16 @@ const pushApi={
   /* beim Öffnen: Anmeldung auffrischen (Rolle oder Adresse des Geräts können sich ändern) */
   async sync(c){if(!pushApi.on())return;try{const s=await pushSub(false);if(s)await pushSave(s,c);else pls.set("u13pushon",null)}catch(e){}}
 };
+/* Wofür dieses Gerät Bescheid bekommt: abgewählte Arten stehen im Feld x der Anmeldung (durch Komma getrennt, siehe push/senden.mjs).
+   Spieler/Eltern sehen nur, was der Trainer für die Mannschaft eingeschaltet hat (pz im Link), Clips nur Spieler und nur mit Videos. */
+const PW={hinweis:"Neue Hinweise und Aufgaben",notiz:"Neue Notizen im Profil",termin:"Abgesagte oder verlegte Termine",afrist:"Erinnerung an Aufgaben",clip:"Neue Clips",frist:"Erinnerung an Clips",antwort:"Antworten vom Trainer",
+  fb:"Nachrichten im Eingang",aantw:"Antworten auf Aufgaben",skom:"Clip-Kommentare von Spielern",kanfr:"Neue Konto-Anfragen"};
+const pwAus=()=>(pls.get("u13pushw")||"").split(",").filter((k)=>k in PW);
+function pwHtml(c){const A=pwAus(),vid=c.ro==="t"?!!(window.__vid&&window.__vid.on&&window.__vid.on()):!!c.v,
+    L=(c.ro==="t"?["fb","aantw","skom","kanfr"]:String(c.pz!=null?c.pz:"hinweis,notiz,clip,frist,antwort").split(",")).filter((k)=>k in PW&&!((k==="clip"||k==="frist"||k==="skom")&&!vid)&&!(c.ro==="e"&&(k==="clip"||k==="frist")));
+  return L.length?'<div class="pwl" style="display:flex;flex-direction:column;gap:6px;margin:10px 0 0">'+L.map((k)=>'<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-pw="'+k+'"'+(A.includes(k)?"":" checked")+"> "+PW[k]+"</label>").join("")+"</div>":""}
+document.addEventListener("change",(e)=>{const i=e.target.closest&&e.target.closest("input[data-pw]");if(!i)return;const A=new Set(pwAus());if(i.checked)A.delete(i.dataset.pw);else A.add(i.dataset.pw);pls.set("u13pushw",[...A].join(",")||null);
+  const c=i.closest("#u13pushc")?{k:(window.__vid&&window.__vid.fbKey)||"",ro:"t",tid:window.__TID||""}:window.__pushCtx&&window.__pushCtx();if(c&&c.k)pushApi.sync(c)});
 const pushMsg=(r)=>r==="denied"?"Benachrichtigungen wurden nicht erlaubt. Du kannst sie in den Einstellungen des Geräts erlauben.":"Das hat nicht geklappt. Bitte später noch einmal versuchen.";
 /* Wofür es Nachrichten gibt (d: „bei einem …“); Clips nur, wenn der Link Videos hat */
 const pushWas=(c,d)=>(d?"einem neuen Hinweis, einer Antwort vom Trainer":"einen neuen Hinweis, eine Antwort vom Trainer")+(c&&c.v?(d?", einem neuen Clip oder einer Erinnerung an eine Clip-Aufgabe":", einen neuen Clip oder eine Erinnerung an eine Clip-Aufgabe"):"");
@@ -822,7 +834,7 @@ function viewerPush(){
       const kf=document.getElementById("kzf");(kf&&kf.parentNode===v?kf:hd).insertAdjacentElement("afterend",el)}
     else{el.style.cssText="margin:14px 0 0";
       el.innerHTML=st==="zu"?'<div class="note">🔕 Benachrichtigungen sind auf diesem Gerät blockiert. Du kannst sie in den Einstellungen des Handys erlauben (iPhone: Einstellungen → Mitteilungen → diese App → Mitteilungen erlauben). Danach die App neu öffnen.</div>'
-        :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Benachrichtigungen sind an.":"🔕 Benachrichtigungen sind aus. Hier kannst du sie jederzeit einschalten.")+'</span><button class="btn" '+(st==="an"?"data-poff>Ausschalten":"data-pon>Einschalten")+'</button></div><div class="note warn" data-pm></div>';
+        :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Benachrichtigungen sind an.":"🔕 Benachrichtigungen sind aus. Hier kannst du sie jederzeit einschalten.")+'</span><button class="btn" '+(st==="an"?"data-poff>Ausschalten":"data-pon>Einschalten")+'</button></div>'+(st==="an"?pwHtml(c):"")+'<div class="note warn" data-pm></div>';
       {const f=v.querySelector(":scope>.vf");if(f)v.insertBefore(el,f);else v.appendChild(el)}}
   };
   document.addEventListener("click",async(e)=>{const t=e.target.closest&&e.target.closest("#u13push button");if(!t)return;const c=ctx();if(!c)return;
@@ -835,22 +847,22 @@ function viewerPush(){
   new MutationObserver(put).observe(document.documentElement,{childList:true,subtree:true});put();
 }
 if(isViewerHash)document.addEventListener("DOMContentLoaded",viewerPush);
-/* Trainer: Karte unter Einstellungen → Hinweise & Links (neue Nachricht im Eingang). Gibt es erst ab Stufe Standard. */
+/* Trainer: Karte unter Einstellungen → Für mich (nach „Als App installieren“). Gibt es erst ab Stufe Standard. */
 function pushCard(){
   const key=()=>(window.__vid&&window.__vid.fbKey)||"",tid=()=>window.__TID||"";
   const put=()=>{
-    const pp=document.getElementById("etp-l");if(!pp||!window.__vid){setTimeout(put,500);return}
+    const pp=document.getElementById("etp-p");if(!pp||!window.__vid){setTimeout(put,500);return}
     let c=document.getElementById("u13pushc");
     if(!window.__vid.msgOn()){if(c)c.remove();return}
     if(!c){c=document.createElement("div");c.className="card";c.id="u13pushc";c.style.display="block";const i=document.getElementById("u13inst");if(i&&i.parentNode===pp)i.insertAdjacentElement("afterend",c);else pp.appendChild(c)}
     const st=!PUSH_OK()?"nein":IOS&&!STANDALONE()?"ios":!key()?"warte":pushApi.on()?"an":pushPerm()==="denied"?"zu":"aus";
     if(c.dataset.st===st)return;c.dataset.st=st;
-    c.innerHTML='<h3>Benachrichtigungen</h3><p class="note" style="margin-top:0">Du bekommst eine Nachricht aufs Handy oder den Computer, wenn Spieler oder Eltern dir im Eingang schreiben, auch wenn die App geschlossen ist. Spieler und Eltern schalten es in ihrer Link-App selbst ein und bekommen dann Bescheid bei neuen Hinweisen und Antworten'+(window.__vid.on()?", bei neuen Clips und Erinnerungen an Clip-Aufgaben":"")+'. In den Nachrichten stehen keine Namen. Sie kommen nach etwa 5 bis 15 Minuten.</p>'
+    c.innerHTML='<h3>Meine Benachrichtigungen</h3>'
       +(st==="nein"?'<p class="note">Dieser Browser kann keine Benachrichtigungen empfangen.</p>'
       :st==="ios"?'<p class="note"><b>Auf dem iPhone und iPad geht das nur in der App vom Home-Bildschirm.</b> Bitte zuerst als App installieren (siehe oben) und dort einschalten.</p>'
       :st==="warte"?'<p class="note">Wird vorbereitet …</p>'
       :st==="zu"?'<p class="note warn">Benachrichtigungen sind auf diesem Gerät blockiert. Bitte in den Einstellungen des Geräts für diese App erlauben.</p>'
-      :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Auf diesem Gerät eingeschaltet.":"🔕 Auf diesem Gerät aus.")+'</span><button class="btn" id="u13pushb">'+(st==="an"?"Ausschalten":"Einschalten")+'</button></div><div class="note warn" id="u13pushm"></div>');
+      :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Auf diesem Gerät eingeschaltet.":"🔕 Auf diesem Gerät aus.")+'</span><button class="btn" id="u13pushb">'+(st==="an"?"Ausschalten":"Einschalten")+'</button></div>'+(st==="an"?pwHtml({ro:"t"}):"")+'<div class="note warn" id="u13pushm"></div>');
     const b=c.querySelector("#u13pushb");
     if(b)b.onclick=async()=>{b.disabled=true;const cx={k:key(),ro:"t",tid:tid()};let r="ok";
       if(st==="an")await pushApi.disable(cx);else{try{r=await pushApi.enable(cx)}catch(e){r="fehler"}}
