@@ -2286,8 +2286,8 @@ V.dienste=(pid)=>{const t=today(),nm=(x)=>{try{return typeof dienstText==="funct
    Nachrichten an den Trainer (Eingang) ab Stufe „Standard“. Ausgeschaltet wird nur ausgeblendet, es wird nichts gelöscht.
    tp: Vorsatz der Mannschaft für die Wege ohne Anmeldung (Kommentare, Nachrichten). */
 const stufe=()=>window.__STUFE?window.__STUFE.get():"voll";
-V.on=()=>!!window.__DEMO||(stufe()==="voll"&&!!(typeof D!=="undefined"&&D.config&&D.config.videos));
-V.msgOn=()=>!!window.__DEMO||stufe()!=="basis";
+V.on=()=>!!(window.__DEMO&&!window.__DEMODB)||(stufe()==="voll"&&!!(typeof D!=="undefined"&&D.config&&D.config.videos));
+V.msgOn=()=>!!(window.__DEMO&&!window.__DEMODB)||stufe()!=="basis";
 V.pkg=(pid)=>({...(V.on()?{vc:V.clipsFor(pid),vg:V.games()}:{}),...(V.msgOn()?{fk:V.fbKey,pz:Object.keys(PUSH_STD).filter((k)=>pushOn(k)&&(V.on()||(k!=="clip"&&k!=="frist"))).join(",")}:{}),ds:V.dienste(pid),...(window.__TID?{tp:window.__TID+"__"}:{})});
 
 function startTrainer(){
@@ -2653,7 +2653,7 @@ document.addEventListener("click",async(e)=>{
 "use strict";
 const ET={plans:[],zu:[],blobs:{}};window.__et=ET;
 /* Vereins-App: Eigentraining nur in Stufe „Voll“ (sonst ausgeblendet, es wird nichts gelöscht) */
-ET.on=()=>!!window.__DEMO||!window.__STUFE||window.__STUFE.get()==="voll";
+ET.on=()=>!!(window.__DEMO&&!window.__DEMODB)||!window.__STUFE||window.__STUFE.get()==="voll";
 const WK=["Mo","Di","Mi","Do","Fr","Sa","So"],WT=["So","Mo","Di","Mi","Do","Fr","Sa"];
 const MAXB=5e6,CH=700000;
 const P2=(n)=>String(n).padStart(2,"0"),isoD=(d)=>d.getFullYear()+"-"+P2(d.getMonth()+1)+"-"+P2(d.getDate());
@@ -2744,7 +2744,7 @@ function css(){if(document.getElementById("etcss"))return;const st=document.crea
 /* =====================================================================
    Trainer
    ===================================================================== */
-const canEdit=()=>typeof db!=="undefined"&&!!db&&window.__ROLE!=="lesen"&&window.__ROLE!=="scout"&&!window.__RO&&!window.__DEMO;
+const canEdit=()=>typeof db!=="undefined"&&!!db&&window.__ROLE!=="lesen"&&window.__ROLE!=="scout"&&!window.__RO&&!(window.__DEMO&&!window.__DEMODB);
 const players=()=>typeof active==="function"?active():[];
 const pName=(pid)=>{const p=(typeof D!=="undefined"&&D.spieler||[]).find((x)=>x.id===pid);return p?(p.vorname+" "+p.name).trim():"(ausgeschieden)"};
 const UI={mode:"e",pf:null,zf:null,arm:null,busy:false,msg:"",bad:false};
@@ -3529,7 +3529,7 @@ const kzStd={pw:"",auto:true,loaded:false};
 const KW=()=>!!(window.__WEB&&window.__konten);
 const kzSlug=(s)=>String(s||"").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
 const kzPrefix=()=>kzSlug(window.__TID||mann()||"u13");
-const kzCanW=()=>!!(window.__kurzTr&&window.__ROLE==="voll"&&!window.__DEMO&&!window.__VIEWER&&typeof db!=="undefined"&&db);
+const kzCanW=()=>!!(window.__kurzTr&&window.__ROLE==="voll"&&!(window.__DEMO&&!window.__DEMODB)&&!window.__VIEWER&&typeof db!=="undefined"&&db);
 async function kzFreeAlias(b0){
   const base=b0.slice(0,40).length<4?(b0+"link").slice(0,40):b0.slice(0,40);
   for(let i=0;i<40;i++){const c=i?base.slice(0,38)+(i+1):base;
@@ -3652,7 +3652,7 @@ let lkAutoN=0;
 /* „Inhalt beschädigt“ erst melden, wenn es nach 45 Sekunden noch so ist: beim Aktualisieren kommen große Pakete in Stücken an und passen kurz nicht zusammen */
 const lkBadT={},lkBad=(id,bad)=>{if(!bad){delete lkBadT[id];return false}const t=lkBadT[id]||(lkBadT[id]=Date.now());return Date.now()-t>=45e3};
 async function lkHealth(){
-  const box=document.getElementById("lkw");if(!box||window.__RO||window.__VIEWER||window.__DEMO||!D.ready||(window.__WEB&&!window.__webSnapReady))return;
+  const box=document.getElementById("lkw");if(!box||window.__RO||window.__VIEWER||(window.__DEMO&&!window.__DEMODB)||!D.ready||(window.__WEB&&!window.__webSnapReady))return;
   const my=++lkTok,E=[],W=[],P=active(),nm=(p)=>p.vorname+" "+p.name,pubIds=Object.keys(SNAP.k||{});
   const test=async(key,blob)=>{try{const o=await unseal(key,blob);return !!o}catch(e){return false}};
   const nOn=[];let xMiss=0;
@@ -3696,7 +3696,7 @@ document.addEventListener("click",(e)=>{const b=e.target.closest&&e.target.close
 /* Noch online, aber abgeschaltet oder nicht mehr angeboten (frühere „Vollansicht“ und „Struktur (anonym)“): fällt beim nächsten Aktualisieren weg */
 const xGone=()=>Object.keys(SNAP.xk||{}).filter((k)=>{const l=L["x"+k]||{};return!XK.includes(k)||!(l.aktiv&&l.key)}).length;
 window.lkHealth=lkHealth;setTimeout(lkHealth,5000);setInterval(lkHealth,60000);
-async function renderLinks(){if(window.__DEMO)return;
+async function renderLinks(){if(window.__DEMO&&!window.__DEMODB)return;
   renderCo();lkHealth();
   const el=$("#lkt");if(!el)return;
   if(D.ready&&!D.config&&!D.spieler.length&&!window.__VIEWER&&!window.__WEB){showAccess();return}
@@ -5711,10 +5711,10 @@ document.head.appendChild(css2);
 (function(){
 const K=window.__kader,KD=K.KD,ks=K.ks,TABF=K.TABF,E=K.E,chip=K.chip,fl=K.fl,fd=K.fd,r1=K.r1,nid=K.nid;
 const nm=(s)=>String(s||"").trim().toLowerCase();
-const raw=()=>window.__DEMO?(KD.vereine||[]):((typeof D!=="undefined"&&D.config&&D.config.kvereine)||[]);
+const raw=()=>window.__DEMO&&!window.__DEMODB?(KD.vereine||[]):((typeof D!=="undefined"&&D.config&&D.config.kvereine)||[]);
 const vList=()=>raw().slice().sort((a,b)=>(a.name||"").localeCompare(b.name||"","de"));
 const vFind=(n)=>raw().find((v)=>nm(v.name)===nm(n))||null;
-const vSave=(L)=>{if(window.__DEMO)return;D.config={...(D.config||{}),kvereine:L};cfgSave({kvereine:L})};
+const vSave=(L)=>{if(window.__DEMO&&!window.__DEMODB)return;D.config={...(D.config||{}),kvereine:L};cfgSave({kvereine:L})};
 const persOf=(n)=>KD.pers.filter((p)=>p.typ!=="eigen"&&nm(p.verein)===nm(n));
 const obsOf=(n)=>KD.obs.filter((o)=>nm(o.verein)===nm(n)).sort((a,b)=>(b.datum||"").localeCompare(a.datum||""));
 const stt=(o)=>o.status==="erledigt"?chip("beobachtet","g"):o.status==="entfallen"?chip("entfallen","gr"):(o.datum||"")<K.td()?chip("offen – vorbei","r"):chip("geplant","y");
@@ -5745,7 +5745,7 @@ function tabVer(pl){
     return'<tr'+(v.saved&&vpn(v)?' class="kpb" style="--pf:'+vpn(v)*10+'%"':"")+'><td class="kn"><button class="btn" data-vsel="'+E(v.id)+'" style="font-weight:700">'+E(v.name)+'</button>'+(v.saved?"":' <span class="note">nicht angelegt</span>')+'</td><td data-l="Priorität">'+(v.saved?K.sel('data-vpr="1" data-id="'+E(v.id)+'" aria-label="Priorität"',vpOpt,String(vpn(v)||"")):'<span class="note">–</span>')+'</td><td data-l="Entfernung">'+kmTxt(v)+'</td><td data-l="Beobachtet">'+done+'</td><td data-l="Geplant">'+plan+'</td><td data-l="Spieler">'+P.length+'</td><td style="white-space:nowrap">'+(v.saved?'<button class="rm" data-ka="vedit" data-id="'+E(v.id)+'" title="Bearbeiten">✎</button><button class="rm'+(ks.arm==="v"+v.id?" arm":"")+'" data-ka="vdel" data-id="'+E(v.id)+'">'+(ks.arm==="v"+v.id?"Löschen?":"✕")+"</button>":'<button class="btn" data-ka="vadd" data-n="'+E(v.name)+'">Anlegen</button>')+"</td></tr>"}).join("");
   return h+'<div class="card tw" style="padding:0"><table class="ktab kvt"><tr><th style="text-align:left">Verein</th><th style="text-align:left">Priorität</th><th>Entfernung</th><th>Beobachtet</th><th>Geplant</th><th>Spieler</th><th></th></tr>'+(rows||'<tr><td colspan="7" class="note" style="text-align:center;padding:20px">Noch keine Vereine. Lege einen Verein an oder plane eine Beobachtung.</td></tr>')+"</table></div>"}
 function detail(pl,v){
-  const O=obsOf(v.name),P=persOf(v.name).sort((a,b)=>(K.score(b,pl)||0)-(K.score(a,pl)||0)),link=(p)=>window.__DEMO?"<b>"+E(K.pname(p))+"</b>":'<a href="#" data-ka="pedit" data-id="'+p.id+'" style="font-weight:700">'+E(K.pname(p))+"</a>";
+  const O=obsOf(v.name),P=persOf(v.name).sort((a,b)=>(K.score(b,pl)||0)-(K.score(a,pl)||0)),link=(p)=>window.__DEMO&&!window.__DEMODB?"<b>"+E(K.pname(p))+"</b>":'<a href="#" data-ka="pedit" data-id="'+p.id+'" style="font-weight:700">'+E(K.pname(p))+"</a>";
   const info=[["Priorität",vpn(v)?vpn(v)+" von 10":""],["Entfernung",kmTxt(v)],["Sportanlage",v.anlage],["Adresse",v.adresse],["Ansprechpartner",v.kontakt],["Notizen",v.notiz]].filter((x)=>x[1]&&x[1]!=="–");
   return(ks.vd?form():"")+'<div class="bar"><button class="btn" data-vsel="">← Alle Vereine</button><span style="flex:1"></span>'+(v.saved?'<button class="btn" data-ka="vedit" data-id="'+E(v.id)+'">✎ Bearbeiten</button>':'<button class="btn" data-ka="vadd" data-n="'+E(v.name)+'">Als Verein anlegen</button>')+'<button class="btn" data-ka="vobs" data-n="'+E(v.name)+'" style="background:var(--ac);color:#fff;border-color:var(--ac)">＋ Spielbesuch planen</button></div>'
    +'<div class="card" style="margin-bottom:12px"><h3>'+E(v.name)+'</h3>'+(info.length?'<div class="kg" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">'+info.map((x)=>'<div><small class="note">'+x[0]+'</small><div>'+E(x[1])+"</div></div>").join("")+"</div>":'<div class="note">Noch keine Angaben zum Verein'+(v.saved?"":" – lege ihn über „Als Verein anlegen“ an")+".</div>")+"</div>"
@@ -6356,7 +6356,7 @@ async function gcTravelAll(){
 /* ----- Google: Anmeldung und Zugriff ----- */
 const gcGisOk=()=>!!(window.google&&google.accounts&&google.accounts.oauth2);
 let gcGisP=null;
-function gcLoadGis(){if(gcGisOk())return Promise.resolve();if(gcGisP)return gcGisP;
+function gcLoadGis(){if(window.__DEMO)return Promise.reject(new Error("In der Demo wird kein echter Kalender verbunden."));if(gcGisOk())return Promise.resolve();if(gcGisP)return gcGisP;
   gcGisP=new Promise((res,rej)=>{const old=document.getElementById("gcgis");if(old)old.remove();
     const s=document.createElement("script");s.id="gcgis";s.src="https://accounts.google.com/gsi/client";s.async=true;
     const to=setTimeout(()=>{gcGisP=null;rej(new Error("Die Google-Anmeldung lässt sich nicht laden (Internet oder Werbeblocker?)"))},12000);
@@ -6466,7 +6466,7 @@ setTimeout(()=>{try{gcRender();if(window.__WEB_BASE&&gcP().cid&&gcP().on&&!gcGis
 </script><script>/* ---------- Sprachnotizen: Hinweis nach Training/Spiel, Notizen aus Datei importieren, Notizen als Datei exportieren ---------- */
 let vnPv=null,vnRows=[],vnPar=null;
 const vnLs=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||"";v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){return""}};
-const vnOk=()=>!(window.__RO||window.__VIEWER||window.__ROLE==="lesen"||window.__ROLE==="scout"||window.__DEMO);
+const vnOk=()=>!(window.__RO||window.__VIEWER||window.__ROLE==="lesen"||window.__ROLE==="scout"||(window.__DEMO&&!window.__DEMODB));
 const vnP=()=>{if(window.__vnP)return window.__vnP;if(!vnPv){try{vnPv=JSON.parse(vnLs("u13vn")||"{}")}catch(e){vnPv={}}}return vnPv};
 function vnSet(patch,noSave){const p={...vnP(),...patch};window.__vnP=p;vnPv=p;vnLs("u13vn",JSON.stringify(p));if(!noSave&&window.__dzSavePrefs)try{window.__dzSavePrefs()}catch(e){}return p}
 const vnMin=(t)=>{const m=/^(\d{1,2}):(\d{2})/.exec(String(t||""));return m?(+m[1])*60+(+m[2]):null};
@@ -9593,7 +9593,7 @@ setInterval(()=>{try{if(document.body.classList.contains("scoutonly"))return;app
 (function(){
 "use strict";
 const W=window;
-if(!W.__WEB||W.__DEMO||W.__VIEWER||W.__SCOUT||W.__NOKONTEN)return;   /* __NOKONTEN: nur Prüfungen der früheren Kurzlink-Technik für Spieler */
+if(!W.__WEB||(W.__DEMO&&!W.__DEMODB)||W.__VIEWER||W.__SCOUT||W.__NOKONTEN)return;   /* __NOKONTEN: nur Prüfungen der früheren Kurzlink-Technik für Spieler */
 const E=(s)=>String(s==null?"":s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const q=(s,r)=>(r||document).querySelector(s);
 const mkeyOf=(em)=>String(em||"").toLowerCase().replace(/[.]/g,"_").replace(/@/g,"_at_");
@@ -9790,7 +9790,7 @@ const wt=setInterval(()=>{const tb=q("#tb");if(tb){clearInterval(wt);mo.observe(
 (function(){
 "use strict";
 const W=window;
-if(!W.__WEB||W.__DEMO||!W.__V)return;
+if(!W.__WEB||(W.__DEMO&&!W.__DEMODB)||!W.__V)return;
 const V=W.__V,E=V.E,q=V.q;
 const mk=(em)=>String(em||"").toLowerCase().replace(/[.]/g,"_").replace(/@/g,"_at_");
 const kid=(tid,em)=>tid+"~"+mk(em);
@@ -10271,7 +10271,7 @@ document.addEventListener("keydown",(e)=>{if(e.key==="Enter"&&e.target&&e.target
 (function(){
 "use strict";
 const W=window;
-if(!W.__WEB||W.__DEMO||!W.__V)return;
+if(!W.__WEB||(W.__DEMO&&!W.__DEMODB)||!W.__V)return;
 const V=W.__V,E=V.E,q=V.q;
 const TEAMC=["players","games","trainings","notes","events","todos","dienste","config","spieltag","tipps","kplan","kperson","kobs","kinbox","karchiv","vhinweise","vstat"];
 const CLUBC=["verein","mitglieder","plaene","kfrei","protokoll"];

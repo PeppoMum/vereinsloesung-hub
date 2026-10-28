@@ -1,6 +1,8 @@
 /* ===== Demo-Ansicht der Vereinslösung =====
    Wird nur aktiv, wenn die Adresse mit #demo:<rolle> endet. Alles läuft im Browser mit ERFUNDENEN Daten (Lorem-ipsum-Namen, erfundene Vereine).
-   Es gibt keine Verbindung zur echten Datenbank, nichts wird gespeichert, ein Neuladen setzt alles zurück. */
+   Es gibt keine Verbindung zur echten Datenbank, nichts wird gespeichert, ein Neuladen setzt alles zurück.
+   Nichts geht nach draußen: keine Datenbank, keine Benachrichtigung, kein Kalender, kein WhatsApp/E-Mail/Teilen (siehe „Schutz“ unten).
+   Die Demo hat einen eigenen Gerätespeicher und berührt nichts, was die echte App auf diesem Gerät gemerkt hat. */
 (function(){
 "use strict";
 const ARTEN=[
@@ -12,24 +14,108 @@ const ARTEN=[
   {id:"lesen",name:"Nur lesen",rechte:["sehen","notizen","kader"],gl:[]},
   {id:"scout",name:"Scout",rechte:["kader","kaderbearb"],gl:[]},
   {id:"platzwart",name:"Platzwart",rechte:[],gl:["plan"]}];
-/* Rollen, die ein Demo-Link darstellen kann */
+/* Rollen, die ein Demo-Link darstellen kann (konto: Spieler bzw. Eltern mit eigenem Konto, Mannschaft D1) */
 const ROLLEN={
   "administrator":{n:"Administrator",rolle:"admin"},
   "jugendleiter":{n:"Jugendleiter",rolle:"jugendleiter"},
   "sportleiter-alle":{n:"Sportlicher Leiter (alle Mannschaften)",art:"sportleiter",teams:"*"},
   "sportleiter-d":{n:"Sportlicher Leiter (nur D1 und D2)",art:"sportleiter",teams:["d1","d2"]},
-  "trainer":{n:"Trainer (D1)",art:"trainer",teams:["d1"]},
+  "trainer":{n:"Trainer (D1, Stufe Voll)",art:"trainer",teams:["d1"]},
+  "trainer-standard":{n:"Trainer (D2, Stufe Standard)",art:"trainer",teams:["d2"]},
+  "trainer-basis":{n:"Trainer (E2, Stufe Basis)",art:"trainer",teams:["e2"]},
   "cotrainer":{n:"Co-Trainer (D1)",art:"cotrainer",teams:["d1"]},
   "torwarttrainer":{n:"Torwarttrainer (alle)",art:"torwart",teams:"*"},
   "athletiktrainer":{n:"Athletiktrainer (alle)",art:"athletik",teams:"*"},
   "nur-lesen":{n:"Nur Ansicht (D1)",art:"lesen",teams:["d1"]},
-  "platzwart":{n:"Platzwart",rolle:"platzwart"}};
+  "scout":{n:"Scout (D1)",art:"scout",teams:["d1"]},
+  "platzwart":{n:"Platzwart",rolle:"platzwart"},
+  "spieler":{n:"Spieler mit Konto (D1)",konto:"spieler"},
+  "eltern":{n:"Eltern mit Konto (D1)",konto:"eltern"}};
 window.__DEMO_ROLLEN=ROLLEN;
+/* Eingebettete Fenster einer Demo arbeiten mit den Daten des Hauptfensters:
+   die Vorschau für Trainer (?vorschau=s|e) und die unsichtbare Vorbereitung der Spieler-/Elternansicht (#demo:vorbereiten). */
+let PAR=null;try{if(window.parent!==window&&window.parent.__DEMOSTORE)PAR=window.parent}catch(e){}
 const m=/^#demo:([a-z0-9-]{2,30})$/.exec(location.hash||"");
-if(!m)return;
-const P=ROLLEN[m[1]]||ROLLEN.administrator;
-window.__DEMO={key:m[1],label:P.n,roles:ROLLEN};
-const EMAIL="demo@beispiel.test";
+const VSF=!!PAR&&/[?&]vorschau=[se](&|$)/.test(location.search);
+if(!m&&!VSF)return;
+const PREP=!!PAR&&!!m&&m[1]==="vorbereiten";
+
+/* ---------- Eigener Gerätespeicher ----------
+   Die echte App merkt sich auf dem Gerät z. B. noch nicht gesendete Änderungen und die gewählte Mannschaft. Die Demo darf das weder sehen
+   noch verändern: localStorage und sessionStorage zeigen hier auf einen eigenen Bereich (je Rolle, nur in diesem Fenster). Nur die Darstellung
+   (Hell/Dunkel) wird einmal übernommen. */
+{const RS=(()=>{try{return window.sessionStorage}catch(e){return null}})(),M=new Map();
+  const mk=(pre)=>{
+    const keys=()=>{const o=[];try{for(let i=0;i<RS.length;i++){const k=RS.key(i);if(k&&k.indexOf(pre)===0)o.push(k.slice(pre.length))}}catch(e){M.forEach((v,k)=>{if(k.indexOf(pre)===0)o.push(k.slice(pre.length))})}return o};
+    const g=(k)=>{try{return RS.getItem(pre+k)}catch(e){return M.has(pre+k)?M.get(pre+k):null}};
+    const s=(k,v)=>{try{RS.setItem(pre+k,String(v))}catch(e){M.set(pre+k,String(v))}};
+    const r=(k)=>{try{RS.removeItem(pre+k)}catch(e){}M.delete(pre+k)};
+    return{getItem:(k)=>g(String(k)),setItem:(k,v)=>s(String(k),v),removeItem:(k)=>r(String(k)),clear:()=>keys().forEach(r),key:(i)=>keys()[i]||null,get length(){return keys().length}}};
+  const tag=VSF?"vorschau":m[1],th=(()=>{try{return window.localStorage.getItem("u13theme")}catch(e){return null}})();
+  const LS=mk("demo."+tag+".l."),SS=mk("demo."+tag+".s.");
+  if(th&&LS.getItem("u13theme")==null)LS.setItem("u13theme",th);
+  try{Object.defineProperty(window,"localStorage",{configurable:true,get:()=>LS})}catch(e){}
+  try{Object.defineProperty(window,"sessionStorage",{configurable:true,get:()=>SS})}catch(e){}}
+
+/* ---------- Schutz: aus der Demo geht nichts nach draußen ----------
+   Anfragen an die Datenbank über das Netz (wie sie Spielerlinks und Konten stellen) beantwortet der Demo-Speicher, ohne dass etwas gesendet wird.
+   Alles andere außerhalb dieser Seite wird abgewiesen. WhatsApp, E-Mail, Teilen und Kalender gibt es in der Demo nicht. */
+const same=(u)=>{try{return new URL(String(u),location.href).origin===location.origin}catch(e){return false}};
+const BLOCK=/^(mailto|sms|tel|whatsapp|intent|webcal):|^https?:\/\/([a-z0-9-]+\.)*(wa\.me|whatsapp\.com|t\.me|telegram\.me|signal\.me|accounts\.google\.com|calendar\.google\.com|outlook\.live\.com|outlook\.office\.com)(\/|$)/i;
+let noteT=null;
+const note=(t)=>{const sh=()=>{let n=document.getElementById("demonote");if(!n){n=document.createElement("div");n.id="demonote";n.setAttribute("role","status");n.style.cssText="position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:99999;max-width:min(92vw,460px);background:#7c3aed;color:#fff;font:14px/1.4 system-ui,sans-serif;padding:10px 14px;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.25);text-align:center";document.body.appendChild(n)}
+  n.textContent=t;n.hidden=false;clearTimeout(noteT);noteT=setTimeout(()=>{n.hidden=true},4500)};if(document.body)sh();else document.addEventListener("DOMContentLoaded",sh)};
+window.__demoNote=note;
+const toFs=(v)=>{if(v==null)return{nullValue:null};if(typeof v==="boolean")return{booleanValue:v};if(typeof v==="number")return Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v};if(Array.isArray(v))return{arrayValue:{values:v.map(toFs)}};if(typeof v==="object"){const f={};Object.keys(v).forEach((k)=>{f[k]=toFs(v[k])});return{mapValue:{fields:f}}}return{stringValue:String(v)}};
+const fromFs=(v)=>!v?null:v.stringValue!=null?v.stringValue:v.integerValue!=null?+v.integerValue:v.doubleValue!=null?v.doubleValue:v.booleanValue!=null?v.booleanValue:v.timestampValue!=null?v.timestampValue:v.arrayValue?(v.arrayValue.values||[]).map(fromFs):v.mapValue?Object.fromEntries(Object.entries(v.mapValue.fields||{}).map(([k,x])=>[k,fromFs(x)])):null;
+const ISO=/^\d{4}-\d\d-\d\dT\d\d:\d\d/;
+const fields=(o)=>{const f={};Object.keys(o||{}).forEach((k)=>{f[k]=k==="at"&&typeof o[k]==="string"&&ISO.test(o[k])?{timestampValue:o[k]}:toFs(o[k])});return f};
+function guard(store,kick){
+  const NAME="projects/demo/databases/(default)/documents/";
+  const res=(code,body)=>Promise.resolve(new Response(JSON.stringify(body||{}),{status:code,headers:{"Content-Type":"application/json"}}));
+  /* Firestore über das Netz (REST): nur der Demo-Speicher antwortet */
+  const rest=(u,meth,body)=>{
+    const mm=/\/databases\/[^/]+\/documents\/(.+)$/.exec(u.pathname);if(!mm)return res(403,{});
+    const key=mm[1].split("/").map(decodeURIComponent).join("/"),seg=key.split("/").length,qs=u.searchParams;
+    if(meth==="GET"){
+      if(seg%2===0){const d=store.get(key);return d===undefined?res(404,{}):res(200,{name:NAME+key,fields:fields(d)})}
+      const dep=seg+1,docs=[];store.forEach((v,k)=>{if(k.indexOf(key+"/")===0&&k.split("/").length===dep)docs.push({name:NAME+k,fields:fields(v)})});return res(200,docs.length?{documents:docs}:{})}
+    let b={};try{b=body?JSON.parse(body):{}}catch(e){}
+    const o={};Object.keys(b.fields||{}).forEach((k)=>{o[k]=fromFs(b.fields[k])});
+    if(meth==="POST"){const id=qs.get("documentId")||Math.random().toString(36).slice(2),k=key+"/"+id;if(store.has(k))return res(409,{});store.set(k,o);kick();return res(200,{name:NAME+k,fields:b.fields||{}})}
+    if(meth==="PATCH"){const mask=qs.getAll("updateMask.fieldPaths");if(qs.get("currentDocument.exists")==="true"&&!store.has(key))return res(404,{});
+      if(mask.length){const cur={...(store.get(key)||{})};mask.forEach((f)=>{if(f in o)cur[f]=o[f];else delete cur[f]});store.set(key,cur)}else store.set(key,o);kick();return res(200,{name:NAME+key,fields:fields(store.get(key))})}
+    if(meth==="DELETE"){store.delete(key);kick();return res(200,{})}
+    return res(403,{})};
+  const F0=window.fetch.bind(window);
+  window.fetch=function(inp,init){
+    const url=typeof inp==="string"?inp:inp&&inp.url?inp.url:String(inp);
+    if(same(url))return F0(inp,init);
+    let u=null;try{u=new URL(url)}catch(e){}
+    const meth=String((init&&init.method)||(inp&&typeof inp==="object"&&inp.method)||"GET").toUpperCase();
+    if(u&&u.hostname==="firestore.googleapis.com")return rest(u,meth,init&&init.body);
+    return Promise.reject(new TypeError("Demo: keine Verbindung nach außen"))};
+  try{const XO=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(meth,u){if(!same(u))throw new TypeError("Demo: keine Verbindung nach außen");return XO.apply(this,arguments)}}catch(e){}
+  try{navigator.sendBeacon=()=>false}catch(e){}
+  for(const C of["WebSocket","EventSource"]){const O=window[C];if(!O)continue;const W=function(u,x){if(!same(String(u).replace(/^ws/i,"http")))throw new TypeError("Demo: keine Verbindung nach außen");return new O(u,x)};W.prototype=O.prototype;try{window[C]=W}catch(e){}}
+  /* Skripte und eingebettete Seiten nur von dieser Seite (z. B. keine Google-Anmeldung für den Kalender) */
+  for(const [El,a] of[[window.HTMLScriptElement,"src"],[window.HTMLIFrameElement,"src"]]){if(!El)continue;const d=Object.getOwnPropertyDescriptor(El.prototype,a);if(!d||!d.set)continue;
+    Object.defineProperty(El.prototype,a,{configurable:true,enumerable:d.enumerable,get:d.get,set(v){if(!same(v)){const me=this;setTimeout(()=>{try{me.dispatchEvent(new Event("error"))}catch(e){}},0);return}d.set.call(this,v)}})}
+  {const SA=Element.prototype.setAttribute;Element.prototype.setAttribute=function(n,v){if(String(n).toLowerCase()==="src"&&(this instanceof HTMLScriptElement||this instanceof HTMLIFrameElement)&&!same(v))return;return SA.call(this,n,v)}}
+  /* Nachrichten, E-Mail, Teilen, Kalender: nur ein Hinweis */
+  const WO=window.open;window.open=function(u){if(u&&BLOCK.test(String(u))){note("In der Demo wird nichts verschickt.");return null}return WO.apply(window,arguments)};
+  document.addEventListener("click",(e)=>{const a=e.target&&e.target.closest&&e.target.closest("a[href]");if(a&&BLOCK.test(a.getAttribute("href")||"")){e.preventDefault();e.stopPropagation();note("In der Demo wird nichts verschickt.")}},true);
+  try{Object.defineProperty(navigator,"share",{configurable:true,value:()=>{note("In der Demo wird nichts geteilt.");return Promise.reject(Object.assign(new Error("Demo"),{name:"AbortError"}))}})}catch(e){}
+  try{Object.defineProperty(navigator,"canShare",{configurable:true,value:()=>false})}catch(e){}
+  try{if(window.Notification)Object.defineProperty(Notification,"requestPermission",{configurable:true,value:()=>Promise.resolve("denied")})}catch(e){}
+}
+if(VSF){const st=PAR.__DEMOSTORE;guard(st,()=>{try{PAR.__DEMOKICK()}catch(e){}});window.__DEMOVS=true;return}
+
+const P=PREP?{n:"Vorbereitung",art:"trainer",teams:["d1"]}:ROLLEN[m[1]]||ROLLEN.administrator;
+const KONTO=P.konto?P:null;
+window.__DEMO={key:m[1],label:P.n,roles:ROLLEN};window.__DEMODB=true;   /* Demo mit eigenem Demo-Speicher (anders als der Link „Demo Trainer“, der nur einen festen Stand zeigt) */
+if(KONTO)window.__DEMOKONTO=true;
+const EMAIL=PREP?"vorbereitung@beispiel.test":"demo@beispiel.test";
 
 /* ---------- Zufall mit festem Startwert: jede Demo sieht gleich aus ---------- */
 let sd=20260901;const R=()=>{sd|=0;sd=sd+0x6D2B79F5|0;let t=Math.imul(sd^sd>>>15,1|sd);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
@@ -45,6 +131,7 @@ const CL="SV Musterstadt|FC Beispieldorf|TuS Platzhausen|SC Testfeld|Spvgg Demot
 const TEAMS=[["m1","Minis","U6"],["g1","G1","U7"],["f2","F2","U8"],["f1","F1","U9"],["e2","E2","U10"],["e1","E1","U11"],["d2","D2","U12"],["d1","D1","U13"],["c2","C2","U14"],["c1","C1","U15"],["b1","B1","U17"],["a1","A1","U19"]];
 const FORM={m1:["3gg3",3],g1:["4gg4",4],f1:["5gg5",5],f2:["5gg5",5],e1:["7gg7",7],e2:["7gg7",7],d1:["9gg9",9],d2:["9gg9",9],c1:["11gg11",11],c2:["9gg9",9],b1:["11gg11",11],a1:["11gg11",11]};
 
+/* Erzeugt wird immer (gleicher Zufall), eingebettete Fenster benutzen danach aber die Daten des Hauptfensters (DB unten) */
 const store=new Map();
 const put=(p,d)=>store.set(p,JSON.parse(JSON.stringify(d)));
 
@@ -143,10 +230,12 @@ TEAMS.forEach(([tid,name],ti)=>{
     vs.naechste=gamesOf(tid).filter((g)=>g.datum>=TODAY).slice(0,8).map((g)=>({d:g.datum,z:"10:30",g:g.gegner,h:g.ha,o:"Sportanlage Musterstadt",a:"Meisterschaft"}));if(tid==="a1"||tid==="d1"){const g0=vs.naechste.find((g)=>g.h==="H");if(g0)g0.p=tid==="a1"?"Kunstrasen":"Naturrasen"}put(tid+"__vstat/main",vs)});
 }
 
+
 /* ---------- Verein, Rollen, Personen ---------- */
 put("verein/main",{name:"TuS Musterstadt (Demo)",saison:"2026/27",teams:TEAMS.map(([id,name,ak])=>({id,name,ak,aktiv:true})),arten:ARTEN,bereiche:[{id:"mini",name:"Minis bis U13",teams:["m1","g1","f1","f2","e1","e2","d1","d2"]},{id:"gross",name:"U14 bis U19",teams:["c2","c1","b1","a1"]}],settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},kontakteVerein:[]});
 const memDoc=(email,name,art,teams)=>{const a=ARTEN.find((x)=>x.id===art),all=TEAMS.map((t)=>t[0]),tl=teams==="*"?all:teams,tr={};tl.forEach((t)=>{tr[t]=a.rechte.slice()});return{email,name,rolle:"team",zu:[{art,teams:teams==="*"?[]:tl,...(teams==="*"?{alle:true}:{})}],tr,g:a.gl.slice(),kader:{}}};
-if(P.rolle==="admin"||P.rolle==="jugendleiter"||P.rolle==="platzwart")put("mitglieder/"+EMAIL,{email:EMAIL,name:"Demo-Person",rolle:P.rolle,zu:[],tr:{},g:P.rolle==="platzwart"?[]:["plan","kurz"],kader:{}});
+if(KONTO){/* Spieler und Eltern sind keine Mitglieder des Vereins: sie kommen über ihr Konto (siehe „Konten“ unten) */}
+else if(P.rolle==="admin"||P.rolle==="jugendleiter"||P.rolle==="platzwart")put("mitglieder/"+EMAIL,{email:EMAIL,name:"Demo-Person",rolle:P.rolle,zu:[],tr:{},g:P.rolle==="platzwart"?[]:["plan","kurz"],kader:{}});
 else put("mitglieder/"+EMAIL,memDoc(EMAIL,"Demo-Person",P.art,P.teams));
 [["erika.beispiel@beispiel.test","Erika Beispiel","trainer",["d2"]],["jonas.probe@beispiel.test","Jonas Probe","cotrainer",["d1"]],["lena.muster@beispiel.test","Lena Muster","sportleiter",["e1","e2"]]].forEach(([e,n,a,t])=>put("mitglieder/"+e,memDoc(e,n,a,t)));
 put("mitglieder/ina.demo@beispiel.test",{email:"ina.demo@beispiel.test",name:"Ina Demo",rolle:"jugendleiter",zu:[],tr:{},g:["plan","kurz"],kader:{}});
@@ -172,36 +261,168 @@ put("anliegen/demoa1",{id:"demoa1",von:"erika.beispiel@beispiel.test",vname:"Eri
 let hd=TODAY;if(dow(hd)>5)hd=addD(hd,8-dow(hd));
 put("kabinen/"+hd,{datum:hd,eintraege:[{id:"k1",kabine:"1",art:"Heim",tid:"d1",von:"18:00",bis:"20:15",txt:"gegen "+CL[0]},{id:"k2",kabine:"2",art:"Gast",fremd:CL[0],von:"18:00",bis:"20:15",txt:"bei D1"}]});
 
-/* ---------- Mini-Firestore im Speicher ---------- */
+/* ---------- Weitere Beispiele (D1 Stufe Voll, D2 Stufe Standard) ----------
+   Spielerlinks, Hinweise und Aufgaben, Notizen und Ziele, Eingang, Videos, Konten, Abmeldungen, Training bewerten.
+   Eigener Zufall, damit die Beispiele oben gleich bleiben. Was die App selbst verschlüsselt (Clip-Kommentare, Antworten auf Aufgaben,
+   Abhaken, Eigentraining-Datei), entsteht beim Start (siehe „Beispiele beim Start“ unten). */
+let sd2=20261028;const R2=()=>{sd2|=0;sd2=sd2+0x6D2B79F5|0;let t=Math.imul(sd2^sd2>>>15,1|sd2);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const key16=()=>{let s="";for(let i=0;i<16;i++)s+=String.fromCharCode(Math.floor(R2()*256));return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
+const hexN=(n)=>{let s="";for(let i=0;i<n;i++)s+=Math.floor(R2()*16).toString(16);return s};
+const plOf=(tid)=>[...store.entries()].filter(([k])=>k.indexOf(tid+"__players/")===0).map(([,v])=>v).sort((a,b)=>a.slot-b.slot);
+const ago=(h)=>new Date(Date.now()-h*36e5).toISOString();
+const mkey=(e)=>String(e).toLowerCase().replace(/[.]/g,"_").replace(/@/g,"_at_");
+const SEED={},BWTG=["Einsatz","Technik","Zweikampf","Spielintelligenz","Verhalten"];   /* Rohstoff für „Beispiele beim Start“ */
+["d1","d2"].forEach((tid)=>{
+  const pl=plOf(tid),ids=pl.map((p)=>p.id),voll=tid==="d1",cfg=store.get(tid+"__config/main"),S=SEED[tid]={links:{},hn:[],kom:[],abh:[],antw:[]},nm=(i)=>pl[i].vorname;
+  /* Spielerlinks (alle aktiv), Teamlink und Demo Spielerlink */
+  pl.forEach((p)=>{const k=key16();S.links[p.id]=k;put(tid+"__links/"+p.id,{id:p.id,key:k,aktiv:true})});
+  put(tid+"__links/xplan",{id:"xplan",key:key16(),aktiv:true});
+  if(voll)put(tid+"__links/xdemosp",{id:"xdemosp",key:key16(),aktiv:true});
+  /* Hinweise und Aufgaben (Termine → 📌 Hinweise; im Link „Hinweise & Aufgaben“, Antworten und Abhaken siehe unten) */
+  const H=[
+    {id:"dh1",text:"Zum Heimspiel bitte **30 Minuten vor Anstoß** da sein.",farbe:"blau",wo:"alle"},
+    {id:"dh2",text:"Schienbeinschoner nicht vergessen!",farbe:"gruen",wo:"alle",fuer:"s"},
+    {id:"dh3",text:"Fahrgemeinschaften zum Auswärtsspiel bitte in der Elterngruppe absprechen.",farbe:"gelb",wo:"alle",fuer:"e"},
+    {id:"dh4",text:"Schau dir bis Freitag das *Video vom letzten Spiel* an. Was ist dir aufgefallen?\n• Wo standen wir zu weit weg?\n• Was hat gut geklappt?",farbe:"blau",wo:"alle",art:"a",bis:addD(TODAY,4),rp:"a",rk:key16(),rs:hexN(64)},
+    {id:"dh5",text:"Bitte die **Einverständniserklärung** für das Hallenturnier unterschrieben mitbringen.",farbe:"gelb",wo:"alle",art:"c",bis:addD(TODAY,7),rp:"t",rk:key16()},
+    {id:"dh6",text:"Extra-Training Torschuss am Samstag um 10 Uhr.",farbe:"rot",wo:"alle",an:ids.slice(1,4)},
+    {id:"dh7",text:"Beispiel für einen Hinweis nur im Terminplan: In den Ferien ist kein Training.",farbe:"blau",wo:"plan",pm:[TODAY.slice(0,7)]},
+    {id:"dh8",text:"Trikot nach dem Spiel bitte waschen und zum nächsten Training mitbringen.",farbe:"gruen",wo:"alle",art:"c",von:addD(TODAY,-20),bis:addD(TODAY,-6)}];
+  H.forEach((n)=>{["von","bis","fuer","art","an","pw","rp","rk","rs"].forEach((k)=>{if(n[k]===undefined)n[k]=null});n.pm=n.pm||[]});
+  S.hn=H;
+  S.abh=[["dh5",[1,2,4,5,7]],["dh8",[1,2,3,4,6,8,9]]];
+  S.antw=[["dh4",1,"Wir standen beim Gegentor viel zu weit auseinander."],["dh4",3,"Das Pressing vorne hat gut geklappt!"],["dh4",5,"Ich war nach dem Ballverlust zu langsam zurück."],["dh5",2,"Mache ich, bringe ich am Donnerstag mit."]];
+  Object.assign(cfg,{hinweise:H,aufgQuote:true},voll?{videos:true,abm:true,bw:{win:10,tags:["Einsatz","Technik","Zweikampf","Spielintelligenz","Verhalten"]}}:{});
+  /* Eingang: Nachrichten von Spielern und Eltern (eine schon beantwortet) */
+  [["df1",30,"Frage","Wann beginnt das Hallentraining?",1,"s","Ab November immer donnerstags. Bis dann!"],["df2",5,"Idee","Können wir im Training mal ein kleines Turnier spielen?",2,"s"],["df3",28,"Anliegen","Wir sind in den Herbstferien eine Woche verreist.",3,"e"]]
+    .forEach(([id,h,art,text,i,ro,an])=>put(tid+"__fbin/"+id,{id,at:ago(h),art,text,von:ro==="e"?"Elternteil von "+nm(i):nm(i),rolle:ro,pid:ids[i],r:hexN(32),gelesen:!!an,...(an?{antwort:an,antwortVon:"Max Mustermann",antwortAm:ago(h-3)}:{})}));
+  /* Notizen und Entwicklungsziele (mit Schrift und Aufzählung), Beobachtungen nur intern */
+  const N=[[1,-12,"ziel",true,"**Ziel bis zur Winterpause:** schwächerer Fuß\n• jeden Tag 10 Minuten Wand-Pässe links\n• im Training bewusst links abschließen"],[1,-30,"notiz",true,"Sehr gute Entwicklung im Spielaufbau, *weiter so*!"],[2,-8,"notiz",false,"Gespräch mit den Eltern wegen Schulstress geführt, Training vorerst nur zweimal pro Woche."],
+    [3,-18,"ziel",true,"Kopfballspiel verbessern: Absprung und Timing."],[4,-5,"notiz",true,"__Kapitän__ beim letzten Spiel, hat das super gemacht."],[5,-22,"ziel",false,"Mehr Mut im Eins-gegen-Eins."],[6,-3,"notiz",true,"Toller Einsatz im Training, auch bei Regen."],[7,-40,"ziel",true,"Ausdauer: bis zu den Herbstferien zweimal pro Woche laufen."]];
+  if(voll){N.forEach(([i,d,art,sb,text],k)=>put(tid+"__notes/dn"+k,{id:"dn"+k,pid:ids[i],datum:addD(TODAY,d),art,sichtbar:sb,text,autor:k%2?"Erika Beispiel":"Max Mustermann"}));
+    put(tid+"__notes/dnb1",{id:"dnb1",pid:ids[2],datum:addD(TODAY,-6),art:"beobachtung",anlass:"Training",sichtbar:false,text:"Nur intern: wirkte unkonzentriert, nach dem Training kurz nachfragen."});
+    put(tid+"__notes/dnt1",{id:"dnt1",pid:"team",datum:addD(TODAY,-2),art:"notiz",sichtbar:false,ort:"start",text:"**Diese Woche:** Fokus auf Umschalten nach Ballverlust.\n• Dienstag: Pressing-Spielformen\n• Donnerstag: Abschlussspiel"});
+    put(tid+"__notes/dnt2",{id:"dnt2",pid:"team",datum:addD(TODAY,-9),art:"notiz",sichtbar:false,ort:"allg",text:"Hallenzeiten im Winter: Freitag 16 bis 17:30 Uhr in der Sporthalle."})}
+  else put(tid+"__notes/dn0",{id:"dn0",pid:ids[1],datum:addD(TODAY,-7),art:"notiz",sichtbar:true,text:"Gute Fortschritte beim Passspiel."});
+  if(!voll){put(tid+"__config/main",cfg);return}
+  /* Videos: drei Clips (einer mit Aufgabe und Frist, einer nur für drei Spieler) und ganze Spiele */
+  const C=[{id:"dc1",titel:"Pressing nach Ballverlust",aufgabe:"Wohin hättest du nach dem Ballverlust laufen müssen?",an:"alle",frist:addD(TODAY,1)+"T18:00",at:ago(20)},
+    {id:"dc2",titel:"Torchance nach Flanke",aufgabe:"",an:ids.slice(1,4),frist:"",at:ago(70)},
+    {id:"dc3",titel:"Spielaufbau über außen",aufgabe:"Was macht der Außenverteidiger in der Szene gut?",an:"alle",frist:"",at:ago(150)}].map((c)=>({...c,url:"https://example.com/",bis:"",s:hexN(32),ck:key16()}));
+  C.forEach((c)=>put(tid+"__clips/"+c.id,c));
+  S.clips=C;
+  S.kom=[["dc1","dk1",{p:ids[2],n:nm(2),t:"Ich hätte sofort nach innen laufen müssen."},6],["dc1","dk2",{p:ids[3],n:nm(3),t:"Zu spät umgeschaltet. Beim nächsten Mal schneller zurück."},4],["dc1","dk3",{p:"T",n:"Max Mustermann",tr:true,r:"dk1",t:"Genau richtig erkannt!"},3],
+    ["dc2","dk4",{p:ids[1],n:nm(1),t:"Der Laufweg an den zweiten Pfosten war gut."},60],["dc2","dk5",{p:"T",n:"Erika Beispiel",tr:true,r:"dk4",t:"Stark gemacht, weiter so!"},58],
+    ["dc3","dk6",{p:ids[4],n:nm(4),t:"Er schaut vor der Ballannahme über die Schulter."},100],["dc3","dk7",{p:ids[1],n:nm(1),t:"Er spielt den Ball schnell und flach weiter."},96]];
+  [...store.entries()].filter(([k,g])=>k.indexOf(tid+"__games/")===0&&g.tore!=null&&g.datum<TODAY).sort((a,b)=>b[1].datum.localeCompare(a[1].datum)).slice(0,4).forEach(([k,g])=>{g.video="https://example.com/";put(k,g)});
+  /* Konten: zwei Spieler mit Eltern verknüpft, zwei Anfragen, Mannschaftslink und ein Spielerlink, Abmeldungen */
+  [[2,"spieler",nm(2)],[2,"eltern","Sabine "+pl[2].name],[3,"eltern","Thomas "+pl[3].name],[5,"spieler",nm(5)]].forEach(([i,rolle,name],k)=>{const e="konto"+(k+1)+"@beispiel.test";
+    put("kverkn/"+tid+"~"+ids[i]+"~"+mkey(e),{tid,pid:ids[i],email:e,rolle,name,pn:pl[i].vorname+" "+pl[i].name,at:addD(TODAY,-25+k)+"T18:00:00.000Z"})});
+  put("kanfr/dka1",{tid,name:"Petra "+pl[6].name,rolle:"eltern",kind:pl[6].vorname+" "+pl[6].name,email:"petra@beispiel.test",at:ago(5)});
+  put("kanfr/dka2",{tid,name:nm(7),rolle:"spieler",kind:pl[7].vorname+" "+pl[7].name,email:"spieler8@beispiel.test",at:ago(26)});
+  put("mteinl/"+hexN(24),{tid,aktiv:true,bis:0,am:addD(TODAY,-30)+"T10:00:00.000Z"});
+  put("spielereinl/"+hexN(24),{tid,pid:ids[4],n:pl[4].vorname+" "+pl[4].name,aktiv:true,bis:0,am:addD(TODAY,-3)+"T10:00:00.000Z"});
+  {let tr=addD(TODAY,1);while(dow(tr)!==2&&dow(tr)!==4)tr=addD(tr,1);
+    put("kabm/dab1",{tid,pid:ids[4],k:"d"+tr.replace(/-/g,"")+"_0",grund:"Arzttermin",name:"Elternteil von "+nm(4),von:Date.parse(tr+"T17:30:00")})}
+  put("kabw/daw1",{tid,pid:ids[6],von:addD(TODAY,10),bis:addD(TODAY,17),grund:"Familienurlaub",name:"Elternteil von "+nm(6)});
+  if(KONTO){const p=pl[1];put("kverkn/"+tid+"~"+p.id+"~"+mkey(EMAIL),{tid,pid:p.id,email:EMAIL,rolle:KONTO.konto,name:KONTO.konto==="spieler"?p.vorname:"Demo-Elternteil",pn:p.vorname+" "+p.name,at:addD(TODAY,-14)+"T18:00:00.000Z"});S.konto=p.id}
+  /* Training bewerten: Tipps der letzten Trainings */
+  [...store.entries()].filter(([k,t])=>k.indexOf(tid+"__trainings/t")===0&&/^t\d$/.test(t.id)).forEach(([,t],i)=>{const taps={},amp={},ts=Date.parse(t.datum+"T18:00:00");
+    ids.forEach((pid,j)=>{if((t.spieler||{})[pid]!=="x")return;const n=(i+j)%3;if(n===0)return;taps[pid]=[[ts+j*6e4,n===1?1:-1,BWTG[(i+j)%BWTG.length]]];if(j%4===0)amp[pid]=[["g","y","r"][(i+j)%3],ts]});
+    put(tid+"__tipps/"+t.id+"_demo",{id:t.id+"_demo",tid:t.id,datum:t.datum,vk:"demo",taps,amp})});
+  put(tid+"__config/main",cfg);
+});
+
+/* ---------- Mini-Firestore im Speicher ----------
+   DB: die Demo-Daten dieses Fensters; eingebettete Fenster (Vorbereitung) teilen sie mit dem Hauptfenster. */
+const DB=PAR?PAR.__DEMOSTORE:store;
+if(PREP)DB.set("mitglieder/"+EMAIL,memDoc(EMAIL,"Vorbereitung","trainer",["d1"]));
 const L=new Set();
 const norm=(p)=>String(p).replace(/^\/+|\/+$/g,"");
 const clone=(x)=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const denyErr=()=>{const e=new Error("Missing or insufficient permissions.");e.code="permission-denied";return e};
 const isFixed=P.rolle==="admin";
 const snapDoc=(p,d)=>({id:p.split("/").pop(),exists:d!==undefined,data:()=>clone(d)});
-const kick=()=>setTimeout(()=>L.forEach((f)=>{try{f()}catch(e){}}),0);
+const kick=PAR?()=>{try{PAR.__DEMOKICK()}catch(e){}}:()=>setTimeout(()=>L.forEach((f)=>{try{f()}catch(e){}}),0);
+if(!PAR){window.__DEMOSTORE=DB;window.__DEMOKICK=kick}
 function docRef(path){path=norm(path);return{path,id:path.split("/").pop(),
-  async get(){if(path.indexOf("ownercheck/")===0&&!isFixed)throw denyErr();return snapDoc(path,store.get(path))},
-  async set(d,o){if(o&&o.merge)store.set(path,{...(store.get(path)||{}),...clone(d)});else store.set(path,clone(d));kick()},
-  async update(d){if(!store.has(path)){const e=new Error("nf");e.code="not-found";throw e}store.set(path,{...store.get(path),...clone(d)});kick()},
-  async delete(){store.delete(path);kick()},
-  onSnapshot(a,b){const cb=typeof a==="function"?a:a&&a.next;let last=null;const run=()=>{const s=JSON.stringify(store.get(path));if(s!==last){last=s;cb&&cb(snapDoc(path,store.get(path)))}};L.add(run);setTimeout(run,0);return()=>L.delete(run)},
+  async get(){if(path.indexOf("ownercheck/")===0&&!isFixed)throw denyErr();return snapDoc(path,DB.get(path))},
+  async set(d,o){if(o&&o.merge)DB.set(path,{...(DB.get(path)||{}),...clone(d)});else DB.set(path,clone(d));kick()},
+  async update(d){if(!DB.has(path)){const e=new Error("nf");e.code="not-found";throw e}DB.set(path,{...DB.get(path),...clone(d)});kick()},
+  async delete(){DB.delete(path);kick()},
+  onSnapshot(a,b){const cb=typeof a==="function"?a:a&&a.next;let last=null;const run=()=>{const s=JSON.stringify(DB.get(path));if(s!==last){last=s;cb&&cb(snapDoc(path,DB.get(path)))}};lsn(run);setTimeout(run,0);return()=>uls(run)},
   collection(n){return colRef(path+"/"+n)}}}
+/* Beobachter: im eingebetteten Fenster beim Hauptfenster angemeldet (dort wird bei jeder Änderung geprüft) */
+const lsn=(f)=>{if(PAR){f.__prep=1;PAR.__DEMOLSN.add(f)}else L.add(f)},uls=(f)=>{if(PAR)PAR.__DEMOLSN.delete(f);else L.delete(f)};
+if(!PAR)window.__DEMOLSN=L;
 function colRef(path,flt){path=norm(path);flt=flt||[];
-  const rows=()=>{const out=[],dep=path.split("/").length+1;store.forEach((v,k)=>{const p=k.split("/");if(k.indexOf(path+"/")===0&&p.length===dep&&flt.every(([f,o,x])=>{const y=v[f];return o==="=="?y===x:o===">="?y>=x:o==="<="?y<=x:o===">"?y>x:o==="<"?y<x:o==="in"?x.indexOf(y)>=0:true}))out.push({id:p[p.length-1],data:v})});return out};
+  const rows=()=>{const out=[],dep=path.split("/").length+1;DB.forEach((v,k)=>{const p=k.split("/");if(k.indexOf(path+"/")===0&&p.length===dep&&flt.every(([f,o,x])=>{const y=v[f];return o==="=="?y===x:o===">="?y>=x:o==="<="?y<=x:o===">"?y>x:o==="<"?y<x:o==="in"?x.indexOf(y)>=0:true}))out.push({id:p[p.length-1],data:v})});return out};
   const snap=()=>{const docs=rows().map((r)=>snapDoc(path+"/"+r.id,r.data));return{docs,empty:!docs.length,size:docs.length,forEach:(f)=>docs.forEach(f),docChanges:()=>docs.map((d)=>({type:"added",doc:d}))}};
   return{path,doc:(id)=>docRef(path+"/"+id),where:(f,o,x)=>colRef(path,flt.concat([[f,o,x]])),orderBy(){return this},limit(){return this},
     async get(){if(path==="mitglieder"&&P.rolle!=="admin"&&P.rolle!=="jugendleiter"){throw denyErr()}return snap()},
-    onSnapshot(a,b){const cb=typeof a==="function"?a:a&&a.next;let last=null;const run=()=>{const s=JSON.stringify(rows());if(s!==last){last=s;cb&&cb(snap())}};L.add(run);setTimeout(run,0);return()=>L.delete(run)}}}
-const user={email:EMAIL,emailVerified:true,isAnonymous:false,uid:"demo-uid",providerData:[{providerId:"password"}],async reload(){},async getIdToken(){return"demo"}};
-const auth={currentUser:user,onAuthStateChanged(f){setTimeout(()=>f(user),0);return()=>{}},async signOut(){location.hash="";location.reload()},async signInAnonymously(){return{user}}};
-const fsx={doc:docRef,collection:colRef,async enablePersistence(){}};
-window.firebase={initializeApp(){},auth:Object.assign(()=>auth,{GoogleAuthProvider:function(){}}),firestore:()=>fsx};
+    onSnapshot(a,b){const cb=typeof a==="function"?a:a&&a.next;let last=null;const run=()=>{const s=JSON.stringify(rows());if(s!==last){last=s;cb&&cb(snap())}};lsn(run);setTimeout(run,0);return()=>uls(run)}}}
+const user={email:EMAIL,emailVerified:true,isAnonymous:false,uid:"demo-uid",providerData:[{providerId:"password"}],async reload(){},async getIdToken(){return"demo"},async getIdTokenResult(){return{authTime:new Date().toISOString()}},async delete(){}};
+/* Spieler und Eltern: erst wenn die Ansicht vorbereitet ist (siehe unten), geht die Anmeldung weiter */
+let ready=Promise.resolve();
+const auth={currentUser:user,onAuthStateChanged(f){ready.then(()=>setTimeout(()=>f(user),0));return()=>{}},async signOut(){location.reload()},async signInAnonymously(){return{user}},async setPersistence(){}};
+const batch=()=>{const l=[];const b={set(r,d,o){l.push(()=>r.set(d,o));return b},update(r,d){l.push(()=>r.update(d));return b},delete(r){l.push(()=>r.delete());return b},async commit(){for(const f of l)await f()}};return b};
+const fsx={doc:docRef,collection:colRef,batch,async enablePersistence(){},async clearPersistence(){},async terminate(){}};
+window.firebase={initializeApp(){},auth:Object.assign(()=>auth,{GoogleAuthProvider:function(){},Auth:{Persistence:{SESSION:"session",LOCAL:"local"}}}),firestore:()=>fsx};
+guard(DB,kick);
+
+/* ---------- Spieler und Eltern mit Konto ----------
+   Ihre Ansicht entsteht aus dem verschlüsselten Stand, den die Trainer-App veröffentlicht. Dafür läuft die Trainer-App von D1 kurz unsichtbar
+   in einem eingebetteten Fenster (#demo:vorbereiten) mit denselben Demo-Daten; danach öffnet sich hier die Seite wie für ein echtes Konto. */
+if(KONTO){
+  const pid=(SEED.d1||{}).konto,done=()=>{const kv=DB.get("kview/d1~"+pid);return!!(kv&&kv.k&&DB.get("pub/p_d1_"+pid))};
+  ready=new Promise((res)=>{
+    const go=()=>{
+      const w=document.createElement("div");w.id="demoprep";w.style.cssText="position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;background:var(--bg,#f5f6f8);color:var(--tx,#111);font:16px/1.4 system-ui,sans-serif;padding:24px;text-align:center";
+      w.innerHTML="<div><b>Demo wird vorbereitet …</b><div style=\"margin-top:6px;opacity:.7\">Die Seite für "+(KONTO.konto==="spieler"?"Spieler":"Eltern")+" entsteht gerade aus den Beispieldaten der Mannschaft D1.</div></div>";
+      document.body.appendChild(w);
+      const f=document.createElement("iframe");f.title="Vorbereitung";f.setAttribute("aria-hidden","true");f.tabIndex=-1;f.style.cssText="position:fixed;left:-20000px;top:0;width:1280px;height:900px;border:0";
+      f.src=location.pathname+location.search+"#demo:vorbereiten";document.body.appendChild(f);
+      const t0=Date.now(),chk=()=>{if(done()){setTimeout(()=>{f.remove();L.forEach((x)=>{if(x.__prep)L.delete(x)});w.remove();res()},300);return}
+        if(Date.now()-t0>60000){w.innerHTML="<div><b>Die Demo konnte nicht vorbereitet werden.</b><div style=\"margin-top:6px\">Bitte die Seite neu laden.</div></div>";return}setTimeout(chk,300)};chk()};
+    if(document.body)go();else document.addEventListener("DOMContentLoaded",go)});
+}
+
+/* ---------- Beispiele beim Start ----------
+   Was die App verschlüsselt, wird hier mit den Bausteinen der App selbst erzeugt, sobald sie geladen ist: Kommentare zu Clips,
+   Antworten auf Aufgaben, wer eine Aufgabe abgehakt hat, ein Eigentraining-Plan mit Datei. Danach werden die Links (nur im Demo-Speicher) veröffentlicht,
+   damit Vorschau, Konten und Demo Spielerlink sofort gehen. */
+const T2=(tid,p)=>tid+"__"+p;
+async function seedTeam(tid){
+  const S=SEED[tid],lk=window.__lk;if(!S||!lk||DB.get("demoseed/"+tid))return;DB.set("demoseed/"+tid,{at:Date.now()});
+  const sig=async(s)=>{const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(h)].map((x)=>x.toString(16).padStart(2,"0")).join("")};
+  const pn=(pid)=>{const p=DB.get(T2(tid,"players/"+pid));return p?p.vorname:""};
+  for(const [c,id,o,h] of S.kom){const cl=(S.clips||[]).find((x)=>x.id===c);if(cl)DB.set(T2(tid,"kom/"+cl.s+"/m/"+id),{b:await lk.seal(cl.ck,{r:"",...o}),at:ago(h)})}
+  for(const [hid,idx] of S.abh){const ids=Object.keys(S.links);for(const i of idx){const pid=ids[i];if(pid)DB.set("aufg/"+await sig("aufg|"+hid+"|"+pid+"|"+S.links[pid])+"/m/x",{d:true})}}
+  for(const [hid,i,t] of S.antw){const n=S.hn.find((x)=>x.id===hid),pid=Object.keys(S.links)[i];if(!n||!pid)continue;
+    const path=n.rp==="t"?await sig("aufg|r"+hid+"|"+pid+"|"+S.links[pid]):n.rs;
+    DB.set("antw/"+path+"/m/a"+hid+i,{b:await lk.seal(n.rk,{p:pid,n:pn(pid),ro:"s",t}),at:ago(10+i*3)})}
+  if(S.clips){/* Eigentraining (nur Stufe Voll): ein Plan mit zwei Stufen als Bild, für zwei Spieler freigegeben */
+    try{const cv=document.createElement("canvas");cv.width=600;cv.height=420;const g=cv.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,600,420);g.fillStyle="#004aad";g.font="bold 30px sans-serif";g.fillText("Demo: Kräftigung zu Hause",30,56);
+      g.fillStyle="#222";g.font="22px sans-serif";["Stufe 1: je 3 × 20 Sekunden","• Unterarmstütz","• Kniebeugen","• Seitstütz links und rechts","Stufe 2: je 3 × 40 Sekunden"].forEach((l,i)=>g.fillText(l,30,120+i*48));
+      const d=cv.toDataURL("image/png"),fid="0123456789abcdef01234567",k=key16(),blob=await lk.seal(k,{n:"Kraeftigung.png",t:"image/png",d});
+      DB.set(T2(tid,"etdatei/"+fid+"_0"),{b:blob});
+      DB.set(T2(tid,"etplan/dep1"),{titel:"Kräftigung zu Hause",hinweis:"Jede Übung sauber ausführen, lieber kürzer als schlampig.",f:{id:fid,k,name:"Kraeftigung.png",typ:"image/png",size:d.length,parts:1},stufen:[{n:"Stufe 1"},{n:"Stufe 2"}],am:ago(240)});
+      const ids=Object.keys(S.links);[[ids[1],0,[1,3]],[ids[3],1,[2,5]]].forEach(([pid,st,tage],i)=>DB.set(T2(tid,"etzu/dez"+i),{pid,plan:"dep1",st,von:addD(TODAY,-7),bis:addD(TODAY,42),tage,ab:null,am:ago(200)}))}catch(e){}}
+  kick();
+}
+/* Läuft in jeder Rolle, sobald die App da ist; veröffentlicht wird nur, wer die Links der Mannschaft verwaltet (wie in der echten App) */
+{let n=0;const t=setInterval(async()=>{if(++n>240){clearInterval(t);return}
+  if(!window.__lk||typeof D==="undefined"||!D.ready)return;clearInterval(t);
+  try{await seedTeam("d1");await seedTeam("d2")}catch(e){}
+  const tid=window.__TID;if(!tid||window.__ROLE!=="voll"||!window.__lkPublish)return;
+  for(let i=0;i<60&&!(window.__links&&Object.keys(window.__links).length);i++)await new Promise((r)=>setTimeout(r,250));
+  if(SEED[tid])setTimeout(()=>{try{window.__lkPublish(false)}catch(e){}},500)},250)}
 
 /* ---------- Hinweisleiste oben ---------- */
+if(PREP)return;
 const bar=()=>{if(document.getElementById("u13demo"))return;
   const st=document.createElement("style");st.textContent="#u13demo{position:relative;z-index:9000;background:#7c3aed;color:#fff;font:13px/1.4 system-ui,sans-serif;padding:6px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;text-align:center}#u13demo b{font-weight:700}#u13demo a{color:#fff;text-decoration:underline;cursor:pointer}";document.head.appendChild(st);
-  const d=document.createElement("div");d.id="u13demo";d.innerHTML="<span><b>Demo</b> · Ansicht als <b>"+P.n.replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</b> · alle Namen und Daten sind erfunden, nichts wird gespeichert</span>";
+  const d=document.createElement("div");d.id="u13demo";d.innerHTML="<span><b>Demo</b> · Ansicht als <b>"+P.n.replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</b> · alle Namen und Daten sind erfunden, nichts wird gespeichert oder verschickt</span>";
   document.body.insertBefore(d,document.body.firstChild);
   const fitD=()=>document.documentElement.style.setProperty("--demoh","0px");fitD();window.addEventListener("resize",fitD);setTimeout(fitD,300);setTimeout(fitD,1500)};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bar);else bar();

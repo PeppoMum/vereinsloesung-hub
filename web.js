@@ -525,7 +525,7 @@ async function clubInit(u){
     if(!cache){showInfo("Keine Verbindung","Die App wurde auf diesem Gerät noch nie online geöffnet. Bitte einmal mit Internet öffnen.","Neu laden");return null}
     fixed=cache.fixed;me=cache.me;V=cache.V;owner=!!cache.owner;frei=!!cache.frei;
   }
-  if(!fixed&&!me&&!offline&&!window.__DEMO){const ek=await elternStart(em);if(ek)return{eltern:ek}}
+  if(!fixed&&!me&&!offline&&(!window.__DEMO||window.__DEMOKONTO)){const ek=await elternStart(em);if(ek)return{eltern:ek}}   /* Demo „Spieler/Eltern mit Konto“: Konto im Demo-Speicher */
   if(!V){
     if(!fixed&&!me&&!offline&&!window.__DEMO){await showInvite(em,einKey());return null}
     if(!fixed){showInfo(me?"Der Verein ist noch nicht eingerichtet.":"Dieses Konto ist nicht freigegeben.","Angemeldet als <b>"+E(em)+"</b>. "+(me?"Bitte den Besitzer der App fragen.":"Zugriff haben nur Personen, die der Verein freigegeben hat."));return null}
@@ -773,12 +773,15 @@ if(isViewerHash&&!VS)document.addEventListener("DOMContentLoaded",viewerInstall)
    Verschickt wird von einem Zeitplan bei GitHub alle paar Minuten (siehe push/LIESMICH.md). Die Nachrichten enthalten keine Namen.
    Erst ab Stufe Standard (Hinweise, Nachrichten). Spielerlinks: nur in der installierten App (iPhone kann es nur dort). Trainer: Einstellungen → Für mich. */
 const VAPID="BKiX-60wgm3sN-vhKxj2GYt6_Ro7YioB2CwqE9UILd3nW7G0xiYyMCzC1jZ4l2VsfIbZdgVhltJpmB63jwoROSU";
-const PUSH_OK=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+const PUSH_OK=()=>!!window.__DEMO||("serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window);
+/* Demo: Ein- und Ausschalten wird nur gespielt – kein Gerät wird angemeldet, keine Erlaubnis abgefragt, es kommt nie eine Benachrichtigung */
+const DEMOSUB={endpoint:"https://demo.invalid/push",toJSON(){return{endpoint:this.endpoint,keys:{}}},async unsubscribe(){return true}};
 const pls={get:(k)=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
 const pushSid=()=>{let s=pls.get("u13push");if(!/^[0-9a-f]{64}$/.test(s||"")){const a=new Uint8Array(32);crypto.getRandomValues(a);s=Array.from(a,(x)=>x.toString(16).padStart(2,"0")).join("");pls.set("u13push",s)}return s};
-const pushPerm=()=>{try{return Notification.permission}catch(e){return"default"}};
+const pushPerm=()=>{if(window.__DEMO)return"default";try{return Notification.permission}catch(e){return"default"}};
 const u8=(s)=>Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")+"===".slice((s.length+3)%4)),(c)=>c.charCodeAt(0));
 async function pushSub(ask){
+  if(window.__DEMO)return ask||pls.get("u13pushon")==="1"?DEMOSUB:null;
   if(ask&&pushPerm()!=="granted"&&await Notification.requestPermission()!=="granted")return null;
   if(pushPerm()!=="granted")return null;
   const reg=await navigator.serviceWorker.ready,old=await reg.pushManager.getSubscription();
@@ -798,7 +801,7 @@ async function pushSave(sub,c){
 const pushApi={
   on:()=>pls.get("u13pushon")==="1",
   async enable(c){const s=await pushSub(true);if(!s)return pushPerm()==="denied"?"denied":"no";await pushSave(s,c);pls.set("u13pushon","1");return"ok"},
-  async disable(c){pls.set("u13pushon",null);pls.set("u13pushx","1");try{const reg=await navigator.serviceWorker.ready,s=await reg.pushManager.getSubscription();if(s)await s.unsubscribe()}catch(e){}
+  async disable(c){pls.set("u13pushon",null);pls.set("u13pushx","1");if(!window.__DEMO)try{const reg=await navigator.serviceWorker.ready,s=await reg.pushManager.getSubscription();if(s)await s.unsubscribe()}catch(e){}
     const id=pushId(c);try{if(c.ro==="t"&&fs)await fs.doc("push/"+id).delete();else await fetch(FSB()+"push/"+id+"?key="+encodeURIComponent(CFG.apiKey),{method:"DELETE"})}catch(e){}},
   /* beim Öffnen: Anmeldung auffrischen (Rolle oder Adresse des Geräts können sich ändern) */
   async sync(c){if(!pushApi.on())return;try{const s=await pushSub(false);if(s)await pushSave(s,c);else pls.set("u13pushon",null)}catch(e){}}
@@ -855,14 +858,14 @@ function pushCard(){
     let c=document.getElementById("u13pushc");
     if(!window.__vid.msgOn()){if(c)c.remove();return}
     if(!c){c=document.createElement("div");c.className="card";c.id="u13pushc";c.style.display="block";const i=document.getElementById("u13inst");if(i&&i.parentNode===pp)i.insertAdjacentElement("afterend",c);else pp.appendChild(c)}
-    const st=!PUSH_OK()?"nein":IOS&&!STANDALONE()?"ios":!key()?"warte":pushApi.on()?"an":pushPerm()==="denied"?"zu":"aus";
+    const st=!PUSH_OK()?"nein":IOS&&!STANDALONE()&&!window.__DEMO?"ios":!key()?"warte":pushApi.on()?"an":pushPerm()==="denied"?"zu":"aus";
     if(c.dataset.st===st)return;c.dataset.st=st;
     c.innerHTML='<h3>Meine Benachrichtigungen</h3>'
       +(st==="nein"?'<p class="note">Dieser Browser kann keine Benachrichtigungen empfangen.</p>'
       :st==="ios"?'<p class="note"><b>Auf dem iPhone und iPad geht das nur in der App vom Home-Bildschirm.</b> Bitte zuerst als App installieren (siehe oben) und dort einschalten.</p>'
       :st==="warte"?'<p class="note">Wird vorbereitet …</p>'
       :st==="zu"?'<p class="note warn">Benachrichtigungen sind auf diesem Gerät blockiert. Bitte in den Einstellungen des Geräts für diese App erlauben.</p>'
-      :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Auf diesem Gerät eingeschaltet.":"🔕 Auf diesem Gerät aus.")+'</span><button class="btn" id="u13pushb">'+(st==="an"?"Ausschalten":"Einschalten")+'</button></div>'+(st==="an"?pwHtml({ro:"t"}):"")+'<div class="note warn" id="u13pushm"></div>');
+      :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Auf diesem Gerät eingeschaltet.":"🔕 Auf diesem Gerät aus.")+'</span><button class="btn" id="u13pushb">'+(st==="an"?"Ausschalten":"Einschalten")+'</button></div>'+(st==="an"?pwHtml({ro:"t"}):"")+(window.__DEMO?'<p class="note">In der Demo wird das nur gespielt: Es kommt keine echte Benachrichtigung.</p>':"")+'<div class="note warn" id="u13pushm"></div>');
     const b=c.querySelector("#u13pushb");
     if(b)b.onclick=async()=>{b.disabled=true;const cx={k:key(),ro:"t",tid:tid()};let r="ok";
       if(st==="an")await pushApi.disable(cx);else{try{r=await pushApi.enable(cx)}catch(e){r="fehler"}}
