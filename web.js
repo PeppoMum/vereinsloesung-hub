@@ -451,11 +451,11 @@ async function kontoView(links,em){
 function kNotif(){
   const pc=window.__pushCtx&&window.__pushCtx(),h='<div class="card" id="kstp" style="margin:0 0 12px"><h3 style="margin-top:0">'+(pc?"App und Benachrichtigungen":"Als App speichern")+'</h3>',was=pc?'<div class="note" style="margin:0 0 8px">Mit Benachrichtigungen bekommst du Bescheid bei '+pushWas(pc,1)+', auch wenn die App geschlossen ist. In den Nachrichten stehen keine Namen.</div>':"";
   if(STANDALONE()){
-    if(!pc)return h+'<div class="note">✅ Die App ist auf diesem Gerät eingerichtet.</div></div>';
+    if(!pc)return h+'<div class="note"><i class=sy data-sy=ok></i> Die App ist auf diesem Gerät eingerichtet.</div></div>';
     if(!PUSH_OK())return h+'<div class="note">Die App ist auf diesem Gerät eingerichtet. Benachrichtigungen gehen auf diesem Gerät leider nicht.</div></div>';
-    if(pushPerm()==="denied")return h+'<div class="note" style="margin:0 0 6px">✅ Die App ist auf diesem Gerät eingerichtet.</div><div class="note">🔕 Benachrichtigungen sind auf diesem Gerät blockiert. Du kannst sie in den Einstellungen des Handys erlauben (iPhone: Einstellungen → Mitteilungen → diese App → Mitteilungen erlauben). Danach die App neu öffnen.</div></div>';
+    if(pushPerm()==="denied")return h+'<div class="note" style="margin:0 0 6px"><i class=sy data-sy=ok></i> Die App ist auf diesem Gerät eingerichtet.</div><div class="note"><i class=sy data-sy=glockeaus></i> Benachrichtigungen sind auf diesem Gerät blockiert. Du kannst sie in den Einstellungen des Handys erlauben (iPhone: Einstellungen → Mitteilungen → diese App → Mitteilungen erlauben). Danach die App neu öffnen.</div></div>';
     const on=pushApi.on();
-    return h+'<div class="note" style="margin:0 0 6px">✅ Die App ist auf diesem Gerät eingerichtet.</div>'+was+'<div class="bar" style="align-items:center;margin:0"><span style="flex:1">'+(on?"🔔 Benachrichtigungen sind an.":"🔕 Benachrichtigungen sind aus.")+'</span><button class="btn" data-ks="'+(on?"poff":"pon")+'"'+(on?"":' style="background:var(--ac,#2563eb);color:#fff;border-color:var(--ac,#2563eb);font-weight:600"')+'>'+(on?"Ausschalten":"Einschalten")+'</button></div>'+(on?pwHtml(pc):"")+'</div>';
+    return h+'<div class="note" style="margin:0 0 6px"><i class=sy data-sy=ok></i> Die App ist auf diesem Gerät eingerichtet.</div>'+was+'<div class="bar" style="align-items:center;margin:0"><span style="flex:1">'+(on?"<i class=sy data-sy=glocke></i> Benachrichtigungen sind an.":"<i class=sy data-sy=glockeaus></i> Benachrichtigungen sind aus.")+'</span><button class="btn" data-ks="'+(on?"poff":"pon")+'"'+(on?"":' style="background:var(--ac,#2563eb);color:#fff;border-color:var(--ac,#2563eb);font-weight:600"')+'>'+(on?"Ausschalten":"Einschalten")+'</button></div>'+(on?pwHtml(pc):"")+'</div>';
   }
   const dev=IOS?"ios":/Android/i.test(navigator.userAgent)?"android":"pc",ol=(k)=>'<ol style="margin:4px 0 6px 20px;padding:0">'+VSTEP[k].slice(1).map((t)=>"<li>"+t+"</li>").join("")+"</ol>";
   return h+was+(pc?'<div style="font-weight:600;margin:6px 0 2px">1. Seite als App speichern</div>':"")+(instEv?'<button class="btn" data-ks="inst" style="margin:4px 0 6px">App jetzt installieren</button>':"")
@@ -618,7 +618,7 @@ async function afterLogin(){
   if(!SHARED&&!window.__DEMO)try{localStorage.setItem("u13role",rolle||"team")}catch(e){}
   instCard();
   if(window.__ROLE!=="scout")pushCard();
-  if(window.__ROLE==="scout")document.body.classList.add("scoutonly");
+  if(window.__ROLE==="scout"){document.body.classList.add("scoutonly");const o=document.getElementById("u13out"),t=document.querySelector(".top .note");if(o&&t)t.appendChild(o)}   /* Scouts sehen keine Einstellungen: Abmelden bleibt oben */
   const lbl={lesen:"· Nur Ansicht",scout:"· Scouting-Zugang"}[window.__ROLE];
   if(lbl){const t=document.querySelector(".top .note");if(t){const sp=document.createElement("span");sp.style.marginLeft="8px";sp.textContent=lbl;t.appendChild(sp)}}
   if(window.__ROLE==="scout"){window.__scoutLink=()=>"(nur für Trainer sichtbar)";return}
@@ -649,7 +649,7 @@ function cards(){
   };put();
 }
 function addSignOut(){
-  const put=()=>{if(!document.getElementById("u13css")){const st=document.createElement("style");st.id="u13css";st.textContent=CSS;document.head.appendChild(st)}const t=document.querySelector(".top .note")||document.querySelector(".top");if(!t||document.getElementById("u13out"))return;const b=document.createElement("button");b.id="u13out";b.type="button";b.textContent="Abmelden";b.title=(auth.currentUser&&auth.currentUser.email)||"";b.onclick=()=>signOutClean();t.appendChild(b)};
+  const put=()=>{if(!document.getElementById("u13css")){const st=document.createElement("style");st.id="u13css";st.textContent=CSS;document.head.appendChild(st)}const t=(!document.body.classList.contains("scoutonly")&&document.getElementById("mebar"))||document.querySelector(".top .note")||document.querySelector(".top");if(!t||document.getElementById("u13out"))return;const b=document.createElement("button");b.id="u13out";b.type="button";b.textContent="Abmelden";b.title=(auth.currentUser&&auth.currentUser.email)||"";b.onclick=()=>signOutClean();t.appendChild(b)};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",put);else put();setTimeout(put,800);
 }
 
@@ -723,7 +723,7 @@ function instCard(){
       c.innerHTML='<h3>Als App installieren</h3>'+(done?'<p class="note" style="margin-top:0">Die App ist auf diesem Gerät schon installiert.</p>':'<button class="btn" id="u13instb" style="display:none;margin:4px 0 8px">App jetzt installieren</button><ul style="margin:6px 0 6px 20px;padding:0"><li><b>iPhone/iPad:</b> in Safari unten auf <b>Teilen</b> (Quadrat mit Pfeil) → <b>Zum Home-Bildschirm</b>.</li><li><b>Android:</b> in Chrome oben rechts auf <b>⋮</b> → <b>App installieren</b> (oder „Zum Startbildschirm hinzufügen“).</li><li><b>Mac/PC:</b> in Chrome oder Edge rechts in der Adresszeile auf das Symbol <b>Installieren</b>. In Safari auf dem Mac: <b>Ablage</b> → <b>Zum Dock hinzufügen</b>.</li></ul><p class="note">Die App startet auch ohne Netz. Ohne Netz kannst du ansehen und ändern, die Änderungen werden geschickt, sobald wieder Netz da ist. Anmelden und Spielerlinks brauchen Netz. Auf einem gemeinsam genutzten Gerät wird nichts gespeichert, dort geht es nur mit Netz.</p>');
       const b=c.querySelector("#u13instb"),show=()=>{if(b&&instEv)b.style.display=""};show();window.addEventListener("u13inst",show);
       if(b)b.onclick=async()=>{const ev=instEv;if(!ev)return;instEv=null;b.style.display="none";try{await ev.prompt()}catch(e){}};
-      pp.insertBefore(c,pp.firstChild);
+      const me=document.getElementById("mecard");pp.insertBefore(c,me&&me.parentNode===pp?me.nextSibling:pp.firstChild);   /* nach „Darstellung“ */
     }
   };put();
 }
@@ -753,10 +753,10 @@ function viewerInstall(){
     b.onclick=async()=>{const ev=instEv;if(!ev)return;instEv=null;b.style.display="none";try{await ev.prompt()}catch(e){}}};
   const sig=()=>(pz()?"p":"")+(eltern()?"e":"")+(plan()?"t":"");   /* Rolle und Benachrichtigungen stehen erst nach dem Laden fest: dann neu aufbauen */
   const top=()=>{const c=document.createElement("div");c.id="u13vinst";c.className="card";c.dataset.k=sig();c.style.cssText="margin:0 0 14px;border-color:var(--ac,#2563eb)";
-    c.innerHTML='<div style="display:flex;gap:8px;align-items:flex-start"><b style="flex:1;font-size:16px">'+(pz()?"📲 Spieler: Bitte als App speichern":"📲 Als App auf dem Handy speichern")+'</b><button type="button" class="xcl" data-vix style="position:static;flex:none;margin:-5px -6px 0 0" aria-label="Ausblenden" title="Ausblenden">✕</button></div>'+body();
+    c.innerHTML='<div style="display:flex;gap:8px;align-items:flex-start"><b style="flex:1;font-size:16px">'+(pz()?"<i class=sy data-sy=handy></i> Spieler: Bitte als App speichern":"<i class=sy data-sy=handy></i> Als App auf dem Handy speichern")+'</b><button type="button" class="xcl" data-vix style="position:static;flex:none;margin:-5px -6px 0 0" aria-label="Ausblenden" title="Ausblenden">✕</button></div>'+body();
     wire(c);c.querySelector("[data-vix]").onclick=()=>{try{localStorage.setItem("u13vinstx","1")}catch(e){}c.remove();put()};return c};
   const low=()=>{const c=document.createElement("details");c.id="u13vinst";c.className="card";c.dataset.k=sig();c.style.cssText="margin:14px 0 0";
-    c.innerHTML='<summary style="cursor:pointer;font-weight:600"><span style="display:inline-flex;gap:8px;align-items:center;width:calc(100% - 24px)"><span style="flex:1">📲 Als App auf dem Handy speichern'+(eltern()||plan()?" (freiwillig)":"")+'</span><button type="button" class="xcl" data-vioff style="position:static;flex:none;margin:-5px 0" aria-label="Ausblenden" title="Ausblenden">✕</button></span></summary>'+body();wire(c);
+    c.innerHTML='<summary style="cursor:pointer;font-weight:600"><span style="display:inline-flex;gap:8px;align-items:center;width:calc(100% - 24px)"><span style="flex:1"><i class=sy data-sy=handy></i> Als App auf dem Handy speichern'+(eltern()||plan()?" (freiwillig)":"")+'</span><button type="button" class="xcl" data-vioff style="position:static;flex:none;margin:-5px 0" aria-label="Ausblenden" title="Ausblenden">✕</button></span></summary>'+body();wire(c);
     c.querySelector("[data-vioff]").onclick=(e)=>{e.preventDefault();e.stopPropagation();try{localStorage.setItem("u13vinstx","2")}catch(x){}c.remove()};return c};
   const off=()=>{try{return localStorage.getItem("u13vinstx")==="2"}catch(e){return false}};   /* ganz ausgeblendet */
   const bottom=(v,el)=>{const f=v.querySelector(":scope>.vf");if(f)v.insertBefore(el,f);else v.appendChild(el)};   /* „Stand“ bleibt ganz unten */
@@ -833,11 +833,11 @@ function viewerPush(){
     if(old&&old.dataset.st===st)return;if(old)old.remove();
     const el=document.createElement("div");el.id="u13push";el.className="card";el.dataset.st=st;
     if(st==="frage"){el.style.cssText="margin:0 0 14px;border-color:var(--ac,#2563eb)";
-      el.innerHTML='<b style="font-size:16px">🔔 Bitte Benachrichtigungen einschalten</b><p class="note" style="margin:4px 0 8px">Dann bekommst du Bescheid, wenn es '+pushWas(c)+' gibt, auch wenn die App geschlossen ist. In den Nachrichten stehen keine Namen.</p><div class="bar"><button class="btn" data-pon style="background:var(--ac,#2563eb);color:#fff;border-color:var(--ac,#2563eb);font-weight:600;min-height:44px">Einschalten</button><button class="btn" data-plater style="min-height:44px">Später</button></div><div class="note" style="margin-top:6px">Einschalten geht auch später jederzeit: ganz unten in der App.</div><div class="note warn" data-pm></div>';
+      el.innerHTML='<b style="font-size:16px"><i class=sy data-sy=glocke></i> Bitte Benachrichtigungen einschalten</b><p class="note" style="margin:4px 0 8px">Dann bekommst du Bescheid, wenn es '+pushWas(c)+' gibt, auch wenn die App geschlossen ist. In den Nachrichten stehen keine Namen.</p><div class="bar"><button class="btn" data-pon style="background:var(--ac,#2563eb);color:#fff;border-color:var(--ac,#2563eb);font-weight:600;min-height:44px">Einschalten</button><button class="btn" data-plater style="min-height:44px">Später</button></div><div class="note" style="margin-top:6px">Einschalten geht auch später jederzeit: ganz unten in der App.</div><div class="note warn" data-pm></div>';
       const kf=document.getElementById("kzf");(kf&&kf.parentNode===v?kf:hd).insertAdjacentElement("afterend",el)}
     else{el.style.cssText="margin:14px 0 0";
-      el.innerHTML=st==="zu"?'<div class="note">🔕 Benachrichtigungen sind auf diesem Gerät blockiert. Du kannst sie in den Einstellungen des Handys erlauben (iPhone: Einstellungen → Mitteilungen → diese App → Mitteilungen erlauben). Danach die App neu öffnen.</div>'
-        :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Benachrichtigungen sind an.":"🔕 Benachrichtigungen sind aus. Hier kannst du sie jederzeit einschalten.")+'</span><button class="btn" '+(st==="an"?"data-poff>Ausschalten":"data-pon>Einschalten")+'</button></div>'+(st==="an"?pwHtml(c):"")+'<div class="note warn" data-pm></div>';
+      el.innerHTML=st==="zu"?'<div class="note"><i class=sy data-sy=glockeaus></i> Benachrichtigungen sind auf diesem Gerät blockiert. Du kannst sie in den Einstellungen des Handys erlauben (iPhone: Einstellungen → Mitteilungen → diese App → Mitteilungen erlauben). Danach die App neu öffnen.</div>'
+        :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"<i class=sy data-sy=glocke></i> Benachrichtigungen sind an.":"<i class=sy data-sy=glockeaus></i> Benachrichtigungen sind aus. Hier kannst du sie jederzeit einschalten.")+'</span><button class="btn" '+(st==="an"?"data-poff>Ausschalten":"data-pon>Einschalten")+'</button></div>'+(st==="an"?pwHtml(c):"")+'<div class="note warn" data-pm></div>';
       {const f=v.querySelector(":scope>.vf");if(f)v.insertBefore(el,f);else v.appendChild(el)}}
   };
   document.addEventListener("click",async(e)=>{const t=e.target.closest&&e.target.closest("#u13push button");if(!t)return;const c=ctx();if(!c)return;
@@ -865,7 +865,7 @@ function pushCard(){
       :st==="ios"?'<p class="note"><b>Auf dem iPhone und iPad geht das nur in der App vom Home-Bildschirm.</b> Bitte zuerst als App installieren (siehe oben) und dort einschalten.</p>'
       :st==="warte"?'<p class="note">Wird vorbereitet …</p>'
       :st==="zu"?'<p class="note warn">Benachrichtigungen sind auf diesem Gerät blockiert. Bitte in den Einstellungen des Geräts für diese App erlauben.</p>'
-      :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"🔔 Auf diesem Gerät eingeschaltet.":"🔕 Auf diesem Gerät aus.")+'</span><button class="btn" id="u13pushb">'+(st==="an"?"Ausschalten":"Einschalten")+'</button></div>'+(st==="an"?pwHtml({ro:"t"}):"")+(window.__DEMO?'<p class="note">In der Demo wird das nur gespielt: Es kommt keine echte Benachrichtigung.</p>':"")+'<div class="note warn" id="u13pushm"></div>');
+      :'<div class="bar" style="align-items:center"><span style="flex:1">'+(st==="an"?"<i class=sy data-sy=glocke></i> Auf diesem Gerät eingeschaltet.":"<i class=sy data-sy=glockeaus></i> Auf diesem Gerät aus.")+'</span><button class="btn" id="u13pushb">'+(st==="an"?"Ausschalten":"Einschalten")+'</button></div>'+(st==="an"?pwHtml({ro:"t"}):"")+(window.__DEMO?'<p class="note">In der Demo wird das nur gespielt: Es kommt keine echte Benachrichtigung.</p>':"")+'<div class="note warn" id="u13pushm"></div>');
     const b=c.querySelector("#u13pushb");
     if(b)b.onclick=async()=>{b.disabled=true;const cx={k:key(),ro:"t",tid:tid()};let r="ok";
       if(st==="an")await pushApi.disable(cx);else{try{r=await pushApi.enable(cx)}catch(e){r="fehler"}}

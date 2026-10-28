@@ -39,6 +39,9 @@ const m=/^#demo:([a-z0-9-]{2,30})$/.exec(location.hash||"");
 const VSF=!!PAR&&/[?&]vorschau=[se](&|$)/.test(location.search);
 if(!m&&!VSF)return;
 const PREP=!!PAR&&!!m&&m[1]==="vorbereiten";
+/* Die Demo braucht keine echten Zugangswerte. Fehlen sie (z. B. eine Kopie ohne firebase-config.js), bekommt die Seite erfundene,
+   damit Spieler-/Elternansicht und Vorschau trotzdem laufen – alle Anfragen beantwortet ohnehin der Demo-Speicher (siehe „Schutz“). */
+{const c=window.U13_FIREBASE||{};if(!(c.apiKey&&c.projectId&&c.authDomain)||/DEIN|EINTRAGEN|XXXX/i.test(String(c.apiKey)+c.projectId))window.U13_FIREBASE={apiKey:"demo",projectId:"demo",authDomain:"demo.invalid",appId:"demo"};}
 
 /* ---------- Eigener Gerätespeicher ----------
    Die echte App merkt sich auf dem Gerät z. B. noch nicht gesendete Änderungen und die gewählte Mannschaft. Die Demo darf das weder sehen
