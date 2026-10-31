@@ -29,8 +29,8 @@ const H=location.hash;
 const isScout=/^#scout\.[A-Za-z0-9_-]{16,}$/.test(H);
 window.__SCOUTKEY=isScout?H.slice(7):"";
 /* Verein: Jede Mannschaft hat eigene Sammlungen („d1__players“ …). Gemeinsame Sammlungen des Vereins stehen in GLOB. */
-const KABKEY=/^#kab\.[A-Za-z0-9_-]{16,}$/.test(H)?H.slice(5):"";
-window.__KAB=!!KABKEY;
+const KABKEY=/^#kabq?\.[A-Za-z0-9_-]{16,}$/.test(H)?H.slice(H.indexOf(".")+1):"";
+window.__KAB=!!KABKEY;window.__KABQ=/^#kabq\./.test(H); /* kabq = QR-Code an der Kabinentür: nur lesen */
 const TQ=(new URLSearchParams(location.search).get("t")||"").toLowerCase().replace(/[^a-z0-9]/g,"");
 const skt=()=>String(window.__SCOUTKEY||"").split("-")[0].toLowerCase().replace(/[^a-z0-9]/g,"");
 window.__TID="";

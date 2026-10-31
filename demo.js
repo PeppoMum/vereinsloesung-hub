@@ -132,6 +132,8 @@ const FN="Max Leon Finn Noah Paul Ben Luca Elias Jonas Felix Tim Malte Emil Anto
 const LN="Muster Beispiel Probe Demo Test Platzhalter Exempel Sample Vorlage Modell Schema Entwurf Beleg Kopie Attrappe Nachbau Muster-Meier Probst Beispieler".split(" ");
 const CL="SV Musterstadt|FC Beispieldorf|TuS Platzhausen|SC Testfeld|Spvgg Demotal|BV Probeheim|VfL Zufallsburg|SG Loremberg|DJK Ipsumhagen|FSV Sampledorf|TSV Fiktivstadt|RW Exempelau".split("|");
 const TEAMS=[["m1","Minis","U6"],["g1","G1","U7"],["f2","F2","U8"],["f1","F1","U9"],["e2","E2","U10"],["e1","E1","U11"],["d2","D2","U12"],["d1","D1","U13"],["c2","C2","U14"],["c1","C1","U15"],["b1","B1","U17"],["a1","A1","U19"]];
+/* Anstoßzeiten am Wochenende je Mannschaft verteilt (für die Kabinen-Automatik); Kleine zuerst */
+const ANSTOSS={m1:"09:30",g1:"09:30",f2:"10:00",f1:"10:00",e2:"11:00",e1:"11:00",d2:"12:15",d1:"12:15",c2:"13:30",c1:"13:30",b1:"15:00",a1:"16:30"},anstoss=(tid)=>ANSTOSS[tid]||"10:30";
 const FORM={m1:["3gg3",3],g1:["4gg4",4],f1:["5gg5",5],f2:["5gg5",5],e1:["7gg7",7],e2:["7gg7",7],d1:["9gg9",9],d2:["9gg9",9],c1:["11gg11",11],c2:["9gg9",9],b1:["11gg11",11],a1:["11gg11",11]};
 
 /* Erzeugt wird immer (gleicher Zufall), eingebettete Fenster benutzen danach aber die Daten des Hauptfensters (DB unten) */
@@ -208,7 +210,7 @@ TEAMS.forEach(([tid,name],ti)=>{
     cfg.fd={team:"https://www.fussball.de/mannschaft/demo/-/saison/2627/team-id/"+fdid(tid)+"#!/",liga:liga?"https://www.fussball.de/spieltagsuebersicht/demo/-/staffel/DEMOSTAFFEL#!/":""};put(tid+"__config/main",cfg);
     const own="TuS Musterstadt "+tid.toUpperCase(),gs=gamesOf(tid),sp=[],fut=gs.filter((g)=>g.datum>=TODAY);
     gs.forEach((g,i)=>{
-      const past=g.datum<TODAY,h=g.ha==="H",f={id:"DG"+tid+i,d:g.datum,z:"10:30",wett:liga?AK[0]:"Spielfest",alt:AK[1],heim:h?own:g.gegner,gast:h?g.gegner:own,st:"",ht:null,gt:null,ort:"Sportanlage Musterstadt, Beispielweg 1, 12345 Musterstadt",ortUrl:"",h};
+      const past=g.datum<TODAY,h=g.ha==="H",f={id:"DG"+tid+i,d:g.datum,z:anstoss(tid),wett:liga?AK[0]:"Spielfest",alt:AK[1],heim:h?own:g.gegner,gast:h?g.gegner:own,st:"",ht:null,gt:null,ort:"Sportanlage Musterstadt, Beispielweg 1, 12345 Musterstadt",ortUrl:"",h};
       if(past){f.ht=h?g.tore:g.gt;f.gt=h?g.gt:g.tore;g.fd=f.id}
       else{const k=fut.indexOf(g);
         if(k===0){g.fd=f.id;f.z="11:00"}                 /* verknüpft, Anstoß wird still ergänzt */
@@ -224,18 +226,26 @@ TEAMS.forEach(([tid,name],ti)=>{
     const T=liga?order.map((r,i)=>{const N=9,w=Math.max(0,N-3-i),u=i%3===0?1:0,l=N-w-u;return{p:i+1,team:r.team,sp:N,s:w,u,n:Math.max(0,l),tore:(w*2+u+3)+":"+(l*2+u+2),diff:(w*2+u+3)-(l*2+u+2),pkt:w*3+u,auf:i===0,ab:i===order.length-1}}):[];
     put("fussball/"+fdid(tid),{v:1,id:fdid(tid),tids:[tid],abgeholt:idx.stand,geaendert:idx.stand,fehler:null,eigen:own,spiele:sp,tabelle:T,tabelleStand:idx.stand,hash:"demo"+tid});
     idx.teams[fdid(tid)]={tids:[tid],ok:true,fehler:null,abgeholt:idx.stand,geaendert:idx.stand,nSpiele:sp.length,nTabelle:T.length,eigen:own}});
+  /* Vereinsspielplan: alle Heimspiele der nächsten 14 Tage (Jugend aus den Demo-Spielen, dazu Senioren und Alte Herren) */
+  {const bis=addD(TODAY,14),vs=[];
+    TEAMS.forEach(([tid,name,ak])=>gamesOf(tid).filter((g)=>g.ha==="H"&&g.datum>=TODAY&&g.datum<=bis).forEach((g)=>vs.push({id:"DV"+g.id,d:g.datum,z:anstoss(tid),heim:"TuS Musterstadt "+tid.toUpperCase(),gast:g.gegner||NAMES[1],mannschaft:ak||name,wett:"Kreisliga",ort:"Sportanlage Musterstadt, Beispielweg 1, 12345 Musterstadt"})));
+    [[2,"15:00","TuS Musterstadt","SC Testfeld","Herren","Kreisliga A"],[2,"12:45","TuS Musterstadt II","BV Probeheim 2","Herren","Kreisliga C"],[6,"19:00","TuS Musterstadt","SG Loremberg","Alte Herren","Freundschaftsspiele"],[9,"15:00","TuS Musterstadt","VfL Zufallsburg","Herren","Kreisliga A"]]
+      .forEach(([n,z,heim,gast,mannschaft,wett],i)=>vs.push({id:"DVS"+i,d:addD(TODAY,n),z,heim,gast,mannschaft,wett,ort:"Sportanlage Musterstadt, Beispielweg 1, 12345 Musterstadt"}));
+    vs.sort((x,y)=>(x.d+x.z).localeCompare(y.d+y.z));
+    put("fussball/verein",{v:1,vereinId:"DEMOVEREIN0000000000000000000000",abgeholt:idx.stand,geaendert:idx.stand,fehler:null,eigen:"TuS Musterstadt",spiele:vs,hash:"demoverein"});
+    idx.verein={ok:true,fehler:null,abgeholt:idx.stand,nSpiele:vs.length}}
   put("fussball/_index",idx);
   /* Nutzungsstufen (Demo): D1 voll wie bisher, D2 und E1 Standard, E2 Basis */
   [["d2","standard"],["e1","standard"],["e2","basis"]].forEach(([tid,st])=>{const c=store.get(tid+"__config/main");if(c){c.stufe=st;put(tid+"__config/main",c)}const v=store.get(tid+"__vstat/main");if(v){v.st=st;put(tid+"__vstat/main",v)}});
 
   /* Kennzahlen: nächste Spiele (mit Ort) für Übersicht und Wochenende */
   TEAMS.forEach(([tid])=>{const vs=store.get(tid+"__vstat/main");if(!vs)return;
-    vs.naechste=gamesOf(tid).filter((g)=>g.datum>=TODAY).slice(0,8).map((g)=>({d:g.datum,z:"10:30",g:g.gegner,h:g.ha,o:"Sportanlage Musterstadt",a:"Meisterschaft"}));if(tid==="a1"||tid==="d1"){const g0=vs.naechste.find((g)=>g.h==="H");if(g0)g0.p=tid==="a1"?"Kunstrasen":"Naturrasen"}put(tid+"__vstat/main",vs)});
+    vs.naechste=gamesOf(tid).filter((g)=>g.datum>=TODAY).slice(0,8).map((g)=>({d:g.datum,z:anstoss(tid),g:g.gegner,h:g.ha,o:"Sportanlage Musterstadt",a:"Meisterschaft"}));if(tid==="a1"||tid==="d1"){const g0=vs.naechste.find((g)=>g.h==="H");if(g0)g0.p=tid==="a1"?"Kunstrasen":"Naturrasen"}put(tid+"__vstat/main",vs)});
 }
 
 
 /* ---------- Verein, Rollen, Personen ---------- */
-put("verein/main",{name:"TuS Musterstadt (Demo)",saison:"2026/27",teams:TEAMS.map(([id,name,ak])=>({id,name,ak,aktiv:true})),arten:ARTEN,bereiche:[{id:"mini",name:"Minis bis U13",teams:["m1","g1","f1","f2","e1","e2","d1","d2"]},{id:"gross",name:"U14 bis U19",teams:["c2","c1","b1","a1"]}],settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},kontakteVerein:[]});
+put("verein/main",{name:"TuS Musterstadt (Demo)",saison:"2026/27",teams:TEAMS.map(([id,name,ak])=>({id,name,ak,aktiv:true})),arten:ARTEN,bereiche:[{id:"mini",name:"Minis bis U13",teams:["m1","g1","f1","f2","e1","e2","d1","d2"]},{id:"gross",name:"U14 bis U19",teams:["c2","c1","b1","a1"]}],settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},kontakteVerein:[],fussball:{vereinLink:"https://www.fussball.de/verein/demo/-/id/DEMOVEREIN0000000000000000000000#!/"}});
 const memDoc=(email,name,art,teams)=>{const a=ARTEN.find((x)=>x.id===art),all=TEAMS.map((t)=>t[0]),tl=teams==="*"?all:teams,tr={};tl.forEach((t)=>{tr[t]=a.rechte.slice()});return{email,name,rolle:"team",zu:[{art,teams:teams==="*"?[]:tl,...(teams==="*"?{alle:true}:{})}],tr,g:a.gl.slice(),kader:{}}};
 if(KONTO){/* Spieler und Eltern sind keine Mitglieder des Vereins: sie kommen über ihr Konto (siehe „Konten“ unten) */}
 else if(P.rolle==="admin"||P.rolle==="jugendleiter"||P.rolle==="platzwart")put("mitglieder/"+EMAIL,{email:EMAIL,name:"Demo-Person",rolle:P.rolle,zu:[],tr:{},g:P.rolle==="platzwart"?[]:["plan","kurz"],kader:{}});
@@ -247,9 +257,11 @@ put("mitglieder/ina.demo@beispiel.test",{email:"ina.demo@beispiel.test",name:"In
 const PL=[{id:"p1",name:"Kunstrasen",typ:"platz",viertel:true},{id:"p2",name:"Rasenplatz",typ:"platz",viertel:true},{id:"h1",name:"Sporthalle",typ:"halle",felder:3}];
 const slots=[];let sn=0;
 const sl=(tid,platz,tag,von,bis,teil)=>slots.push({id:"s"+(++sn),tid,art:"Training",platz,tag,von,bis,teil:teil||[1,2,3,4],pid:"sommer"});
-[["m1",1,"15:30","16:30",[1]],["g1",1,"16:00","17:00",[1]],["c2",1,"18:30","20:00",[1,2,3,4]],["f1",1,"16:00","17:00",[2]],["f2",1,"16:00","17:00",[3,4]],["e1",1,"17:00","18:30",[1,2]],["e2",1,"17:00","18:30",[3,4]],["d1",2,"17:30","19:00",[1,2]],["d2",2,"17:30","19:00",[3,4]],["c1",1,"18:30","20:00",[1,2,3,4]],["b1",2,"19:00","20:30",[1,2]],["a1",2,"19:00","20:30",[3,4]]].forEach(([t,p,v,b,te],i)=>{[1,3].forEach((tg)=>sl(t,"p"+p,tg+(i%2),v,b,te))});
+[["m1",1,"15:30","16:30",[1]],["g1",1,"16:00","17:00",[1]],["c2",1,"18:30","20:00",[1,2,3,4]],["f1",1,"16:00","17:00",[2]],["f2",1,"16:00","17:00",[3,4]],["e1",1,"17:00","18:30",[1,2]],["e2",1,"17:00","18:30",[3,4]],["d1",2,"17:30","19:00",[1,2]],["d2",2,"17:30","19:00",[3,4]],["c1",1,"18:30","20:00",[1,2,3,4]],["b1",2,"18:30","20:00",[3,4]],["a1",2,"19:00","20:30",[3,4]]].forEach(([t,p,v,b,te],i)=>{[1,3].forEach((tg)=>sl(t,"p"+p,tg+(i%2),v,b,te))});
+slots.forEach((x)=>{if(x.tid==="b1"||x.tid==="d2")x.teilen=true});   /* B1 und D2 teilen sich montags/mittwochs kurz die Hälfte 2 */
 sl("g1","h1",5,"16:00","17:30",[1]);sl("f1","h1",5,"16:00","17:30",[2]);sl("f2","h1",5,"16:00","17:30",[3]);sl("e1","h1",5,"17:30","19:00",[1,2,3]);
-put("plaene/platz",{plaetze:PL,kabinen:["0","1","2","3","4"],extern:[],stdKabine:{m1:"1",c2:"4",g1:"1",f1:"1",f2:"2",e1:"2",e2:"3",d1:"3",d2:"4",c1:"4",b1:"0",a1:"0"},stdKabineTag:{},slots,plans:[{id:"sommer",name:"Sommerplan"},{id:"winter",name:"Winterplan"}],aktiv:"sommer",aus:[]});
+/* Beispiel: Kabine 3 donnerstags gesperrt (Lauftreff) – die D1 teilt sich dann Kabine 0 mit der A1; weitere Mannschaften außerhalb der App */
+put("plaene/platz",{plaetze:PL,kabinen:["0","1","2","3","4"],extern:[{id:"x1",name:"1. Senioren",eigene:true,fd:"Herren · TuS Musterstadt"},{id:"x2",name:"Alte Herren",fd:"Alte Herren · TuS Musterstadt"}],kabSperren:[{id:"ks1",kabine:"3",tag:4,grund:"Lauftreff"}],stdKabine:{m1:"1",c2:"4",g1:"1",f1:"1",f2:"2",e1:"2",e2:"3",d1:"3",d2:"4",c1:"4",b1:"0",a1:"0"},stdKabineTag:{},slots,plans:[{id:"sommer",name:"Sommerplan"},{id:"winter",name:"Winterplan"}],aktiv:"sommer",aus:[]});
 /* Platz frei / übernommen: E1 sagt das nächste Training auf dem Kunstrasen ab, D1 übernimmt ein Viertel zusätzlich, ein Viertel bleibt frei */
 {const e1=slots.find((x)=>x.tid==="e1"&&x.platz==="p1"&&x.art==="Training");
   if(e1){let d=TODAY;for(let i=0;i<8&&dow(d)!==e1.tag;i++)d=addD(d,1);if(d===TODAY&&e1.bis<new Date().toTimeString().slice(0,5))d=addD(d,7);
