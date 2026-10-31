@@ -8474,6 +8474,10 @@ V.tab({id:"peinst",label:"Einstellungen",show:()=>pShow()&&V.canPlan(),render(el
   if(V.isStaff()&&!kLUnsub){kLUnsub=V.fs().collection("kablinks").onSnapshot((s)=>{kLinks=s.docs.map((d)=>({id:d.id,...d.data()}));if(V.cur==="peinst"&&!V.typing())V.render()},()=>{kLinks=[]})}
   platzRender(q("#pe1",el),"einst");renderKab(q("#pe2",el),{db:V.fs(),edit:true,kab:false,view:"einst",redraw:()=>V.render()});
 },stop(){kabStop()}});
+/* Nach einer Auswahl das Feld verlassen: solange ein Feld aktiv ist, zeichnet die App bewusst nicht neu (sonst wäre Tippen gestört) – bei Auswahllisten, Häkchen und Datum würde sich dann nichts ändern */
+/* Auswahl „Teil“ in der Trainingswoche (Platz: ganz/Hälfte/Viertel, Halle: Felder) */
+function wkTeilOpts(p,sel){if(nCols(p)===1)return '<option value="">ganz</option>';if(p.typ==="halle")return [["","ganze Halle"]].concat(allTeil(p).map((n)=>[String(n),"Feld "+n])).map(([k,l])=>'<option value="'+k+'"'+(k===sel?" selected":"")+'>'+l+'</option>').join("");return [["","ganzer Platz"],["12","Hälfte 1"],["34","Hälfte 2"],["1","Viertel 1"],["2","Viertel 2"],["3","Viertel 3"],["4","Viertel 4"]].map(([k,l])=>'<option value="'+k+'"'+(k===sel?" selected":"")+'>'+l+'</option>').join("")}
+function leaveField(t){if(t&&(t.tagName==="SELECT"||/^(checkbox|radio|date)$/.test(t.type||"")))try{t.blur()}catch(e){}}
 function platzRender(el,view){
   if(V.typing())return;
   const plan=V.plan;if(!plan){el.innerHTML='<div class="note">Lädt …</div>';return}
@@ -8557,7 +8561,7 @@ function platzRender(el,view){
     const tms=clubTeams().filter((t)=>t.aktiv!==false).concat(plan.extern||[]);if(!tms.some((t)=>t.id===pWkT))pWkT=(tms[0]||{}).id;
     /* Einträge ohne Plan („immer“) gelten in jedem Plan; sie werden hier mit angezeigt und beim Speichern in die Pläne übernommen (sonst doppelt) */
     const mine=(plan.slots||[]).filter((x)=>!x.datum&&x.art==="Training"&&x.tid===pWkT&&(!x.pid||x.pid===pWkP)).sort((a,b)=>(a.pid?1:0)-(b.pid?1:0)),kabs=plan.kabinen||[],KT=((plan.stdKabineTag||{})[pWkT])||{};
-    const teilOpts=(p,sel)=>{if(nCols(p)===1)return '<option value="">ganz</option>';if(p.typ==="halle")return [["","ganze Halle"]].concat(allTeil(p).map((n)=>[String(n),"Feld "+n])).map(([k,l])=>'<option value="'+k+'"'+(k===sel?" selected":"")+'>'+l+'</option>').join("");return [["","ganzer Platz"],["12","Hälfte 1"],["34","Hälfte 2"],["1","Viertel 1"],["2","Viertel 2"],["3","Viertel 3"],["4","Viertel 4"]].map(([k,l])=>'<option value="'+k+'"'+(k===sel?" selected":"")+'>'+l+'</option>').join("")};
+    const teilOpts=wkTeilOpts;
     h+='<aside class="card vc" id="wkcard"><h3>Trainingswoche · '+E(teamName(pWkT))+(pWkP?' · '+E(((plan.plans||[]).find((x)=>x.id===pWkP)||{}).name||""):"")+'</h3><div class="vrow"><label>Mannschaft<select id="wkt">'+tms.map((t)=>'<option value="'+E(t.id)+'"'+(t.id===pWkT?" selected":"")+'>'+E(t.name)+'</option>').join("")+'</select></label>'+'</div>'+(pWkP&&mine.some((x)=>!x.pid)&&mine.some((x)=>x.pid)?'<div class="tinfo">Für diese Mannschaft gab es Trainings doppelt (im Plan und für alle Pläne). Angezeigt sind die zuletzt eingetragenen. Bitte prüfen und speichern, dann ist es nur noch einmal da.</div>':"");
     for(let d=1;d<=7;d++){const x=mine.find((y)=>y.tag===d),on=!!x,p=pById(x?x.platz:PL0[0].id),tsel=x&&x.teil&&x.teil.length?x.teil.join(""):"";
       h+='<div class="vrow wkd" style="opacity:'+(on?1:.7)+'"><label style="flex-direction:row;align-items:center;gap:6px;width:62px"><input type="checkbox" id="wk_on_'+d+'"'+(on?" checked":"")+'> <b>'+V.wt[d-1]+'</b></label>'+(on?'<input type="time" id="wk_v_'+d+'" value="'+E(x.von)+'" aria-label="von"><span class="note">–</span><input type="time" id="wk_b_'+d+'" value="'+E(x.bis)+'" aria-label="bis"><select id="wk_p_'+d+'" aria-label="Platz">'+PL0.map((pp)=>'<option value="'+E(pp.id)+'"'+(pp.id===p.id?" selected":"")+'>'+E(pp.name)+'</option>').join("")+'</select><select id="wk_t_'+d+'" aria-label="Teil">'+teilOpts(p,tsel)+'</select><select id="wk_k_'+d+'" aria-label="Kabine"><option value="">Kabine: Standard</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+(KT[d]===k?" selected":"")+'>Kabine '+E(k)+'</option>').join("")+'<option value="~a"'+(KT[d]==="~a"?" selected":"")+'>Kabine: automatisch</option><option value="-"'+(KT[d]==="-"?" selected":"")+'>keine Kabine</option></select>':'<span class="note">kein Training</span>')+'</div>'}
@@ -8627,14 +8631,14 @@ function platzRender(el,view){
     const pwi=t.closest("[data-pwi]");if(pwi){const [sid,d]=pwi.dataset.pwi.split("@");await pfAbsage(sid,d,false);return}
     const pbk=t.closest("[data-pbk]");if(pbk){await pfBack(pbk.dataset.pbk.split(","));return}
     const wkpp=t.closest("[data-wkpp]");if(wkpp){pWkP=wkpp.dataset.wkpp;pMsg="";redraw();return}
-    if(!ed)return;
-    const ch=t.closest("[data-c]");if(ch){readForm();const n=+ch.dataset.c.slice(1),i=pF.tage.indexOf(n);if(i>=0)pF.tage.splice(i,1);else pF.tage.push(n);redraw();return}
-    const qc=t.closest("[data-q]");if(qc&&pF){readForm();const n=+qc.dataset.q,i=pF.teil.indexOf(n);if(i>=0)pF.teil.splice(i,1);else pF.teil.push(n);pF.teil.sort();redraw();return}
-    const qp=t.closest("[data-qp]");if(qp&&pF){readForm();pF.teil=qp.dataset.qp.split("").map(Number);redraw();return}
     if(t.closest("[data-tdh]")){pDay=V.today();pTagSeg="";redraw();return}
     if(t.closest("[data-tkab]")){kDay=pDay||V.today();V.open("kabinen");return}
     const tdn=t.closest("[data-tdn]");if(tdn){pDay=V.add(pDay||V.today(),+tdn.dataset.tdn);pTagSeg="";redraw();return}
     const tsg=t.closest("[data-tsg]");if(tsg){pTagSeg=tsg.dataset.tsg;redraw();return}
+    if(!ed)return;
+    const ch=t.closest("[data-c]");if(ch){readForm();const n=+ch.dataset.c.slice(1),i=pF.tage.indexOf(n);if(i>=0)pF.tage.splice(i,1);else pF.tage.push(n);redraw();return}
+    const qc=t.closest("[data-q]");if(qc&&pF){readForm();const n=+qc.dataset.q,i=pF.teil.indexOf(n);if(i>=0)pF.teil.splice(i,1);else pF.teil.push(n);pF.teil.sort();redraw();return}
+    const qp=t.closest("[data-qp]");if(qp&&pF){readForm();pF.teil=qp.dataset.qp.split("").map(Number);redraw();return}
     const wkt=t.closest("[data-wkt]");if(wkt){pWkT=wkt.dataset.wkt;pMsg="";redraw();setTimeout(()=>{const c=q("#wkcard",el);if(c)c.scrollIntoView({block:"nearest"})},50);return}
     if(t.id==="wkcopy"||t.id==="wksave"){
       const days=[1,2,3,4,5,6,7],on=(d)=>{const c=q("#wk_on_"+d,el);return c&&c.checked};const first=days.find((d)=>on(d)&&q("#wk_v_"+d,el));
@@ -8649,7 +8653,7 @@ function platzRender(el,view){
       if(pWkP)(plan.slots||[]).filter((x)=>isTeam(x)&&!x.pid).forEach((x)=>(plan.plans||[]).forEach((pl)=>{if(pl.id!==pWkP&&!keep.some((y)=>isTeam(y)&&y.pid===pl.id&&y.tag===x.tag))keep.push({...x,id:V.id("s"),pid:pl.id})}));
       const ktag={...(plan.stdKabineTag||{})};ktag[pWkT]=KT;
       try{await V.savePlan({slots:keep.concat(neu),stdKabineTag:ktag});V.log("Trainingswoche geändert ("+teamName(pWkT)+")",pWkT);pMsg="Gespeichert.";pMsgK="ok";redraw()}catch(x){msg("Das hat nicht geklappt (fehlende Berechtigung oder keine Verbindung).","er")}return}
-    if(t.id==="pxadd"){const n=rd("pxname").trim();if(!n)return;try{await V.savePlan({extern:(V.plan.extern||[]).concat([{id:V.id("x"),name:n}])});V.log("Weitere Mannschaft angelegt: "+n)}catch(x){}return}
+    if(t.id==="pxadd"){const n=rd("pxname").trim();if(!n){V.toast("Bitte einen Namen eingeben.",true);return}try{await V.savePlan({extern:(V.plan.extern||[]).concat([{id:V.id("x"),name:n}])});V.log("Weitere Mannschaft angelegt: "+n)}catch(x){}return}
     const pxx=t.closest("[data-pxx]");if(pxx){if(!pxx.dataset.arm){pxx.dataset.arm="1";pxx.textContent="Wirklich? Ihre Einträge im Platzplan werden gelöscht";return}const id=pxx.dataset.pxx;try{await V.savePlan({extern:(plan.extern||[]).filter((x)=>x.id!==id),slots:(plan.slots||[]).filter((x)=>x.tid!==id)});V.log("Weitere Mannschaft entfernt")}catch(x){}return}
     if(t.id==="pnew"){if(!PL0.length){msg("Bitte zuerst unten einen Platz oder eine Halle anlegen.","er");return}pEdit=null;pGroup=null;pEditDay=null;pF=newForm(day);redraw();return}
     if(t.id==="pcancel"){pAusSrc="";pF=null;pEdit=null;pMsg="";redraw();return}
@@ -8684,13 +8688,14 @@ function platzRender(el,view){
     if(t.id==="pdel"){try{await V.savePlan({slots:(plan.slots||[]).filter((s)=>(pGroup||[pEdit]).indexOf(s.id)<0)});V.log("Platzplan: Eintrag gelöscht");pF=null;pEdit=null;pMsg="Gelöscht.";pMsgK="ok";redraw()}catch(x){msg("Das hat nicht geklappt.","er")}return}
     const gs=t.closest("[data-gs]");if(gs){const g=soon[+gs.dataset.gs],p=q('[data-gp="'+gs.dataset.gs+'"]',el).value,tl=q('[data-gt="'+gs.dataset.gs+'"]',el).value;const a=V.min(g.z)==null?17*60:V.min(g.z);
       try{await V.savePlan({slots:(plan.slots||[]).concat([{id:V.id("s"),tid:g.tid,art:"Spiel",platz:p,von:V.hm(a),bis:V.hm(Math.min(a+120,23*60+59)),datum:g.d,txt:"gegen "+(g.g||"?"),...(tl!=="1234"&&nCols(pById(p))>1?{teil:tl.split("").map(Number)}:{})}])});V.log("Heimspiel-Platz eingetragen",g.tid)}catch(x){}return}
-    if(t.id==="padd"){const n=rd("nplatz").trim();if(!n){return}const id=V.id("p");try{await V.savePlan({plaetze:(V.plan.plaetze||[]).concat([{id,name:n,typ:rd("nptyp"),...(rd("nptyp")==="halle"?{felder:+rd("nphg")||1}:{})}])});V.log("Platz/Halle angelegt: "+n)}catch(x){}return}
+    if(t.id==="padd"){const n=rd("nplatz").trim();if(!n){V.toast("Bitte einen Namen eingeben.",true);return}const id=V.id("p");try{await V.savePlan({plaetze:(V.plan.plaetze||[]).concat([{id,name:n,typ:rd("nptyp"),...(rd("nptyp")==="halle"?{felder:+rd("nphg")||1}:{})}])});V.log("Platz/Halle angelegt: "+n)}catch(x){}return}
     const px=t.closest("[data-px]");if(px){if(!px.dataset.arm){px.dataset.arm="1";px.textContent="Wirklich? Alle Einträge dort werden gelöscht";return}const id=px.dataset.px;try{await V.savePlan({plaetze:(V.plan.plaetze||[]).filter((p)=>p.id!==id),slots:(V.plan.slots||[]).filter((s)=>s.platz!==id)});V.log("Platz/Halle entfernt")}catch(x){}return}
     if(t.id==="npl2"){try{await V.savePlan({plans:[{id:V.id("pl"),name:"Winterplan",von:"",bis:""},{id:V.id("pl"),name:"Sommerplan",von:"",bis:""}]});V.log("Sommer- und Winterplan angelegt")}catch(x){}return}
-    if(t.id==="npladd"){const n=rd("nplan").trim();if(!n)return;try{await V.savePlan({plans:(V.plan.plans||[]).concat([{id:V.id("pl"),name:n,von:rd("nplv"),bis:rd("nplb")}])});V.log("Plan angelegt: "+n)}catch(x){}return}
+    if(t.id==="npladd"){const n=rd("nplan").trim();if(!n){V.toast("Bitte einen Namen eingeben.",true);return}try{await V.savePlan({plans:(V.plan.plans||[]).concat([{id:V.id("pl"),name:n,von:rd("nplv"),bis:rd("nplb")}])});V.log("Plan angelegt: "+n)}catch(x){}return}
     const lx=t.closest("[data-lx]");if(lx){if(!lx.dataset.arm){lx.dataset.arm="1";lx.textContent="Wirklich? Einträge bleiben, gelten dann immer";return}const id=lx.dataset.lx;try{await V.savePlan({plans:(plan.plans||[]).filter((x)=>x.id!==id),slots:(plan.slots||[]).map((s)=>{if(s.pid!==id)return s;const c={...s};delete c.pid;return c})})}catch(x){}return}
   };
   el.onchange=async(e)=>{
+    leaveField(e.target);
     const t=e.target;if(!t.dataset)return;
     if(t.id==="pmt"){pTeamSel=t.value;pZr=null;redraw();return}
     if(t.id==="ptm"&&pTake){pTake.tid=t.value;pTake.own="";redraw();return}
@@ -8699,6 +8704,7 @@ function platzRender(el,view){
       if(go){go.textContent=tr+" absagen";go.disabled=!n}if(inf)inf.innerHTML="<b>"+tr+"</b> von "+E(teamName(pZr.tid))+" werden abgesagt. Die Viertel werden frei und andere Mannschaften können sie übernehmen.";return}
     if(!ed)return;
     if(t.id==="wkt"){pWkT=t.value;pMsg="";redraw();return}
+    if(/^wk_p_\d$/.test(t.id)){const ts=q("#wk_t_"+t.id.slice(5),el);if(ts)ts.innerHTML=wkTeilOpts(pById(t.value),"");return}
     if(/^wk_on_\d$/.test(t.id)){const d=+t.id.slice(6),row=t.closest(".wkd");if(t.checked&&row&&!q("#wk_v_"+d,el)){const p=PL0[0],kabs=plan.kabinen||[];row.style.opacity=1;row.querySelector(".note").outerHTML='<input type="time" id="wk_v_'+d+'" value="17:00" aria-label="von"><span class="note">–</span><input type="time" id="wk_b_'+d+'" value="18:30" aria-label="bis"><select id="wk_p_'+d+'" aria-label="Platz">'+PL0.map((pp)=>'<option value="'+E(pp.id)+'">'+E(pp.name)+'</option>').join("")+'</select><select id="wk_t_'+d+'" aria-label="Teil"><option value="">ganzer Platz</option><option value="12">Hälfte 1</option><option value="34">Hälfte 2</option><option value="1">Viertel 1</option><option value="2">Viertel 2</option><option value="3">Viertel 3</option><option value="4">Viertel 4</option></select><select id="wk_k_'+d+'" aria-label="Kabine"><option value="">Kabine: Standard</option>'+kabs.map((k)=>'<option value="'+E(k)+'">Kabine '+E(k)+'</option>').join("")+'<option value="~a">Kabine: automatisch</option><option value="-">keine Kabine</option></select>'}else if(!t.checked&&row)row.style.opacity=.7;return}
     if(t.dataset.pxn!=null){const id=t.dataset.pxn,n=t.value.trim();if(!n)return;try{await V.savePlan({extern:(V.plan.extern||[]).map((x)=>x.id===id?{...x,name:n}:x)})}catch(x){}return}
     if(t.dataset.pxf!=null){const id=t.dataset.pxf;try{await V.savePlan({extern:(plan.extern||[]).map((x)=>x.id===id?{...x,fd:t.value}:x)})}catch(x){}return}
@@ -9004,6 +9010,7 @@ function renderKab(el,o){
     const lc=t.closest("[data-lkc]");if(lc){const u=W.__WEB_BASE0+"#kab."+lc.dataset.lkc;try{await navigator.clipboard.writeText(u);lc.textContent="Kopiert"}catch(x){const i=q("#lku"+lc.dataset.lkc,el);if(i){i.select();lc.textContent="Markiert – bitte kopieren"}}return}
   };
   el.onchange=async(e)=>{
+    leaveField(e.target);
     const t=e.target;
     if(t.dataset&&t.dataset.qk!=null&&ed){const id=t.dataset.qk,v=t.value;if(v===""&&!/^[va]~/.test(id))return;
       let arr=((kDoc&&kDoc.eintraege)||[]).slice();const vi=virt.find((y)=>y.id===id);const was=vi&&arr.find((y)=>y.src===vi.src);
