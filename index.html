@@ -8185,6 +8185,8 @@ const runs=(t)=>{const o=[];let a=null;t.forEach((n,i)=>{if(a==null)a=n;if(t[i+1
 const tOv=(a,b)=>a.a<b.b&&b.a<a.b;
 const clashOf=(a,b,pl)=>a.platz===b.platz&&tOv(a,b)&&teilOf(a,pl).some((x)=>teilOf(b,pl).indexOf(x)>=0)&&!(a.teilen&&b.teilen);
 const WDL=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
+/* Plan, der heute gilt (fest gewählt oder nach Zeitraum), sonst der erste; ohne Pläne "" */
+const curPlanId=()=>{const P=V.plan||{},L=P.plans||[],T=V.today();if(!L.length)return"";if(P.aktiv&&L.some((x)=>x.id===P.aktiv))return P.aktiv;return(L.find((x)=>(!x.von||T>=x.von)&&(!x.bis||T<=x.bis))||L[0]).id};
 const activePlan=()=>{const P=V.plan||{};return(P.plans||[]).find((x)=>x.id===P.aktiv)||null};
 const usedN=(p,list)=>{const n=nCols(p);return n===1?1:(list.some((s)=>teilOf(s,p).length<n)?n:1)};
 const colRange=(s,p,n)=>n===1?[[0,0]]:runs(teilOf(s,p)).map((r)=>[r[0]-1,r[1]-1]);
@@ -8537,7 +8539,9 @@ function platzRender(el,view){
   /* Trainingstage je Mannschaft */
   /* Mannschaften: je Mannschaft eine Karte mit Trainingszeiten, Platz, Kabine und Spieltag; rechts daneben die Trainingswoche zum Bearbeiten */
   if(view==="teams"){
-    const tms=clubTeams().filter((t)=>t.aktiv!==false).concat(plan.extern||[]),R=KR(),pidAkt=pWkP==null?(plan.aktiv||""):pWkP;
+    if(pWkP==null||(pWkP&&!(plan.plans||[]).some((x)=>x.id===pWkP)))pWkP=curPlanId();
+    const tms=clubTeams().filter((t)=>t.aktiv!==false).concat(plan.extern||[]),R=KR(),pidAkt=pWkP;
+    if((plan.plans||[]).length)h+='<div class="card vc"><div class="vrow"><span class="note">Trainingszeiten für:</span>'+plan.plans.map((x)=>'<span class="vch'+(x.id===pWkP?" on":"")+'" data-wkpp="'+E(x.id)+'" role="button" tabindex="0">'+E(x.name)+'</span>').join("")+'</div></div>';
     if(!tms.some((t)=>t.id===pWkT))pWkT=(tms[0]||{}).id;
     const card=(t)=>{const ext=!!extTeam(t.id),sl=(plan.slots||[]).filter((x)=>!x.datum&&x.art==="Training"&&x.tid===t.id&&(!x.pid||x.pid===pidAkt)).sort((a,b)=>a.tag-b.tag),grp=[];
       const kOf=(d)=>{const k=(((plan.stdKabineTag||{})[t.id])||{})[d]||(plan.stdKabine||{})[t.id]||"";return k==="~a"?"automatisch":k==="-"?"keine":k?"K "+k:"–"};
@@ -8551,10 +8555,10 @@ function platzRender(el,view){
   /* Trainingswoche einer Mannschaft: jeder Tag mit eigener Zeit, eigenem Platz und eigener Kabine */
   if(view==="teams"&&ed&&PL0.length){
     const tms=clubTeams().filter((t)=>t.aktiv!==false).concat(plan.extern||[]);if(!tms.some((t)=>t.id===pWkT))pWkT=(tms[0]||{}).id;
-    if(pWkP==null)pWkP=plan.aktiv||"";
-    const mine=(plan.slots||[]).filter((x)=>!x.datum&&x.art==="Training"&&x.tid===pWkT&&(x.pid||"")===pWkP),kabs=plan.kabinen||[],KT=((plan.stdKabineTag||{})[pWkT])||{};
+    /* Einträge ohne Plan („immer“) gelten in jedem Plan; sie werden hier mit angezeigt und beim Speichern in die Pläne übernommen (sonst doppelt) */
+    const mine=(plan.slots||[]).filter((x)=>!x.datum&&x.art==="Training"&&x.tid===pWkT&&(!x.pid||x.pid===pWkP)).sort((a,b)=>(a.pid?1:0)-(b.pid?1:0)),kabs=plan.kabinen||[],KT=((plan.stdKabineTag||{})[pWkT])||{};
     const teilOpts=(p,sel)=>{if(nCols(p)===1)return '<option value="">ganz</option>';if(p.typ==="halle")return [["","ganze Halle"]].concat(allTeil(p).map((n)=>[String(n),"Feld "+n])).map(([k,l])=>'<option value="'+k+'"'+(k===sel?" selected":"")+'>'+l+'</option>').join("");return [["","ganzer Platz"],["12","Hälfte 1"],["34","Hälfte 2"],["1","Viertel 1"],["2","Viertel 2"],["3","Viertel 3"],["4","Viertel 4"]].map(([k,l])=>'<option value="'+k+'"'+(k===sel?" selected":"")+'>'+l+'</option>').join("")};
-    h+='<aside class="card vc" id="wkcard"><h3>Trainingswoche · '+E(teamName(pWkT))+'</h3><div class="vrow"><label>Mannschaft<select id="wkt">'+tms.map((t)=>'<option value="'+E(t.id)+'"'+(t.id===pWkT?" selected":"")+'>'+E(t.name)+'</option>').join("")+'</select></label>'+((plan.plans||[]).length?'<label>Plan<select id="wkp"><option value="">immer</option>'+plan.plans.map((x)=>'<option value="'+E(x.id)+'"'+(x.id===pWkP?" selected":"")+'>'+E(x.name)+'</option>').join("")+'</select></label>':"")+'</div>';
+    h+='<aside class="card vc" id="wkcard"><h3>Trainingswoche · '+E(teamName(pWkT))+(pWkP?' · '+E(((plan.plans||[]).find((x)=>x.id===pWkP)||{}).name||""):"")+'</h3><div class="vrow"><label>Mannschaft<select id="wkt">'+tms.map((t)=>'<option value="'+E(t.id)+'"'+(t.id===pWkT?" selected":"")+'>'+E(t.name)+'</option>').join("")+'</select></label>'+'</div>'+(pWkP&&mine.some((x)=>!x.pid)&&mine.some((x)=>x.pid)?'<div class="tinfo">Für diese Mannschaft gab es Trainings doppelt (im Plan und für alle Pläne). Angezeigt sind die zuletzt eingetragenen. Bitte prüfen und speichern, dann ist es nur noch einmal da.</div>':"");
     for(let d=1;d<=7;d++){const x=mine.find((y)=>y.tag===d),on=!!x,p=pById(x?x.platz:PL0[0].id),tsel=x&&x.teil&&x.teil.length?x.teil.join(""):"";
       h+='<div class="vrow wkd" style="opacity:'+(on?1:.7)+'"><label style="flex-direction:row;align-items:center;gap:6px;width:62px"><input type="checkbox" id="wk_on_'+d+'"'+(on?" checked":"")+'> <b>'+V.wt[d-1]+'</b></label>'+(on?'<input type="time" id="wk_v_'+d+'" value="'+E(x.von)+'" aria-label="von"><span class="note">–</span><input type="time" id="wk_b_'+d+'" value="'+E(x.bis)+'" aria-label="bis"><select id="wk_p_'+d+'" aria-label="Platz">'+PL0.map((pp)=>'<option value="'+E(pp.id)+'"'+(pp.id===p.id?" selected":"")+'>'+E(pp.name)+'</option>').join("")+'</select><select id="wk_t_'+d+'" aria-label="Teil">'+teilOpts(p,tsel)+'</select><select id="wk_k_'+d+'" aria-label="Kabine"><option value="">Kabine: Standard</option>'+kabs.map((k)=>'<option value="'+E(k)+'"'+(KT[d]===k?" selected":"")+'>Kabine '+E(k)+'</option>').join("")+'<option value="~a"'+(KT[d]==="~a"?" selected":"")+'>Kabine: automatisch</option><option value="-"'+(KT[d]==="-"?" selected":"")+'>keine Kabine</option></select>':'<span class="note">kein Training</span>')+'</div>'}
     h+='<div class="vrow"><button class="btn" id="wkcopy">Zeiten vom ersten Tag für alle übernehmen</button><button class="btn" id="wksave" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button></div><div class="vmsg '+pMsgK+'" id="pmsg">'+E(pMsg)+'</div></aside>'}
@@ -8622,6 +8626,7 @@ function platzRender(el,view){
     const pab=t.closest("[data-pab]");if(pab){const [sid,d]=pab.dataset.pab.split("@");await pfAbsage(sid,d,true);return}
     const pwi=t.closest("[data-pwi]");if(pwi){const [sid,d]=pwi.dataset.pwi.split("@");await pfAbsage(sid,d,false);return}
     const pbk=t.closest("[data-pbk]");if(pbk){await pfBack(pbk.dataset.pbk.split(","));return}
+    const wkpp=t.closest("[data-wkpp]");if(wkpp){pWkP=wkpp.dataset.wkpp;pMsg="";redraw();return}
     if(!ed)return;
     const ch=t.closest("[data-c]");if(ch){readForm();const n=+ch.dataset.c.slice(1),i=pF.tage.indexOf(n);if(i>=0)pF.tage.splice(i,1);else pF.tage.push(n);redraw();return}
     const qc=t.closest("[data-q]");if(qc&&pF){readForm();const n=+qc.dataset.q,i=pF.teil.indexOf(n);if(i>=0)pF.teil.splice(i,1);else pF.teil.push(n);pF.teil.sort();redraw();return}
@@ -8634,12 +8639,14 @@ function platzRender(el,view){
     if(t.id==="wkcopy"||t.id==="wksave"){
       const days=[1,2,3,4,5,6,7],on=(d)=>{const c=q("#wk_on_"+d,el);return c&&c.checked};const first=days.find((d)=>on(d)&&q("#wk_v_"+d,el));
       if(t.id==="wkcopy"){if(!first)return;days.forEach((d)=>{if(d!==first&&q("#wk_v_"+d,el)){q("#wk_v_"+d,el).value=rd("wk_v_"+first);q("#wk_b_"+d,el).value=rd("wk_b_"+first)}});return}
-      const keep=(plan.slots||[]).filter((x)=>!(!x.datum&&x.art==="Training"&&x.tid===pWkT&&(x.pid||"")===pWkP)),neu=[],KT={...(((plan.stdKabineTag||{})[pWkT])||{})};
+      const isTeam=(x)=>!x.datum&&x.art==="Training"&&x.tid===pWkT,keep=(plan.slots||[]).filter((x)=>!(isTeam(x)&&(x.pid||"")===pWkP)&&!(pWkP&&isTeam(x)&&!x.pid)),neu=[],KT={...(((plan.stdKabineTag||{})[pWkT])||{})};
       for(const d of days){if(!on(d)||!q("#wk_v_"+d,el)){delete KT[d];continue}const v=rd("wk_v_"+d),b=rd("wk_b_"+d),pl=rd("wk_p_"+d),te=rd("wk_t_"+d),k=rd("wk_k_"+d);
         if(!timeOk(v,b)){msg(V.wt[d-1]+": Die Endzeit muss nach der Startzeit liegen.","er");return}
-        const old=(plan.slots||[]).find((x)=>!x.datum&&x.art==="Training"&&x.tid===pWkT&&(x.pid||"")===pWkP&&x.tag===d)||{};
+        const old=(plan.slots||[]).find((x)=>isTeam(x)&&!x.pid&&x.tag===d)||(plan.slots||[]).find((x)=>isTeam(x)&&(x.pid||"")===pWkP&&x.tag===d)||{};
         neu.push({id:old.id||V.id("s"),tid:pWkT,art:"Training",platz:pl,von:v,bis:b,tag:d,txt:old.txt||"",...(pWkP?{pid:pWkP}:{}),...(te?{teil:te.split("").map(Number)}:{}),...(old.teilen?{teilen:true}:{})});
         if(k)KT[d]=k;else delete KT[d]}
+      /* bisherige „immer“-Trainings bleiben in den anderen Plänen erhalten, wo die Mannschaft an dem Tag noch nichts hat */
+      if(pWkP)(plan.slots||[]).filter((x)=>isTeam(x)&&!x.pid).forEach((x)=>(plan.plans||[]).forEach((pl)=>{if(pl.id!==pWkP&&!keep.some((y)=>isTeam(y)&&y.pid===pl.id&&y.tag===x.tag))keep.push({...x,id:V.id("s"),pid:pl.id})}));
       const ktag={...(plan.stdKabineTag||{})};ktag[pWkT]=KT;
       try{await V.savePlan({slots:keep.concat(neu),stdKabineTag:ktag});V.log("Trainingswoche geändert ("+teamName(pWkT)+")",pWkT);pMsg="Gespeichert.";pMsgK="ok";redraw()}catch(x){msg("Das hat nicht geklappt (fehlende Berechtigung oder keine Verbindung).","er")}return}
     if(t.id==="pxadd"){const n=rd("pxname").trim();if(!n)return;try{await V.savePlan({extern:(V.plan.extern||[]).concat([{id:V.id("x"),name:n}])});V.log("Weitere Mannschaft angelegt: "+n)}catch(x){}return}
@@ -8692,7 +8699,6 @@ function platzRender(el,view){
       if(go){go.textContent=tr+" absagen";go.disabled=!n}if(inf)inf.innerHTML="<b>"+tr+"</b> von "+E(teamName(pZr.tid))+" werden abgesagt. Die Viertel werden frei und andere Mannschaften können sie übernehmen.";return}
     if(!ed)return;
     if(t.id==="wkt"){pWkT=t.value;pMsg="";redraw();return}
-    if(t.id==="wkp"){pWkP=t.value;pMsg="";redraw();return}
     if(/^wk_on_\d$/.test(t.id)){const d=+t.id.slice(6),row=t.closest(".wkd");if(t.checked&&row&&!q("#wk_v_"+d,el)){const p=PL0[0],kabs=plan.kabinen||[];row.style.opacity=1;row.querySelector(".note").outerHTML='<input type="time" id="wk_v_'+d+'" value="17:00" aria-label="von"><span class="note">–</span><input type="time" id="wk_b_'+d+'" value="18:30" aria-label="bis"><select id="wk_p_'+d+'" aria-label="Platz">'+PL0.map((pp)=>'<option value="'+E(pp.id)+'">'+E(pp.name)+'</option>').join("")+'</select><select id="wk_t_'+d+'" aria-label="Teil"><option value="">ganzer Platz</option><option value="12">Hälfte 1</option><option value="34">Hälfte 2</option><option value="1">Viertel 1</option><option value="2">Viertel 2</option><option value="3">Viertel 3</option><option value="4">Viertel 4</option></select><select id="wk_k_'+d+'" aria-label="Kabine"><option value="">Kabine: Standard</option>'+kabs.map((k)=>'<option value="'+E(k)+'">Kabine '+E(k)+'</option>').join("")+'<option value="~a">Kabine: automatisch</option><option value="-">keine Kabine</option></select>'}else if(!t.checked&&row)row.style.opacity=.7;return}
     if(t.dataset.pxn!=null){const id=t.dataset.pxn,n=t.value.trim();if(!n)return;try{await V.savePlan({extern:(V.plan.extern||[]).map((x)=>x.id===id?{...x,name:n}:x)})}catch(x){}return}
     if(t.dataset.pxf!=null){const id=t.dataset.pxf;try{await V.savePlan({extern:(plan.extern||[]).map((x)=>x.id===id?{...x,fd:t.value}:x)})}catch(x){}return}
