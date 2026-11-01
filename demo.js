@@ -30,7 +30,8 @@ const ROLLEN={
   "scout":{n:"Scout (D1)",art:"scout",teams:["d1"]},
   "platzwart":{n:"Platzwart",rolle:"platzwart"},
   "spieler":{n:"Spieler mit Konto (D1)",konto:"spieler"},
-  "eltern":{n:"Eltern mit Konto (D1)",konto:"eltern"}};
+  "eltern":{n:"Eltern mit Konto (D1)",konto:"eltern"},
+  "beides":{n:"Spieler und Elternteil in einem Konto (D1)",konto:"spieler",zw:"Demo-Elternteil"}};
 window.__DEMO_ROLLEN=ROLLEN;
 /* Eingebettete Fenster einer Demo arbeiten mit den Daten des Hauptfensters:
    die Vorschau für Trainer (?vorschau=s|e) und die unsichtbare Vorbereitung der Spieler-/Elternansicht (#demo:vorbereiten). */
@@ -340,7 +341,7 @@ const SEED={},BWTG=["Einsatz","Technik","Zweikampf","Spielintelligenz","Verhalte
   {let tr=addD(TODAY,1);while(dow(tr)!==2&&dow(tr)!==4)tr=addD(tr,1);
     put("kabm/dab1",{tid,pid:ids[4],k:"d"+tr.replace(/-/g,"")+"_0",grund:"Arzttermin",name:"Elternteil von "+nm(4),von:Date.parse(tr+"T17:30:00")})}
   put("kabw/daw1",{tid,pid:ids[6],von:addD(TODAY,10),bis:addD(TODAY,17),grund:"Familienurlaub",name:"Elternteil von "+nm(6)});
-  if(KONTO){const p=pl[1];put("kverkn/"+tid+"~"+p.id+"~"+mkey(EMAIL),{tid,pid:p.id,email:EMAIL,rolle:KONTO.konto,name:KONTO.konto==="spieler"?p.vorname:"Demo-Elternteil",pn:p.vorname+" "+p.name,at:addD(TODAY,-14)+"T18:00:00.000Z"});S.konto=p.id}
+  if(KONTO){const p=pl[1];put("kverkn/"+tid+"~"+p.id+"~"+mkey(EMAIL),{tid,pid:p.id,email:EMAIL,rolle:KONTO.konto,name:KONTO.konto==="spieler"?p.vorname:"Demo-Elternteil",pn:p.vorname+" "+p.name,at:addD(TODAY,-14)+"T18:00:00.000Z",...(KONTO.zw?{zw:KONTO.zw}:{})});S.konto=p.id}
   /* Training bewerten: Tipps der letzten Trainings */
   [...store.entries()].filter(([k,t])=>k.indexOf(tid+"__trainings/t")===0&&/^t\d$/.test(t.id)).forEach(([,t],i)=>{const taps={},amp={},ts=Date.parse(t.datum+"T18:00:00");
     ids.forEach((pid,j)=>{if((t.spieler||{})[pid]!=="x")return;const n=(i+j)%3;if(n===0)return;taps[pid]=[[ts+j*6e4,n===1?1:-1,BWTG[(i+j)%BWTG.length]]];if(j%4===0)amp[pid]=[["g","y","r"][(i+j)%3],ts]});

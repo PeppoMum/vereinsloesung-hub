@@ -19,4 +19,4 @@ self.addEventListener("fetch",e=>{
 self.addEventListener("push",e=>{let d={};try{d=e.data?e.data.json():{}}catch(x){d={b:e.data?e.data.text():""}}
   e.waitUntil(self.registration.showNotification(d.t||"Verein",{body:d.b||"",icon:"icon-192.png",badge:"icon-192.png",tag:d.g||undefined,data:{u:d.u||"./"}}))});
 self.addEventListener("notificationclick",e=>{e.notification.close();const u=new URL((e.notification.data&&e.notification.data.u)||"./",self.registration.scope).href;
-  e.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(L=>{const c=L.find(x=>x.url.startsWith(self.registration.scope)&&"focus" in x);return c?c.focus():clients.openWindow(u)}))});
+  e.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(L=>{const c=L.find(x=>x.url.startsWith(self.registration.scope)&&"focus" in x);if(!c)return clients.openWindow(u);if(/[?&]e=/.test(u)&&c.navigate)return c.navigate(u).then((w)=>(w||c).focus()).catch(()=>c.focus());return c.focus()}))});   /* Aufgabe/Clip: neu laden in der richtigen Mannschaft */
