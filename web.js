@@ -237,7 +237,7 @@ function firstUser(){return new Promise((res)=>{const un=auth.onAuthStateChanged
 const KPATH=/__k(plan|person|obs|inbox)\//;
 const noWrite=(ref)=>(window.__ROLE==="lesen"||(window.__KRO&&ref&&KPATH.test(String(ref.path||ref._path||""))))?Promise.reject({code:"permission-denied"}):null;
 function docW(ref){return{get:()=>ref.get(),set:(d)=>noWrite(ref)||ref.set(clean(d)),update:(d)=>noWrite(ref)||ref.update(clean(d)),delete:()=>noWrite(ref)||ref.delete(),onSnapshot:(a,b)=>ref.onSnapshot(a,b),collection:(n)=>colW(ref.collection(n))}}
-function colW(ref){return{get:()=>ref.get(),onSnapshot:(a,b)=>ref.onSnapshot(a,b),doc:(id)=>docW(ref.doc(id))}}
+function colW(ref){return{get:()=>ref.get(),onSnapshot:(a,b)=>ref.onSnapshot(a,b),doc:(id)=>docW(ref.doc(id)),where:(f,o,v)=>({get:()=>ref.where(f,o,v).get()})}}
 const wrap=()=>({collection:(n)=>colW(fs.collection(T(n))),doc:(p)=>docW(fs.doc(T(p)))});
 
 /* ---------- Verein: Rollen, Mannschaften ---------- */
@@ -851,7 +851,7 @@ const pushApi={
 };
 /* Wofür dieses Gerät Bescheid bekommt: abgewählte Arten stehen im Feld x der Anmeldung (durch Komma getrennt, siehe push/senden.mjs).
    Spieler/Eltern sehen nur, was der Trainer für die Mannschaft eingeschaltet hat (pz im Link), Clips nur Spieler und nur mit Videos. */
-const PW={hinweis:"Neue Hinweise und Aufgaben",notiz:"Neue Notizen im Profil",termin:"Abgesagte oder verlegte Termine",afrist:"Erinnerung an Aufgaben",clip:"Neue Clips",frist:"Erinnerung an Clips",antwort:"Antworten vom Trainer",
+const PW={hinweis:"Neue Hinweise und Aufgaben",notiz:"Neue Notizen im Profil",termin:"Abgesagte oder verlegte Termine",afrist:"Erinnerung an Aufgaben",dienst:"Erinnerung an Dienste (montags)",clip:"Neue Clips",frist:"Erinnerung an Clips",antwort:"Antworten vom Trainer",
   fb:"Nachrichten im Eingang",aantw:"Antworten auf Aufgaben",skom:"Clip-Kommentare von Spielern",kanfr:"Neue Konto-Anfragen"};
 const pwAus=()=>(pls.get("u13pushw")||"").split(",").filter((k)=>k in PW);
 function pwHtml(c){const A=pwAus(),vid=c.ro==="t"?!!(window.__vid&&window.__vid.on&&window.__vid.on()):!!c.v,

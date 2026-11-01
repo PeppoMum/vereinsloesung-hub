@@ -167,6 +167,9 @@ TEAMS.forEach(([tid,name],ti)=>{
   put(tid+"__events/e1",{id:"e1",datum:addD(TODAY,6),typ:"Termin",titel:"Elternabend",zeit:"19:00",ort:"Vereinsheim Musterstadt",eltern:true});
   put(tid+"__events/e2",{id:"e2",datum:addD(TODAY,9),typ:"Termin",titel:"Trainersitzung",zeit:"20:00",eltern:false});
   put(tid+"__dienste/d1",{id:"d1",art:"Materialdienst",datum:MON,bis:addD(MON,6),label:"Gruppe 1",spieler:ids.slice(0,2)});
+  /* Dienst der Woche für den Konto-Spieler (ids[1]): gelber Kasten oben in der Spieler-/Eltern-Ansicht */
+  put(tid+"__dienste/d2",{id:"d2",art:"Obst & Gemüse",datum:addD(MON,6),bis:null,label:"",spielText:"",spieler:[ids[1]]});
+  if(addD(MON,5)>=TODAY)put(tid+"__dienste/d3",{id:"d3",art:"Leibchen",datum:addD(MON,5),bis:null,label:"",spielText:"",spieler:[ids[1]]});
   put(tid+"__todos/t1",{id:"t1",typ:"todo",text:"Lorem ipsum Bälle aufpumpen.",datum:addD(TODAY,3),wer:"Max Mustermann",done:false});
   put(tid+"__todos/t2",{id:"t2",typ:"todo",text:"Dolor sit amet Trikots abholen.",datum:null,wer:null,done:true});
   put(tid+"__notes/n1",{id:"n1",pid:ids[1],datum:addD(TODAY,-10),art:"notiz",kategorie:"Allgemein",text:"Lorem ipsum dolor sit amet, consetetur sadipscing elitr.",sichtbar:false});
