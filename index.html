@@ -376,6 +376,9 @@ html[data-design] body #gpl select{background-position:right 4px center;padding-
 .chv{display:inline-block;flex:none;width:12px;height:12px;vertical-align:-1px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;font-style:normal;transition:transform .15s}
 .chv.r{transform:rotate(-90deg)}.chv.l{transform:rotate(90deg)}
 .sy[data-sy=play]{--sy:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M8 5.5v13l10-6.5z%22/%3E%3C/svg%3E")}
+
+/* iPhone: untere Leiste am Handy ohne eigenes Wischen, sonst malt iOS Knöpfe nach Fenstern/Zurückkehren manchmal nicht */
+@media(max-width:760px){html.mobnav nav{overflow:visible!important;-webkit-overflow-scrolling:auto!important}}
 #lkco{display:none!important}</style>
 <div class="app">
 <nav><button class="nlg" id="nlg" type="button" title="Vereinslogo" aria-label="Vereinslogo"></button><h1>U13 · <span id="sais">2026/27</span></h1><small>Teamzentrale</small>
@@ -2549,7 +2552,7 @@ const css='<style id="vidcss">.vd-card{background:var(--card);border:1px solid v
 +'.vu-was{font-size:17px;font-weight:600;overflow-wrap:anywhere}.vu-zeit{font-size:16px;font-weight:600;margin-top:8px}'
 +'.vu-row{gap:10px}.vu-dot{width:10px;height:10px;border-radius:50%;flex:none}.vu-d{min-width:78px;font-weight:600}.vu-z{font-weight:600;white-space:nowrap}'
 +'.vu-ort{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:16px;font-weight:600;margin-top:8px;overflow-wrap:anywhere}.vu-rt{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:99px;background:var(--ac);color:#fff;font-size:14px;font-weight:700;text-decoration:none;white-space:nowrap}'
-+'.vu-o{font-size:13.5px;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vu-o .vu-i{width:14px;height:14px;vertical-align:-2px;margin-right:3px}[data-vtp]{cursor:pointer;-webkit-tap-highlight-color:transparent}@media(hover:hover){.vu-row[data-vtp]:hover{background:var(--grs)}}.vu-ch{color:var(--mu);font-size:20px;line-height:1;flex:none}'
++'.vu-o{font-size:13.5px;color:var(--mu);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vu-o .vu-i{width:14px;height:14px;vertical-align:-2px;margin-right:3px}[data-vtp]{cursor:pointer;-webkit-tap-highlight-color:transparent}@media(hover:hover){.vu-row[data-vtp]:hover{background:var(--grs)}}'
 +'.vtp-hd{display:flex;align-items:flex-start;gap:10px}.vtp-t{display:block;font-size:20px;line-height:1.25;margin-top:2px;overflow-wrap:anywhere}.vtp-in{display:flex;flex-direction:column;gap:6px}.vtp-ln{font-size:15px;line-height:1.45;overflow-wrap:anywhere}.vtp-bt{justify-content:flex-start;flex-wrap:wrap}.vtp-ln b{font-weight:600}'
 +'.vu-all{border:0;background:none;padding:10px 0 0;font:inherit;font-size:14px;font-weight:600;color:var(--ac);cursor:pointer;min-height:40px}'
 +'.vu-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 12px}'
@@ -2923,7 +2926,7 @@ function uebHtml(d,pid){
       +(pa&&a.or?'<div class="vu-ort">'+vuPin+"<span>"+esc(a.or)+'</span><a class="vu-rt" href="'+esc(vuMap(a))+'" target="_blank" rel="noopener">Route</a></div>':"")
       +(a.u?'<div class="note" style="color:var(--o);margin-top:6px"><i class=sy data-sy=warn></i> '+esc(a.u)+"</div>":"")+(!dn.length&&d.t?'<button type="button" class="vu-all" data-vgo="t">Alle Termine ansehen ›</button>':"")+"</div>"
     :'<div class="card" style="margin:0 0 12px"><h3 style="margin-top:0">Als Nächstes</h3><div class="note">Keine Termine in nächster Zeit.</div>'+(d.t?'<button type="button" class="vu-all" data-vgo="t">Alle Termine ansehen ›</button>':"")+"</div>";
-  const danach=dn.length?'<div class="card" style="margin:0 0 12px">'+('<h3 style="margin-top:0">Danach</h3>'+dn.map((o,i)=>'<div class="vd-row vu-row"'+(vuPop(o)?' data-vtp="'+(i+1)+'" role="button" tabindex="0"':"")+'><span class="vu-dot" style="background:'+vuDot(o)+'"></span><div class="vu-d">'+esc(dShort(o.d))+'</div><div style="flex:1;min-width:0">'+esc(o.tl||o.ty)+(vuTitel(o)?' <span class="note">'+esc(vuTitel(o))+"</span>":"")+(vuPop(o)&&o.or?'<div class="vu-o">'+vuPin+esc(o.or.split(",")[0])+"</div>":"")+(o.u?'<div class="note" style="color:var(--o)"><i class=sy data-sy=warn></i> '+esc(o.u)+"</div>":"")+'</div><div class="vu-z">'+esc(o.be?vuU(o.be):o.tr?vuU(o.tr):String(o.z||"").replace(/ Uhr$/,""))+"</div>"+(vuPop(o)?'<span class="vu-ch" aria-hidden="true">›</span>':"")+"</div>").join(""))
+  const danach=dn.length?'<div class="card" style="margin:0 0 12px">'+('<h3 style="margin-top:0">Danach</h3>'+dn.map((o,i)=>'<div class="vd-row vu-row"'+(vuPop(o)?' data-vtp="'+(i+1)+'" role="button" tabindex="0"':"")+'><span class="vu-dot" style="background:'+vuDot(o)+'"></span><div class="vu-d">'+esc(dShort(o.d))+'</div><div style="flex:1;min-width:0">'+esc(o.tl||o.ty)+(vuTitel(o)?' <span class="note">'+esc(vuTitel(o))+"</span>":"")+(vuPop(o)&&o.or?'<div class="vu-o">'+vuPin+esc(o.or.split(",")[0])+"</div>":"")+(o.u?'<div class="note" style="color:var(--o)"><i class=sy data-sy=warn></i> '+esc(o.u)+"</div>":"")+'</div><div class="vu-z">'+esc(o.be?vuU(o.be):o.tr?vuU(o.tr):String(o.z||"").replace(/ Uhr$/,""))+"</div>"+"</div>").join(""))
       +(d.t?'<button type="button" class="vu-all" data-vgo="t">Alle Termine ansehen ›</button>':"")+"</div>":"";
   const tiles=vuLiga(d)+(sp&&clips.length?vuVid(d,pid,open):"");
   return(sp?hintHtml(d,pid):"")+gross+danach+(window.__KONTO&&window.__KONTO.abm?'<div id="vabm"></div>':"")+'<div id="vhaslot"></div>'+wocheHtml(d,pid)
@@ -8106,10 +8109,14 @@ function mountNav(){
   document.addEventListener("click",(e)=>{if(!e.target.closest(".mobsheet,#mobmore,#vmore"))document.querySelectorAll(".mobsheet").forEach((x)=>x.hidden=true)});
   document.addEventListener("click",()=>{setTimeout(tick,30);setTimeout(tick,200)},true);
   setInterval(tick,400);setTimeout(tick,300);try{document.fonts.ready.then(()=>{sigB="";tick()})}catch(e){}
-  /* iPhone: nach Zurückkehren in die App Leiste neu zeichnen (sonst blieb ein Menüknopf leer) */
-  const rp=()=>{try{sigB=sigT="";tick();document.querySelectorAll("nav,#vnav").forEach((n)=>{n.style.visibility="hidden";void n.offsetHeight;requestAnimationFrame(()=>{n.style.visibility=""})})}catch(e){}};
+  /* iPhone: Leiste nach Zurückkehren, Fenstern und Wechseln neu malen (sonst blieben Menüknöpfe leer, bis man erneut tippte) */
+  const paint=(hard)=>{try{document.querySelectorAll("nav,#vnav").forEach((n)=>{if(hard){n.style.visibility="hidden";void n.offsetHeight;requestAnimationFrame(()=>{n.style.visibility=""})}else{n.querySelectorAll("button").forEach((b)=>{b.style.opacity=".99"});void n.offsetHeight;requestAnimationFrame(()=>{n.querySelectorAll("button").forEach((b)=>{b.style.opacity=""})})}})}catch(e){}};
+  const rp=()=>{try{sigB=sigT="";tick()}catch(e){}paint(true)};
   const back=()=>{setTimeout(rp,60);setTimeout(rp,700)};
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)back()});W.addEventListener("pageshow",back);
+  let pt=0;const soft=()=>{if(!ph())return;clearTimeout(pt);pt=setTimeout(()=>{paint(false);setTimeout(()=>paint(false),450)},120)};
+  document.addEventListener("click",soft,true);document.addEventListener("touchend",soft,{capture:true,passive:true});W.addEventListener("popstate",soft);
+  try{new MutationObserver(soft).observe(document.body,{childList:true})}catch(e){}
 
 })();
 function placeTeamBtn(){const nav=q("#vnav");if(!nav)return;const pill=q(".vpill",nav),vr=q(".vr",nav),home=q("#vhome",nav);if(!pill||!vr||!home)return;
