@@ -206,6 +206,9 @@ TEAMS.forEach(([tid,name],ti)=>{
 
 /* ---------- FUSSBALL.DE (erfundene Daten: Spielplan, Tabelle, Abweichungen zum Ausprobieren) ---------- */
 {
+  /* D1 braucht immer mindestens 4 kommende Spiele (das vierte zeigt „Dieser Tag ist schon belegt“) – an manchen Tagen ergab der Kalender nur 3 */
+  {const fu=[...store.entries()].filter(([k,g])=>k.indexOf("d1__games/")===0&&g.datum>=TODAY).map(([,g])=>g.datum).sort();
+   for(let i=fu.length,d=fu.length?fu[fu.length-1]:TODAY;i<4;i++){d=addD(d,14);put("d1__games/gx"+i,{id:"gx"+i,nr:30+i,datum:d,art:"Meisterschaft",dauer:60,form:FORM.d1[0],gewichtet:true,spielerzahl:FORM.d1[1],gegner:CL[8],ha:"H",tore:null,gt:null,wertung:true,spieler:{}})}}
   const NAMES=["SV Musterstadt","FC Beispieldorf","TuS Platzhausen","SC Testfeld","Spvgg Demotal","BV Probeheim","VfL Zufallsburg","SG Loremberg"];
   const fdid=(t)=>"DEMO"+t.toUpperCase()+"00000000000000000000";
   const gamesOf=(tid)=>[...store.entries()].filter(([k])=>k.indexOf(tid+"__games/")===0).map(([,v])=>v).sort((a,b)=>a.datum.localeCompare(b.datum));
