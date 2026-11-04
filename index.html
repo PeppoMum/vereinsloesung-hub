@@ -202,14 +202,14 @@ html[data-design="kobalt"] .btn[style*="background:var(--ac)"]{border-color:var(
 html[data-design="kobalt"] nav{background:#000;border-bottom:1px solid #000}
 html[data-design="kobalt"] nav h1{color:#fff}
 html[data-design="kobalt"] nav button{color:#C9CEDA;font-weight:600}
-html[data-design="kobalt"] nav button:hover{color:#fff}
+@media(hover:hover){html[data-design="kobalt"] nav button:hover{color:#fff}}   /* nur mit Maus: auf dem iPhone blieb der zuletzt angetippte Knopf sonst weiß auf weiß */
 html[data-design="kobalt"] nav button.on{background:#004AAD;color:#fff;font-weight:600}
 @media(prefers-color-scheme:dark){html[data-design="kobalt"]:not([data-theme="light"]) nav{border-bottom-color:var(--ln)}}
 html[data-design="kobalt"][data-theme="dark"] nav{border-bottom-color:var(--ln)}
 html.vclub[data-design="kobalt"] nav{background:var(--card);border:1px solid var(--ln);border-radius:99px;padding:5px}
 html.vclub[data-design="kobalt"] nav h1{color:var(--tx);padding-left:14px}
 html.vclub[data-design="kobalt"] nav button{color:var(--mu)}
-html.vclub[data-design="kobalt"] nav button:hover{color:var(--tx)}
+@media(hover:hover){html.vclub[data-design="kobalt"] nav button:hover{color:var(--tx)}}   /* nur mit Maus: auf dem iPhone blieb der zuletzt angetippte Knopf sonst weiß auf weiß */
 html.vclub[data-design="kobalt"] nav button.on{background:#004AAD;color:#fff}
 @media(max-width:760px){
  html[data-design="kobalt"] nav,html.vclub[data-design="kobalt"] nav{background:var(--card);border:0;border-top:1px solid var(--ln);border-radius:0}
@@ -379,6 +379,8 @@ html[data-design] body #gpl select{background-position:right 4px center;padding-
 
 /* iPhone: untere Leiste am Handy ohne eigenes Wischen, sonst malt iOS Knöpfe nach Fenstern/Zurückkehren manchmal nicht */
 @media(max-width:760px){html.mobnav nav{overflow:visible!important;-webkit-overflow-scrolling:auto!important}}
+/* iPhone: Leiste als eine feste, stabile Ebene (Knöpfe wurden sonst teils nicht gemalt) */
+@media(max-width:760px){html.mobnav .app>nav{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}}
 #lkco{display:none!important}</style>
 <div class="app">
 <nav><button class="nlg" id="nlg" type="button" title="Vereinslogo" aria-label="Vereinslogo"></button><h1>U13 · <span id="sais">2026/27</span></h1><small>Teamzentrale</small>
@@ -5216,7 +5218,7 @@ document.addEventListener("change",(e)=>{const t=e.target;if(!L||!t.dataset||!t.
 /* Reparatur: falsch gespeicherter Status „a“ (abwesend) heißt intern „t“ */
 const fx=new Set();window.__fixA=function(){(D.spiele||[]).forEach((g)=>{const sp=g.spieler||{};if(!Object.values(sp).some((s)=>s&&s.status==="a")||fx.has(g.id))return;fx.add(g.id);const n={};Object.keys(sp).forEach((k)=>{n[k]=sp[k]&&sp[k].status==="a"?{...sp[k],status:"t"}:sp[k]});(window.ccQuiet||((f)=>f()))(()=>save("games",g.id,{...g,spieler:n}))})};
 const css=document.createElement("style");
-css.textContent='#lv{position:fixed;inset:0;z-index:200;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}#lv[hidden]{display:none}#lv .lvb{max-width:1000px;margin:0 auto;padding:12px 14px calc(90px + env(safe-area-inset-bottom))}'
+css.textContent='#lv{position:fixed;inset:0;z-index:200;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}#lv[hidden]{display:none}html:has(#lv:not([hidden])) #gd:not([hidden]){z-index:190}#lv .lvb{max-width:1000px;margin:0 auto;padding:12px 14px calc(90px + env(safe-area-inset-bottom))}'
 +'#lv .lvbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg);padding:6px 0 10px;z-index:3;flex-wrap:wrap}#lv .lvtop{display:flex;gap:18px;align-items:center;flex-wrap:wrap}'
 +'#lv .lvck{display:flex;align-items:center;gap:14px;flex-wrap:wrap}#lv #lvclk{font-size:44px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}#lv .lvcb{display:flex;gap:8px;flex-wrap:wrap}#lv .lvf{display:flex;gap:14px;align-items:center;flex-wrap:wrap}#lv .lvadj{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-basis:100%}#lv .lvadj .btn{padding:7px 10px}'
 +'#lv .lvg{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:8px}#lv .lvr{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:9px 10px;display:flex;flex-direction:column;gap:7px}#lv .lvr.lvx{opacity:.7}#lv .lvr.lvx .lvn{text-decoration:line-through}'
@@ -8036,29 +8038,27 @@ function mountNav(){
 
 /* Handy: Menüs mit „Mehr“ statt verstecktem Wischen */
 (function(){
-  const ph=()=>W.innerWidth<=760;let sigB="",sigT="";
+  const ph=()=>W.innerWidth<=760;let sigB="",sigT="",lastH="";
   const mk=(id)=>{let e=document.getElementById(id);if(!e){e=document.createElement("div");e.id=id;e.className="mobsheet";e.hidden=true;document.body.appendChild(e)}return e};
   function bottom(){
     const nav=document.querySelector("body > .app > nav")||document.querySelector("nav");if(!nav)return;
-    const bs=[...nav.querySelectorAll("button[data-s]")];bs.forEach((b)=>b.classList.remove("mobx"));
-    /* Handy: „Mehr“ einmal anlegen und behalten – das iPhone malte einen frisch eingefügten Knopf in der Leiste oft nicht (leerer Platz) */
+    const bs=[...nav.querySelectorAll("button[data-s]")],H=document.documentElement;
     let more0=nav.querySelector("#mobmore");if(more0&&(!ph()||more0.classList.contains("tabmore"))){more0.remove();more0=null}
     const sh=mk("mobsheetB");
-    sh.style.top=sh.style.left="";
-    if(!ph()){document.documentElement.classList.remove("mobnav");wide(nav,bs,sh);return}
-    const vis=bs.filter((b)=>b.offsetParent!==null||getComputedStyle(b).display!=="none");
-    document.documentElement.classList.add("mobnav");
-    const pnt=()=>requestAnimationFrame(()=>{try{paint(true)}catch(e){}});
-    if(vis.length<=5){if(more0)more0.remove();pnt();return}
-    const act=vis.find((b)=>b.classList.contains("on"));let keep=vis.slice(0,4);if(act&&keep.indexOf(act)<0)keep[3]=act;
-    const rest=vis.filter((b)=>keep.indexOf(b)<0);rest.forEach((b)=>b.classList.add("mobx"));
-    let m=more0;if(!m){m=document.createElement("button");m.type="button";m.id="mobmore";m.innerHTML='<span class="em">⋯</span><span>Mehr</span>'}
+    if(!ph()){lastH="";bs.forEach((b)=>b.classList.remove("mobx"));sh.style.top=sh.style.left="";H.classList.remove("mobnav");wide(nav,bs,sh);return}
+    /* Handy: die Leiste nur anfassen, wenn sich wirklich etwas ändert – jedes Umbauen/Ummalen ließ auf dem iPhone Knöpfe leer und die Leiste flackern */
+    if(!H.classList.contains("mobnav"))H.classList.add("mobnav");
+    const was=bs.filter((b)=>b.classList.contains("mobx"));was.forEach((b)=>b.classList.remove("mobx"));   /* nur zum Messen, im selben Schritt zurück */
+    const vis=bs.filter((b)=>getComputedStyle(b).display!=="none");
+    let rest=[];if(vis.length>5){const act=vis.find((b)=>b.classList.contains("on"));const keep=vis.slice(0,4);if(act&&keep.indexOf(act)<0)keep[3]=act;rest=vis.filter((b)=>keep.indexOf(b)<0)}
+    rest.forEach((b)=>b.classList.add("mobx"));
+    if(!rest.length){if(more0)more0.remove();sh.hidden=true;return}
+    let m=more0;if(!m){m=document.createElement("button");m.type="button";m.id="mobmore";m.innerHTML='<span class="em">⋯</span><span>Mehr</span>';m.onclick=(e)=>{e.stopPropagation();sh.hidden=!sh.hidden}}
     if(nav.lastElementChild!==m)nav.appendChild(m);
-    /* Zahl „neu“ von Eingang: nur am „Mehr“, solange Eingang dahinter steht (früher erledigte das das Neuanlegen) */
+    /* Zahl „neu“ von Eingang: nur am „Mehr“, solange Eingang dahinter steht */
     {const fz=nav.querySelector('button.mobx[data-s="fb"] .vbadge'),mz=m.querySelector(".vbadge");if(!fz){if(mz)mz.remove()}else if(!mz)m.appendChild(fz.cloneNode(true));else if(mz.textContent!==fz.textContent)mz.textContent=fz.textContent}
-    pnt();
-    sh.innerHTML=rest.map((b)=>'<button type="button" data-mb="'+b.dataset.s+'">'+((W.__dz&&W.__dz.icon)?W.__dz.icon(b.dataset.s):"")+'<span>'+[...b.childNodes].filter((n)=>n.nodeType===3).map((n)=>n.nodeValue).join("").trim().replace(/\s+/g," ")+'</span></button>').join("");
-    m.onclick=(e)=>{e.stopPropagation();sh.hidden=!sh.hidden};
+    const htm=rest.map((b)=>'<button type="button" data-mb="'+b.dataset.s+'">'+((W.__dz&&W.__dz.icon)?W.__dz.icon(b.dataset.s):"")+'<span>'+[...b.childNodes].filter((n)=>n.nodeType===3).map((n)=>n.nodeValue).join("").trim().replace(/\s+/g," ")+'</span></button>').join("");
+    if(lastH!==htm){sh.innerHTML=htm;lastH=htm}
     sh.onclick=(e)=>{const x=e.target.closest("[data-mb]");if(!x)return;sh.hidden=true;const b=nav.querySelector('button[data-s="'+x.dataset.mb+'"]');if(b)b.click()};
   }
   /* Tablet/Computer: was nicht in die Zeile passt, kommt hinter „Mehr ▾“ (die aktive Seite bleibt sichtbar) */
@@ -8114,17 +8114,9 @@ function mountNav(){
   document.addEventListener("click",(e)=>{if(!e.target.closest(".mobsheet,#mobmore,#vmore"))document.querySelectorAll(".mobsheet").forEach((x)=>x.hidden=true)});
   document.addEventListener("click",()=>{setTimeout(tick,30);setTimeout(tick,200)},true);
   setInterval(tick,400);setTimeout(tick,300);try{document.fonts.ready.then(()=>{sigB="";tick()})}catch(e){}
-  /* iPhone: Leiste nach Zurückkehren, Fenstern und Wechseln neu malen (sonst blieben Menüknöpfe leer, bis man erneut tippte) */
-  const paint=(hard)=>{try{document.querySelectorAll("nav,#vnav").forEach((n)=>{if(hard){n.style.visibility="hidden";void n.offsetHeight;requestAnimationFrame(()=>{n.style.visibility=""})}else{n.querySelectorAll("button").forEach((b)=>{b.style.opacity=".99"});void n.offsetHeight;requestAnimationFrame(()=>{n.querySelectorAll("button").forEach((b)=>{b.style.opacity=""})})}})}catch(e){}};
-  const rp=()=>{try{sigB=sigT="";tick()}catch(e){}paint(true)};
-  const back=()=>{setTimeout(rp,60);setTimeout(rp,700)};
-  /* Beim Start nachmalen (Schrift und Reiter kommen erst nach und nach) */
-  const ap=()=>{if(ph())paint(true)};setTimeout(ap,1000);setTimeout(ap,2500);try{document.fonts.ready.then(ap)}catch(e){}
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)back()});W.addEventListener("pageshow",back);
-  let pt=0;const soft=()=>{if(!ph())return;clearTimeout(pt);pt=setTimeout(()=>{paint(false);setTimeout(()=>paint(false),450)},120)};
-  document.addEventListener("click",soft,true);document.addEventListener("touchend",soft,{capture:true,passive:true});W.addEventListener("popstate",soft);
-  try{new MutationObserver(soft).observe(document.body,{childList:true})}catch(e){}
-
+  /* Zurück in die App: nur nachsehen, ob sich etwas geändert hat (keine Neumal-Tricks mehr – die ließen die Leiste flackern) */
+  const back=()=>{sigB=sigT="";tick()};
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)setTimeout(back,60)});W.addEventListener("pageshow",()=>setTimeout(back,60));
 })();
 function placeTeamBtn(){const nav=q("#vnav");if(!nav)return;const pill=q(".vpill",nav),vr=q(".vr",nav),home=q("#vhome",nav);if(!pill||!vr||!home)return;
   const g=(id)=>q("#"+id,nav),tb=g("vteamb"),sy=g("vsync"),ro=g("vrole"),th=g("vth");if(!tb||!sy||!ro||!th)return;
