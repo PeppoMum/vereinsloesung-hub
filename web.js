@@ -238,7 +238,7 @@ function firstUser(){return new Promise((res)=>{const un=auth.onAuthStateChanged
 const KPATH=/__k(plan|person|obs|inbox)\//;
 const noWrite=(ref)=>(window.__ROLE==="lesen"||(window.__KRO&&ref&&KPATH.test(String(ref.path||ref._path||""))))?Promise.reject({code:"permission-denied"}):null;
 function docW(ref){return{get:()=>ref.get(),set:(d)=>noWrite(ref)||ref.set(clean(d)),update:(d)=>noWrite(ref)||ref.update(clean(d)),delete:()=>noWrite(ref)||ref.delete(),onSnapshot:(a,b)=>ref.onSnapshot(a,b),collection:(n)=>colW(ref.collection(n))}}
-function colW(ref){return{get:()=>ref.get(),onSnapshot:(a,b)=>ref.onSnapshot(a,b),doc:(id)=>docW(ref.doc(id)),where:(f,o,v)=>({get:()=>ref.where(f,o,v).get()})}}
+function colW(ref){return{get:()=>ref.get(),onSnapshot:(a,b)=>ref.onSnapshot(a,b),doc:(id)=>docW(ref.doc(id)),where:(f,o,v)=>({get:()=>ref.where(f,o,v).get(),onSnapshot:(a,b)=>ref.where(f,o,v).onSnapshot(a,b)})}}
 const wrap=()=>({collection:(n)=>colW(fs.collection(T(n))),doc:(p)=>docW(fs.doc(T(p)))});
 
 /* ---------- Verein: Rollen, Mannschaften ---------- */
@@ -587,7 +587,7 @@ async function clubInit(u){
   me=me||{email:em,rolle:rolle,zu:[],tr:{},g:[],kader:{}};
   if(fixed&&me.rolle!=="admin")me={...me,rolle:"admin"};
   if(!offline&&rolle==="team"&&!window.__DEMO){
-    try{const r=await fs.collection("kfrei").where("email","==",em).get();const kf={};r.docs.forEach((d)=>{const x=d.data();if(x&&x.tid)kf[x.tid]={stufe:x.stufe,ein:x.ein!==false,bis:x.bis||0}});me={...me,kf}}catch(e){}
+    try{const r=await fs.collection("kfrei").where("email","==",em).get();const kf={};r.docs.forEach((d)=>{const x=d.data();if(x&&x.tid)kf[x.tid]={stufe:x.stufe,ein:x.ein!==false,bis:x.bis||0,plan:x.plan||""}});me={...me,kf}}catch(e){}
   }
   if(!SHARED)try{localStorage.setItem("u13v:"+em,JSON.stringify({fixed:!!fixed,me,V,owner,frei}))}catch(e){}
   /* Administratoren und Jugendleitung müssen sich mindestens alle 30 Tage neu anmelden (die Zugriffsregeln verlangen es ebenfalls) */
@@ -603,6 +603,8 @@ async function clubInit(u){
   if(!ch.team){showInfo("Du bist noch keiner Mannschaft zugeordnet.","Angemeldet als <b>"+E(em)+"</b>. Bitte die Jugendleitung bitten, dich unter „Personen &amp; Rechte“ einer Mannschaft zuzuordnen.");return null}
   const rights=rightsIn(me,rolle,ch.team.id);
   window.__VRIGHTS=rights;window.__VMODE=modeOf(rights)||"lesen";window.__KRO=rights.indexOf("kader")>=0&&rights.indexOf("kaderbearb")<0&&rolle!=="admin"&&rolle!=="jugendleiter";
+  /* Einzelfreigabe nur für eine Kaderplanung (kfrei.plan): nur diese Planung und ihre Spieler; ansehen oder bearbeiten */
+  {const k=rolle==="team"&&me.kf&&me.kf[ch.team.id];window.__KPLAN=k&&k.plan&&(k.stufe==="sehen"||k.stufe==="bearbeiten")&&!(k.bis&&k.bis<=Date.now())?{id:k.plan,edit:rights.indexOf("kaderbearb")>=0}:null}
   window.__TID=ch.team.id;window.__TEAM=ch.team;window.__WEB_BASE=window.__WEB_BASE0+"?t="+ch.team.id;
   try{localStorage.setItem("u13team",ch.team.id)}catch(e){}
   return{team:ch.team};
@@ -663,7 +665,7 @@ async function afterLogin(){
   instCard();
   if(window.__ROLE!=="scout")pushCard();
   if(window.__ROLE==="scout"){document.body.classList.add("scoutonly");const o=document.getElementById("u13out"),t=document.querySelector(".top .note");if(o&&t)t.appendChild(o)}   /* Scouts sehen keine Einstellungen: Abmelden bleibt oben */
-  const lbl={lesen:"· Nur Ansicht",scout:"· Scouting-Zugang"}[window.__ROLE];
+  const lbl=window.__ROLE==="scout"&&window.__KPLAN?(window.__KPLAN.edit?"· Nur Kaderplanung":"· Nur Kaderplanung (ansehen)"):{lesen:"· Nur Ansicht",scout:"· Scouting-Zugang"}[window.__ROLE];
   if(lbl){const t=document.querySelector(".top .note");if(t){const sp=document.createElement("span");sp.style.marginLeft="8px";sp.textContent=lbl;t.appendChild(sp)}}
   if(window.__ROLE==="scout"){window.__scoutLink=()=>"(nur für Trainer sichtbar)";return}
   if(window.__ROLE==="lesen"){try{const r=await fs.doc(T("config/scout")).get();scoutKey=(r.exists&&r.data()&&r.data().k)||""}catch(e){}window.__scoutLink=()=>scoutKey?window.__WEB_BASE0+"#scout."+scoutKey:"(nicht verfügbar)";return}

@@ -28,6 +28,7 @@ const ROLLEN={
   "athletiktrainer":{n:"Athletiktrainer (alle)",art:"athletik",teams:"*"},
   "nur-lesen":{n:"Nur Ansicht (D1)",art:"lesen",teams:["d1"]},
   "scout":{n:"Scout (D1)",art:"scout",teams:["d1"]},
+  "nur-planung":{n:"Nur eine Kaderplanung (D1, bearbeiten)",art:"scout",teams:[],kplan:"d1"},
   "platzwart":{n:"Platzwart",rolle:"platzwart"},
   "spieler":{n:"Spieler mit Konto (D1)",konto:"spieler"},
   "eltern":{n:"Eltern mit Konto (D1)",konto:"eltern"},
@@ -189,9 +190,9 @@ TEAMS.forEach(([tid,name],ti)=>{
     wk:[{id:"zu",name:"Zugesagt",c:"g",p:100,z:1},{id:"sw",name:"Sehr wahrscheinlich",c:"g",p:80},{id:"wa",name:"Wahrscheinlich",c:"y",p:60},{id:"un",name:"Unsicher",c:"o",p:40},{id:"en",name:"Eher nicht",c:"r",p:20},{id:"ab",name:"Abgang / Absage",c:"gr",p:0,a:1}],
     krit:[{id:"te",name:"Technik"},{id:"ta",name:"Taktik"},{id:"at",name:"Athletik"},{id:"pe",name:"Persönlichkeit"}]};
    put(tid+"__kplan/"+plid,plan);
-   const posNames=POS.map((x)=>x[0]),mk=(id,o)=>put(tid+"__kperson/"+id,Object.assign({id,typ:"extern",vorname:"",name:"",geb:"",verein:"",mannschaft:"",nr:"",fuss:"",groesse:"",telM:"",telV:"",mail:"",adresse:"",pos:{},kr:{},manuell:null,staerken:"",schwaechen:"",notiz:"",beob:[],kontakt:[],probe:[],plans:{}},o));
+   const posNames=POS.map((x)=>x[0]),mk=(id,o)=>put(tid+"__kperson/"+id,(x=>({...x,pl:Object.keys(x.plans||{}).sort()}))(Object.assign({id,typ:"extern",vorname:"",name:"",geb:"",verein:"",mannschaft:"",nr:"",fuss:"",groesse:"",telM:"",telV:"",mail:"",adresse:"",pos:{},kr:{},manuell:null,staerken:"",schwaechen:"",notiz:"",beob:[],kontakt:[],probe:[],plans:{}},o)));
    /* eigene Spieler: bleiben sie? */
-   pl.forEach((pp,i)=>{const r=R(),wk=r<.55?"sw":r<.75?"wa":r<.9?"un":"zu";mk("kq_e"+pp.id,{typ:"eigen",sid:pp.id,pos:{[pp.torwart&&TWn?posNames[0]:posNames[(TWn?1:0)+i%(posNames.length-(TWn?1:0))]]:2},plans:{[plid]:{status:r<.8?"go":r<.92?"gof":"ngf",rolle:pick(["an","st","sr","rp","ro"]),wk,phase:"",prio:"",kontakt:false,wunsch:"",next:{}}}})});
+   pl.forEach((pp,i)=>{const r=R(),wk=r<.55?"sw":r<.75?"wa":r<.9?"un":"zu";mk("kq_e"+pp.id,{typ:"eigen",sid:pp.id,sp:{name:pp.name,vorname:pp.vorname,geburtsdatum:pp.geburtsdatum,positionen:pp.positionen},pos:{[pp.torwart&&TWn?posNames[0]:posNames[(TWn?1:0)+i%(posNames.length-(TWn?1:0))]]:2},plans:{[plid]:{status:r<.8?"go":r<.92?"gof":"ngf",rolle:pick(["an","st","sr","rp","ro"]),wk,phase:"",prio:"",kontakt:false,wunsch:"",next:{}}}})});
    /* gescoutete Spieler: Jahrgänge nach Regel sichtbar, zwei bewusst außerhalb */
    const ages=auto.concat([n+3<=19?n+3:n-3,n-3>=6?n-3:n+4]);
    ages.forEach((a,i)=>{for(let k=0;k<(i<auto.length?3:1);k++){const id="kq_x"+i+"_"+k,vor=pick(FN),nach=pick(LN),r=R(),ph=pick(["be","be","ka","pe","pa","en","zu"]),by=2028-a,inP=i<auto.length&&k<2;
@@ -259,6 +260,7 @@ put("verein/main",{name:"TuS Musterstadt (Demo)",saison:"2026/27",teams:TEAMS.ma
 const memDoc=(email,name,art,teams)=>{const a=ARTEN.find((x)=>x.id===art),all=TEAMS.map((t)=>t[0]),tl=teams==="*"?all:teams,tr={};tl.forEach((t)=>{tr[t]=a.rechte.slice()});return{email,name,rolle:"team",zu:[{art,teams:teams==="*"?[]:tl,...(teams==="*"?{alle:true}:{})}],tr,g:a.gl.slice(),kader:{}}};
 if(KONTO){/* Spieler und Eltern sind keine Mitglieder des Vereins: sie kommen über ihr Konto (siehe „Konten“ unten) */}
 else if(P.rolle==="admin"||P.rolle==="jugendleiter"||P.rolle==="platzwart")put("mitglieder/"+EMAIL,{email:EMAIL,name:"Demo-Person",rolle:P.rolle,zu:[],tr:{},g:P.rolle==="platzwart"?[]:["plan","kurz"],kader:{}});
+else if(P.kplan)put("mitglieder/"+EMAIL,{email:EMAIL,name:"Demo-Person",rolle:"team",zu:[],tr:{},g:[],kader:{},kf:{[P.kplan]:{stufe:"bearbeiten",ein:true,bis:0,plan:"kp"+P.kplan}}});   /* Einzelfreigabe nur für die Planung der D1 */
 else put("mitglieder/"+EMAIL,memDoc(EMAIL,"Demo-Person",P.art,P.teams));
 [["erika.beispiel@beispiel.test","Erika Beispiel","trainer",["d2"]],["jonas.probe@beispiel.test","Jonas Probe","cotrainer",["d1"]],["lena.muster@beispiel.test","Lena Muster","sportleiter",["e1","e2"]]].forEach(([e,n,a,t])=>put("mitglieder/"+e,memDoc(e,n,a,t)));
 put("mitglieder/ina.demo@beispiel.test",{email:"ina.demo@beispiel.test",name:"Ina Demo",rolle:"jugendleiter",zu:[],tr:{},g:["plan","kurz"],kader:{}});
@@ -381,7 +383,7 @@ function docRef(path){path=norm(path);return{path,id:path.split("/").pop(),
 const lsn=(f)=>{if(PAR){f.__prep=1;PAR.__DEMOLSN.add(f)}else L.add(f)},uls=(f)=>{if(PAR)PAR.__DEMOLSN.delete(f);else L.delete(f)};
 if(!PAR)window.__DEMOLSN=L;
 function colRef(path,flt){path=norm(path);flt=flt||[];
-  const rows=()=>{const out=[],dep=path.split("/").length+1;DB.forEach((v,k)=>{const p=k.split("/");if(k.indexOf(path+"/")===0&&p.length===dep&&flt.every(([f,o,x])=>{const y=v[f];return o==="=="?y===x:o===">="?y>=x:o==="<="?y<=x:o===">"?y>x:o==="<"?y<x:o==="in"?x.indexOf(y)>=0:true}))out.push({id:p[p.length-1],data:v})});return out};
+  const rows=()=>{const out=[],dep=path.split("/").length+1;DB.forEach((v,k)=>{const p=k.split("/");if(k.indexOf(path+"/")===0&&p.length===dep&&flt.every(([f,o,x])=>{const y=v[f];return o==="=="?y===x:o==="array-contains"?Array.isArray(y)&&y.indexOf(x)>=0:o===">="?y>=x:o==="<="?y<=x:o===">"?y>x:o==="<"?y<x:o==="in"?x.indexOf(y)>=0:true}))out.push({id:p[p.length-1],data:v})});return out};
   const snap=()=>{const docs=rows().map((r)=>snapDoc(path+"/"+r.id,r.data));return{docs,empty:!docs.length,size:docs.length,forEach:(f)=>docs.forEach(f),docChanges:()=>docs.map((d)=>({type:"added",doc:d}))}};
   return{path,doc:(id)=>docRef(path+"/"+id),where:(f,o,x)=>colRef(path,flt.concat([[f,o,x]])),orderBy(){return this},limit(){return this},
     async get(){if(path==="mitglieder"&&P.rolle!=="admin"&&P.rolle!=="jugendleiter"){throw denyErr()}return snap()},
