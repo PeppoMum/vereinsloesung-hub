@@ -11,6 +11,7 @@ const ALT = 3 * 864e5;   /* ältere Einträge (Zeitplan lag still) werden ohne V
 /* Texte ohne Namen; u = Adresse beim Antippen (./?link öffnet den auf dem Gerät gemerkten Spielerlink) */
 const TX = {
   clip: { t: "Neuer Clip für dich", b: "Schau ihn dir in der App an und schreib deine Meinung dazu.", u: "./?link" },
+  spielv: { t: "Neues Spielvideo", b: "Das Video vom letzten Spiel ist da. Schau es dir in der App an.", u: "./?link" },
   frist: { t: "Erinnerung: Clip-Aufgabe", b: "Bitte kommentiere den Clip bald. Falls du das schon gemacht hast: Danke!", u: "./?link" },
   kom: { t: "Antwort vom Trainer", b: "Der Trainer hat auf deinen Kommentar zum Clip geantwortet.", u: "./?link" },
   antwort: { t: "Antwort vom Trainer", b: "Der Trainer hat auf deine Nachricht geantwortet.", u: "./?link" },
@@ -42,12 +43,12 @@ export function passt(q, s) {
   if (q.art === "dienst") return s.ro !== "t" && !!s.pid && Array.isArray(q.an) && q.an.includes(s.pid) && (q.fuer === "e" ? s.ro === "e" : s.ro !== "e");
   if (q.art === "etplan") return s.ro !== "t" && s.ro !== "e" && !!s.pid && Array.isArray(q.an) && q.an.includes(s.pid);   /* neuer Eigentrainingsplan: nur das Gerät des Spielers */
   if (q.art === "antwort") return !!q.r && s.r === q.r && s.ro !== "t";
-  if (q.art === "clip" || q.art === "frist" || q.art === "kom" || q.art === "aufant") return s.ro !== "t" && s.ro !== "e" && !!s.pid && (q.an === "alle" || (Array.isArray(q.an) && q.an.includes(s.pid)));
+  if (q.art === "clip" || q.art === "spielv" || q.art === "frist" || q.art === "kom" || q.art === "aufant") return s.ro !== "t" && s.ro !== "e" && !!s.pid && (q.an === "alle" || (Array.isArray(q.an) && q.an.includes(s.pid)));
   return false;
 }
 export function nachricht(q, id) {
   const x = TX[q.art];
-  const b = (q.art === "frist" || q.art === "afrist" || q.art === "dienst") && typeof q.tx === "string" && q.tx.length < 200 ? q.tx : x.b;
+  const b = (q.art === "frist" || q.art === "afrist" || q.art === "dienst" || q.art === "spielv") && typeof q.tx === "string" && q.tx.length < 200 ? q.tx : x.b;
   const viele = q.n > 1, t = q.art === "hinweis" && q.a ? "Neue Aufgabe für dich"
     : q.art === "dienst" ? (q.fuer === "e" ? (viele ? "Dienste für dein Kind diese Woche" : "Dienst für dein Kind diese Woche") : (viele ? "Deine Dienste diese Woche" : x.t)) : x.t;   /* Aufgabe (mit oder ohne Abhaken) statt Hinweis */
   /* Trainer: gleich in der richtigen Mannschaft; Antippen öffnet direkt die Aufgabe bzw. den Clip im Eingang (h), Nachrichten den Reiter Nachrichten */
