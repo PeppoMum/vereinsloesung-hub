@@ -256,7 +256,7 @@ TEAMS.forEach(([tid,name],ti)=>{
 
 
 /* ---------- Verein, Rollen, Personen ---------- */
-put("verein/main",{name:"TuS Musterstadt (Demo)",saison:"2026/27",teams:TEAMS.map(([id,name,ak])=>({id,name,ak,aktiv:true})),arten:ARTEN,bereiche:[{id:"mini",name:"Minis bis U13",teams:["m1","g1","f1","f2","e1","e2","d1","d2"]},{id:"gross",name:"U14 bis U19",teams:["c2","c1","b1","a1"]}],settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},kontakteVerein:[],fussball:{vereinLink:"https://www.fussball.de/verein/demo/-/id/DEMOVEREIN0000000000000000000000#!/"}});
+put("verein/main",{name:"TuS Musterstadt (Demo)",ort:"Musterstadt",heim:"Sportplatz Musterstadt",saison:"2026/27",teams:TEAMS.map(([id,name,ak])=>({id,name,ak,aktiv:true})),arten:ARTEN,bereiche:[{id:"mini",name:"Minis bis U13",teams:["m1","g1","f1","f2","e1","e2","d1","d2"]},{id:"gross",name:"U14 bis U19",teams:["c2","c1","b1","a1"]}],settings:{ausgrauenTage:42,erinnerungTage:21,loeschMonate:24},kontakteVerein:[],fussball:{vereinLink:"https://www.fussball.de/verein/demo/-/id/DEMOVEREIN0000000000000000000000#!/"}});
 const memDoc=(email,name,art,teams)=>{const a=ARTEN.find((x)=>x.id===art),all=TEAMS.map((t)=>t[0]),tl=teams==="*"?all:teams,tr={};tl.forEach((t)=>{tr[t]=a.rechte.slice()});return{email,name,rolle:"team",zu:[{art,teams:teams==="*"?[]:tl,...(teams==="*"?{alle:true}:{})}],tr,g:a.gl.slice(),kader:{}}};
 if(KONTO){/* Spieler und Eltern sind keine Mitglieder des Vereins: sie kommen über ihr Konto (siehe „Konten“ unten) */}
 else if(P.rolle==="admin"||P.rolle==="jugendleiter"||P.rolle==="platzwart")put("mitglieder/"+EMAIL,{email:EMAIL,name:"Demo-Person",rolle:P.rolle,zu:[],tr:{},g:P.rolle==="platzwart"?[]:["plan","kurz"],kader:{}});
@@ -319,7 +319,7 @@ const SEED={},BWTG=["Einsatz","Technik","Zweikampf","Spielintelligenz","Verhalte
   S.hn=H;
   S.abh=[["dh5",[1,2,4,5,7]],["dh8",[1,2,3,4,6,8,9]]];
   S.antw=[["dh4",1,"Wir standen beim Gegentor viel zu weit auseinander."],["dh4",3,"Das Pressing vorne hat gut geklappt!"],["dh4",5,"Ich war nach dem Ballverlust zu langsam zurück."],["dh5",2,"Mache ich, bringe ich am Donnerstag mit."]];
-  Object.assign(cfg,{hinweise:H,aufgQuote:true},voll?{videos:true,abm:true,bw:{win:10,tags:["Einsatz","Technik","Zweikampf","Spielintelligenz","Verhalten"]}}:{});
+  Object.assign(cfg,{hinweise:H,aufgQuote:true},voll?{videos:true,abm:true,abmErw:{s:true,t:false,a:true},bw:{win:10,tags:["Einsatz","Technik","Zweikampf","Spielintelligenz","Verhalten"]}}:{});
   /* Eingang: Nachrichten von Spielern und Eltern (eine schon beantwortet) */
   [["df1",30,"Frage","Wann beginnt das Hallentraining?",1,"s","Ab November immer donnerstags. Bis dann!"],["df2",5,"Idee","Können wir im Training mal ein kleines Turnier spielen?",2,"s"],["df3",28,"Anliegen","Wir sind in den Herbstferien eine Woche verreist.",3,"e"]]
     .forEach(([id,h,art,text,i,ro,an])=>put(tid+"__fbin/"+id,{id,at:ago(h),art,text,von:ro==="e"?"Elternteil von "+nm(i):nm(i),rolle:ro,pid:ids[i],r:hexN(32),gelesen:!!an,...(an?{antwort:an,antwortVon:"Max Mustermann",antwortAm:ago(h-3)}:{})}));
@@ -350,8 +350,11 @@ const SEED={},BWTG=["Einsatz","Technik","Zweikampf","Spielintelligenz","Verhalte
   put("mteinl/"+hexN(24),{tid,aktiv:true,bis:0,am:addD(TODAY,-30)+"T10:00:00.000Z"});
   put("spielereinl/"+hexN(24),{tid,pid:ids[4],n:pl[4].vorname+" "+pl[4].name,aktiv:true,bis:0,am:addD(TODAY,-3)+"T10:00:00.000Z"});
   {let tr=addD(TODAY,1);while(dow(tr)!==2&&dow(tr)!==4)tr=addD(tr,1);
-    put("kabm/dab1",{tid,pid:ids[4],k:"d"+tr.replace(/-/g,"")+"_0",grund:"Arzttermin",name:"Elternteil von "+nm(4),von:Date.parse(tr+"T17:30:00")})}
+    put("kabm/dab1",{tid,pid:ids[4],k:"d"+tr.replace(/-/g,"")+"_0",st:"ab",grund:"Arzttermin",name:"Elternteil von "+nm(4),von:Date.parse(tr+"T17:30:00")})}
   put("kabw/daw1",{tid,pid:ids[6],von:addD(TODAY,10),bis:addD(TODAY,17),grund:"Familienurlaub",name:"Elternteil von "+nm(6)});
+  /* Zusagen für den Kinoabend in 3 Tagen (Treffen 17:45). Sein Platz am Tag ist 0 oder 1, je nachdem, ob an dem Tag auch Training ist: beide eintragen, es zählt nur der passende. */
+  {const kd=addD(TODAY,3),kv=new Date(+kd.slice(0,4),+kd.slice(5,7)-1,+kd.slice(8,10),17,45).getTime();
+    [0,1,2,3,5,8].forEach((i)=>[0,1].forEach((n)=>put("kabm/dzu"+i+"_"+n,{tid,pid:ids[i],k:"d"+kd.replace(/-/g,"")+"_"+n,von:kv,st:"zu",grund:"",name:i%2?"Elternteil von "+nm(i):nm(i)})))}
   if(KONTO){const p=pl[1];put("kverkn/"+tid+"~"+p.id+"~"+mkey(EMAIL),{tid,pid:p.id,email:EMAIL,rolle:KONTO.konto,name:KONTO.konto==="spieler"?p.vorname:"Demo-Elternteil",pn:p.vorname+" "+p.name,at:addD(TODAY,-14)+"T18:00:00.000Z",...(KONTO.zw?{zw:KONTO.zw}:{})});S.konto=p.id}
   /* Training bewerten: Tipps der letzten Trainings */
   [...store.entries()].filter(([k,t])=>k.indexOf(tid+"__trainings/t")===0&&/^t\d$/.test(t.id)).forEach(([,t],i)=>{const taps={},amp={},ts=Date.parse(t.datum+"T18:00:00");

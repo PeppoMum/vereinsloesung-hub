@@ -5,6 +5,8 @@
 "use strict";
 if(window.__WEBINIT)return;window.__WEBINIT=true;
 const CFG=window.U13_FIREBASE||{};
+/* Vereinsname für die Anmeldeseite: zuletzt auf diesem Gerät geladen (verein/main.name) */
+const nmWeb=()=>{let k="";try{k=localStorage.getItem("u13vn")||""}catch(e){}if(!k)try{k=vKurz()}catch(e){}return String(k||"Teamzentrale").replace(/ · Teamzentrale$/,"").replace(/[<>&"]/g,"")||"Verein"};
 const SDK=(CFG.sdkBase||"https://www.gstatic.com/firebasejs/10.14.1/");
 const XIDS=["full","anon","plan","demo","demosp"];
 window.__WEB=true;
@@ -191,7 +193,7 @@ let ov=null;
 function overlay(html){
   if(!document.getElementById("u13css")){const st=document.createElement("style");st.id="u13css";st.textContent=CSS;document.head.appendChild(st)}
   if(!ov){ov=document.createElement("div");ov.id="u13login";(document.body||document.documentElement).appendChild(ov)}
-  ov.innerHTML='<div class="lc"><h1>TuS Haltern · Teamzentrale</h1><p class="sb">Für Trainer, Spieler und Eltern</p>'+html+"</div>";return ov;
+  ov.innerHTML='<div class="lc"><h1>'+nmWeb()+' · Teamzentrale</h1><p class="sb">Für Trainer, Spieler und Eltern</p>'+html+"</div>";return ov;
 }
 const hideOverlay=()=>{if(ov){ov.remove();ov=null}};
 function showSetup(){overlay('<div class="ms er" style="font-size:15px">Die Verbindung zu Firebase ist noch nicht eingerichtet.</div><p class="sb">Bitte die Datei <b>firebase-config.js</b> mit den Werten aus dem Firebase-Projekt ausfüllen (siehe Anleitung) und die Dateien erneut hochladen.</p>')}
@@ -237,7 +239,9 @@ function firstUser(){return new Promise((res)=>{const un=auth.onAuthStateChanged
 /* ---------- Datenbank-Hülle: gleiche Aufrufe wie in der Artifact-Umgebung, mit Mannschafts-Präfix ---------- */
 const KPATH=/__k(plan|person|obs|inbox)\//;
 const noWrite=(ref)=>(window.__ROLE==="lesen"||(window.__KRO&&ref&&KPATH.test(String(ref.path||ref._path||""))))?Promise.reject({code:"permission-denied"}):null;
-function docW(ref){return{get:()=>ref.get(),set:(d)=>noWrite(ref)||ref.set(clean(d)),update:(d)=>noWrite(ref)||ref.update(clean(d)),delete:()=>noWrite(ref)||ref.delete(),onSnapshot:(a,b)=>ref.onSnapshot(a,b),collection:(n)=>colW(ref.collection(n))}}
+/* patch: nur die genannten Stellen ändern (Liste [Pfad, Wert], ohne Wert = entfernen); setm: anlegen und mit Vorhandenem zusammenführen. Gibt es nur mit der echten Firebase-Bibliothek; in der Demo (eigener Nachbau) wird wie bisher das ganze Dokument gespeichert */
+const patchArgs=(ch)=>{const F=fb.firestore,a=[];ch.forEach((c)=>{a.push(new F.FieldPath(...c[0]),c.length>1?clean(c[1]):F.FieldValue.delete())});return a};
+function docW(ref){return{get:()=>ref.get(),set:(d)=>noWrite(ref)||ref.set(clean(d)),update:(d)=>noWrite(ref)||ref.update(clean(d)),...(fb&&fb.firestore.FieldPath?{patch:(ch)=>noWrite(ref)||ref.update(...patchArgs(ch)),setm:(d)=>noWrite(ref)||ref.set(clean(d),{merge:true})}:{}),delete:()=>noWrite(ref)||ref.delete(),onSnapshot:(a,b)=>ref.onSnapshot(a,b),collection:(n)=>colW(ref.collection(n))}}
 function colW(ref){return{get:()=>ref.get(),onSnapshot:(a,b)=>ref.onSnapshot(a,b),doc:(id)=>docW(ref.doc(id)),where:(f,o,v)=>({get:()=>ref.where(f,o,v).get(),onSnapshot:(a,b)=>ref.where(f,o,v).onSnapshot(a,b)})}}
 const wrap=()=>({collection:(n)=>colW(fs.collection(T(n))),doc:(p)=>docW(fs.doc(T(p)))});
 
@@ -326,7 +330,7 @@ function showInfo(title,html,btn){
 }
 function showClubSetup(email){
   return new Promise((res)=>{
-    const o=overlay('<p class="sb" style="margin-top:0">Der Verein ist noch nicht eingerichtet. Du bist als Besitzer eingetragen und legst ihn jetzt an. Mannschaften kannst du später jederzeit ergänzen.</p><label class="sb">Name des Vereins<input id="vn" value="TuS Haltern am See"></label><label class="sb">Saison<input id="vs" value="2026/27"></label><div class="sb"><b>Mannschaften</b></div><div id="vt" style="margin:0 0 10px">'+STD_TEAMS.map((t)=>'<label style="display:flex;gap:8px;align-items:center;margin:2px 0"><input type="checkbox" data-t="'+t[0]+'" checked style="width:auto;margin:0"> '+E(t[1])+' ('+E(t[2])+')'+(t[3]?"":" – derzeit nicht besetzt")+'</label>').join("")+'</div><div class="ms" id="vm"></div><button class="pr" id="vgo">Verein anlegen</button><button class="ln" id="vso">Abmelden</button>'),m=o.querySelector("#vm");
+    const o=overlay('<p class="sb" style="margin-top:0">Der Verein ist noch nicht eingerichtet. Du bist als Besitzer eingetragen und legst ihn jetzt an. Mannschaften kannst du später jederzeit ergänzen.</p><label class="sb">Name des Vereins<input id="vn" value="" placeholder="z. B. TuS Musterstadt"></label><label class="sb">Saison<input id="vs" value="2026/27"></label><div class="sb"><b>Mannschaften</b></div><div id="vt" style="margin:0 0 10px">'+STD_TEAMS.map((t)=>'<label style="display:flex;gap:8px;align-items:center;margin:2px 0"><input type="checkbox" data-t="'+t[0]+'" checked style="width:auto;margin:0"> '+E(t[1])+' ('+E(t[2])+')'+(t[3]?"":" – derzeit nicht besetzt")+'</label>').join("")+'</div><div class="ms" id="vm"></div><button class="pr" id="vgo">Verein anlegen</button><button class="ln" id="vso">Abmelden</button>'),m=o.querySelector("#vm");
     o.querySelector("#vso").onclick=()=>signOutClean();
     o.querySelector("#vgo").onclick=async()=>{
       const teams=STD_TEAMS.filter((t)=>o.querySelector('[data-t="'+t[0]+'"]').checked).map((t)=>({id:t[0],name:t[1],ak:t[2],aktiv:!!t[3]}));
@@ -562,7 +566,7 @@ async function clubInit(u){
   }
   if(!offline){
     try{const s=await fs.doc("mitglieder/"+em).get();me=s.exists?s.data():null}catch(e){if(!denied(e))offline=true}
-    try{const s=await fs.doc("verein/main").get();V=s.exists?s.data():null}catch(e){if(!denied(e))offline=true}
+    try{const s=await fs.doc("verein/main").get();V=s.exists?s.data():null;try{if(V&&V.name)localStorage.setItem("u13vn",String(V.name).trim().replace(/\s+(am|an der|an|im|in der|ob der|bei)\s+\S.*$/i,""))}catch(x){}}catch(e){if(!denied(e))offline=true}
   }
   let cache=null;try{cache=JSON.parse(localStorage.getItem("u13v:"+em)||"null")}catch(e){}
   if(offline){
@@ -859,7 +863,7 @@ const pushApi={
 };
 /* Wofür dieses Gerät Bescheid bekommt: abgewählte Arten stehen im Feld x der Anmeldung (durch Komma getrennt, siehe push/senden.mjs).
    Spieler/Eltern sehen nur, was der Trainer für die Mannschaft eingeschaltet hat (pz im Link), Clips nur Spieler und nur mit Videos. */
-const PW={hinweis:"Neue Hinweise und Aufgaben",notiz:"Neue Notizen im Profil",termin:"Abgesagte oder verlegte Termine",afrist:"Erinnerung an Aufgaben",dienst:"Erinnerung an Dienste (montags)",etplan:"Neue Eigentrainingspläne",clip:"Neue Clips",spielv:"Neue Spielvideos",frist:"Erinnerung an Clips",antwort:"Antworten vom Trainer",
+const PW={hinweis:"Neue Hinweise und Aufgaben",notiz:"Neue Notizen im Profil",termin:"Abgesagte oder verlegte Termine",afrist:"Erinnerung an Aufgaben",dienst:"Erinnerung an Dienste (montags)",etplan:"Neue Eigentrainingspläne",clip:"Neue Clips",spielv:"Neue Spielvideos",frist:"Erinnerung an Clips",antwort:"Antworten vom Trainer",zusage:"Erinnerung an fehlende Zusagen",
   fb:"Nachrichten im Eingang",aantw:"Antworten auf Aufgaben",skom:"Clip-Kommentare von Spielern",kanfr:"Neue Konto-Anfragen",todo:"Fällige To-Dos (fällig am)"};
 const pwAus=()=>(pls.get("u13pushw")||"").split(",").filter((k)=>k in PW);
 function pwHtml(c){const A=pwAus(),vid=c.ro==="t"?!!(window.__vid&&window.__vid.on&&window.__vid.on()):!!c.v,
