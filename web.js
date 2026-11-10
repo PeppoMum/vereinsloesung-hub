@@ -711,7 +711,9 @@ async function publishSnap(snap){
   /* Eigentraining-Dateien: ändern sich nie (neue Datei = neue ID), deshalb nur neue hochladen; Liste mit Teilezahl in linkmeta */
   let m0=null;try{const m=await fs.doc(T("linkmeta/main")).get();m0=m.exists?m.data():null}catch(e){}
   const ff0=(m0&&m0.ff)||{},ff={};
-  for(const fid of Object.keys(snap.f||{})){const id=pre("f")+fid;if(ff0[fid]){ff[fid]=ff0[fid];keep.add(id);for(let i=1;i<ff0[fid];i++)keep.add(id+"~"+i);continue}
+  /* nur überspringen, wenn die Datei auch wirklich (mit allen Teilen) in „pub“ liegt – sonst neu hochladen (Fehler 10.11.: Plan beim Spieler nicht ladbar) */
+  const da=async(id,n)=>{try{for(let i=0;i<n;i++){const d=await fs.doc("pub/"+id+(i?"~"+i:"")).get();if(!d.exists)return false}return true}catch(e){return false}};
+  for(const fid of Object.keys(snap.f||{})){const id=pre("f")+fid;if(ff0[fid]&&await da(id,ff0[fid])){ff[fid]=ff0[fid];keep.add(id);for(let i=1;i<ff0[fid];i++)keep.add(id+"~"+i);continue}
     await put(id,snap.f[fid]);ff[fid]=Math.max(1,Math.ceil(snap.f[fid].length/CH))}
   if(snap.bg){let bg=clean(snap.bg);if(JSON.stringify(bg).length>900000)bg={L:bg.L||"",D:bg.D||"",i:""};keep.add("bg_"+tid);await fs.doc("pub/bg_"+tid).set(bg)}
   keep.add("scout_"+tid);
@@ -737,24 +739,27 @@ window.__webOwnerSnap=function(cb){
     const raw={};docs.forEach((d)=>{raw[d.id]=d.data()});
     const join=(id)=>{const m=raw[id];if(!m||typeof m.b!=="string")return null;let b=m.b;for(let i=1;i<(m.n||1);i++){const c=raw[id+"~"+i];if(!c)return null;b+=c.b}return b};
     const s={u:meta.u||"",k:meta.k||{},xk:meta.xk||{},fp:meta.fp||"",fa:meta.fa||"",fs:meta.fs||"",dzs:meta.dzs||"",ok:meta.ok|0,p:{},x:{},a:{}},tp="_"+window.__TID+"_";
+    s.fh={...fhC};   /* Eigentraining-Dateien, die vollständig online sind */
     Object.keys(raw).forEach((id)=>{if(id.indexOf("~")>=0)return;if(id.slice(0,2)==="a_"){s.a[id]={s:raw[id].s,w:raw[id].w,v:raw[id].v|0};return}if(id.indexOf("p"+tp)===0){const b=join(id);if(b)s.p[id.slice(tp.length+1)]=b}else if(id.indexOf("x"+tp)===0){const b=join(id);if(b)s.x[id.slice(tp.length+1)]=b}});
     window.__webSnapReady=true;cb(s);
   };
   const later=()=>{clearTimeout(tm);tm=setTimeout(build,150)};
   /* Sparsam: nicht die ganze Sammlung „pub“ (alle Mannschaften) beobachten, sondern nur den eigenen Stand (linkmeta)
      und nach jeder Veröffentlichung gezielt die eigenen Fächer lesen; Kurzlink-Fächer einzeln beobachten. */
-  const own={},al={},alU={};let tok=0;const tp="_"+window.__TID+"_";
+  const own={},al={},alU={},fhC={};let tok=0;const tp="_"+window.__TID+"_";
   const merge=()=>{docs=Object.keys(own).concat(Object.keys(al)).map((id)=>{const v=own[id]||al[id];return{id,data:()=>v}});later()};
   const one=async(id)=>{try{const s=await fs.doc("pub/"+id).get();return s.exists?s.data():null}catch(e){return null}};
   const fetchOwn=async(m)=>{const my=++tok,o={},bases=Object.keys(m.k||{}).map((k)=>"p"+tp+k).concat(Object.keys(m.xk||{}).map((k)=>"x"+tp+k));
     await Promise.all(bases.map(async(id)=>{const d=await one(id);if(!d)return;o[id]=d;for(let i=1;i<(d.n||1);i++){const c=await one(id+"~"+i);if(c)o[id+"~"+i]=c}}));
+    /* Eigentraining-Dateien: einmal je Sitzung prüfen, ob alle Teile online sind (fehlende werden bei jedem neuen Stand wieder geprüft) */
+    for(const fid of Object.keys(m.ff||{})){if(fhC[fid])continue;let da=true;for(let i=0;i<(m.ff[fid]|0||1);i++)if(!(await one("f"+tp+fid+(i?"~"+i:"")))){da=false;break}if(da)fhC[fid]=1}
     if(my!==tok)return;Object.keys(own).forEach((k)=>delete own[k]);Object.assign(own,o);merge()};
   const watchA=()=>{const want=new Set(((window.__kzAids&&window.__kzAids())||[]).filter(Boolean));
     Object.keys(alU).forEach((id)=>{if(!want.has(id)){alU[id]();delete alU[id];delete al[id];merge()}});
     want.forEach((id)=>{if(alU[id])return;alU[id]=fs.doc("pub/"+id).onSnapshot((s)=>{if(s.exists)al[id]=s.data();else delete al[id];merge()},()=>{})})};
   watchA();setInterval(watchA,3000);
   let lastU=null;
-  fs.doc(T("linkmeta/main")).onSnapshot((s)=>{meta=s.exists?s.data():{};const u=JSON.stringify([meta.u,meta.k,meta.xk]);if(u===lastU){later();return}lastU=u;fetchOwn(meta).catch(()=>{})},()=>{});
+  fs.doc(T("linkmeta/main")).onSnapshot((s)=>{meta=s.exists?s.data():{};const u=JSON.stringify([meta.u,meta.k,meta.xk,meta.ff]);if(u===lastU){later();return}lastU=u;fetchOwn(meta).catch(()=>{})},()=>{});
 };
 
 /* Karte „Als App installieren“ unter Einstellungen → Für mich (für alle Angemeldeten, auch eingeschränkte Ansicht) */
