@@ -715,13 +715,19 @@ async function publishSnap(snap){
   const tid=window.__TID,pre=(k)=>k+"_"+tid+"_";
   for(const pid of Object.keys(snap.p||{}))await put(pre("p")+pid,snap.p[pid]);
   for(const k of Object.keys(snap.x||{}))await put(pre("x")+k,snap.x[k]);
+  /* Eigentraining-Dateien (auch Videos): Teile zuerst, dann ein kleiner Kopf {b:"",n} – liegt der Kopf da, ist die Datei vollständig.
+     So lässt sich „ist online?“ mit einem winzigen Lesezugriff prüfen, ohne die ganze Datei zu laden (Phil 13.11.: Videos). */
+  const putF=async(id,b)=>{const parts=[];for(let i=0;i<b.length;i+=CH)parts.push(b.slice(i,i+CH));if(!parts.length)parts.push("");
+    for(let i=0;i<parts.length;i++){keep.add(id+"~"+(i+1));await fs.doc("pub/"+id+"~"+(i+1)).set({b:parts[i]})}
+    keep.add(id);await fs.doc("pub/"+id).set({b:"",n:parts.length+1});return parts.length+1};
+  const kopf=async(id)=>{try{const d=await fs.doc("pub/"+id).get();const x=d.exists?d.data():null;return x&&x.b===""&&(x.n|0)>1?x.n|0:0}catch(e){return 0}};
+  const blobOf=async(v)=>{try{return typeof v==="function"?await v():v}catch(e){return null}};
   /* Eigentraining-Dateien: ändern sich nie (neue Datei = neue ID), deshalb nur neue hochladen; Liste mit Teilezahl in linkmeta */
   let m0=null;try{const m=await fs.doc(T("linkmeta/main")).get();m0=m.exists?m.data():null}catch(e){}
   const ff0=(m0&&m0.ff)||{},ff={};
-  /* nur überspringen, wenn die Datei auch wirklich (mit allen Teilen) in „pub“ liegt – sonst neu hochladen (Fehler 10.11.: Plan beim Spieler nicht ladbar) */
-  const da=async(id,n)=>{try{for(let i=0;i<n;i++){const d=await fs.doc("pub/"+id+(i?"~"+i:"")).get();if(!d.exists)return false}return true}catch(e){return false}};
-  for(const fid of Object.keys(snap.f||{})){const id=pre("f")+fid;if(ff0[fid]&&await da(id,ff0[fid])){ff[fid]=ff0[fid];keep.add(id);for(let i=1;i<ff0[fid];i++)keep.add(id+"~"+i);continue}
-    await put(id,snap.f[fid]);ff[fid]=Math.max(1,Math.ceil(snap.f[fid].length/CH))}
+  /* nur überspringen, wenn der Kopf online liegt (Fehler 10.11.: Plan beim Spieler nicht ladbar); Dateien im alten Format werden einmal neu hochgeladen */
+  for(const fid of Object.keys(snap.f||{})){const id=pre("f")+fid,n=await kopf(id);if(n){ff[fid]=n;keep.add(id);for(let i=1;i<n;i++)keep.add(id+"~"+i);continue}
+    const b=await blobOf(snap.f[fid]);if(typeof b!=="string")continue;ff[fid]=await putF(id,b)}
   if(snap.bg){let bg=clean(snap.bg);if(JSON.stringify(bg).length>900000)bg={L:bg.L||"",D:bg.D||"",i:""};keep.add("bg_"+tid);await fs.doc("pub/bg_"+tid).set(bg)}
   keep.add("scout_"+tid);
   /* Alte Fächer aufräumen: die Liste vom letzten Mal steht in linkmeta (spart das Lesen der ganzen Sammlung aller Mannschaften) */
@@ -758,8 +764,8 @@ window.__webOwnerSnap=function(cb){
   const one=async(id)=>{try{const s=await fs.doc("pub/"+id).get();return s.exists?s.data():null}catch(e){return null}};
   const fetchOwn=async(m)=>{const my=++tok,o={},bases=Object.keys(m.k||{}).map((k)=>"p"+tp+k).concat(Object.keys(m.xk||{}).map((k)=>"x"+tp+k));
     await Promise.all(bases.map(async(id)=>{const d=await one(id);if(!d)return;o[id]=d;for(let i=1;i<(d.n||1);i++){const c=await one(id+"~"+i);if(c)o[id+"~"+i]=c}}));
-    /* Eigentraining-Dateien: einmal je Sitzung prüfen, ob alle Teile online sind (fehlende werden bei jedem neuen Stand wieder geprüft) */
-    for(const fid of Object.keys(m.ff||{})){if(fhC[fid])continue;let da=true;for(let i=0;i<(m.ff[fid]|0||1);i++)if(!(await one("f"+tp+fid+(i?"~"+i:"")))){da=false;break}if(da)fhC[fid]=1}
+    /* Eigentraining-Dateien: nur der kleine Kopf wird gelesen (altes Format zählt als fehlend und wird beim nächsten Veröffentlichen neu hochgeladen) */
+    for(const fid of Object.keys(m.ff||{})){if(fhC[fid])continue;const h=await one("f"+tp+fid);if(h&&h.b===""&&(h.n|0)>1)fhC[fid]=1}
     if(my!==tok)return;Object.keys(own).forEach((k)=>delete own[k]);Object.assign(own,o);merge()};
   const watchA=()=>{const want=new Set(((window.__kzAids&&window.__kzAids())||[]).filter(Boolean));
     Object.keys(alU).forEach((id)=>{if(!want.has(id)){alU[id]();delete alU[id];delete al[id];merge()}});
