@@ -3254,6 +3254,7 @@ async function openFile(getBlob,f,ti,sx){
   try{const b=await getBlob();if(!b)throw new Error("fehlt");const o=await window.__lk.unseal(f.k,b);o.ti=ti;o.sx=sx||"";fileView(o)}
   catch(e){fileView(null,/^video\//.test(f.t||f.typ||"")?"Das Video konnte nicht geladen werden. Bitte später noch einmal versuchen.":"Der Plan konnte nicht geladen werden. Bitte später noch einmal versuchen.")}
 }
+ET.openFile=(g,f,ti,sx)=>{css();return openFile(g,f,ti,sx)};
 document.addEventListener("click",(e)=>{if(!e.target.closest)return;const ov=document.getElementById("etov");if(!ov||ov.hidden)return;if(e.target.closest("[data-etx]")||e.target===ov)fileClose()});
 document.addEventListener("keydown",(e)=>{if(e.key==="Escape")fileClose()});
 
@@ -3369,6 +3370,7 @@ async function upload(file){
   for(let i=0;i<parts.length;i++)await db.collection("etdatei").doc(fid+"_"+i).set({b:parts[i]});
   ET.blobs[fid]=blob;return{id:fid,k,name:file.name,typ:file.type||"",size:file.size,parts:parts.length}}
 const dropFile=(f)=>{if(!f||!f.id)return;for(let i=0;i<(f.parts||1);i++)db.collection("etdatei").doc(f.id+"_"+i).delete().catch(()=>{});delete ET.blobs[f.id]};
+ET.upload=upload;ET.drop=dropFile;   
 async function pSave(){
   pRead();const f=UI.pf,titel=f.titel.trim();
   if(!titel){note("Bitte einen Namen für den Plan eintragen.",true);return}
@@ -4099,6 +4101,7 @@ async function buildSnap(){
   for(const p of active()){const l=L[p.id];if(!l||!l.aktiv||!l.key)continue;const et=window.__et?window.__et.pkg(p.id,TP.days,ETF):[];out.p[p.id]=await seal(l.key,{...(window.__vid?window.__vid.pkg(p.id):{}),h:profExt()?profileHtml(p.id):"",l:logo,s:sa,m:mann(),v:vName(),u:out.u,t:TP,n:p.vorname,f:p.foto||"",hn:await hnFor(HN,p.id,l.key),...(D.config&&D.config.aufgQuote?{aq:1}:{}),li:LI,dz:"kobalt",...(et.length?{et}:{})});out.k[p.id]=await sha8(l.key)}
   /* Eigentraining: Dateien der freigegebenen Pläne (verschlüsselt mit eigenem Schlüssel, der nur im Link des Spielers steht) */
   /* Web: erst beim Hochladen laden (nur Dateien, die noch nicht online sind; spart bei Videos viel Datenvolumen) */
+  if(window.__vid&&window.__vid.files)window.__vid.files(ETF);   /* Mannschafts-App: Videos zu Clips (13.11.) */
   for(const id of Object.keys(ETF)){if(window.__WEB){(out.f=out.f||{})[id]=()=>window.__et.blob(ETF[id]);continue}try{(out.f=out.f||{})[id]=await window.__et.blob(ETF[id])}catch(e){}}
   out.bg=await bgSnap();out.dzs=dzSig();out.x={};out.xk={};
   for(const k of XK){const l=L["x"+k];if(!l||!l.aktiv||!l.key)continue;out.x[k]=await seal(l.key,k==="demosp"?{...demoPlayer(),k,u:out.u,l:logo,s:sa,m:mann(),v:vName(),dz:"kobalt"}:k==="plan"?{k,u:out.u,t:TP,l:logo,s:sa,m:mann(),v:vName(),hn:HN.filter((n)=>n.fuer!=="s"&&n.art!=="a"&&n.art!=="c"&&!Array.isArray(n.an)).map((n)=>{const x={...n};delete x.rp;delete x.rs;delete x.rk;return x}),dz:"kobalt"}:{k,u:out.u,db:extData(k),dz:"kobalt"});out.xk[k]=await sha8(l.key)}
@@ -4243,7 +4246,7 @@ async function lkHealth(){
   const off=pubIds.filter((id)=>{const l=L[id]||{};return P.some((p)=>p.id===id)&&!(l.aktiv&&l.key)}).length+pubIds.filter((id)=>!P.some((p)=>p.id===id)).length+xGone();
   if(off&&!window.__WEB)W.push(off+" Link(s) sind noch online, obwohl sie abgeschaltet oder der Spieler nicht mehr aktiv ist – beim nächsten Aktualisieren werden sie entfernt.");
   /* Eigentraining: freigegebene Plan-Datei fehlt online -> einmal neu veröffentlichen (Fehler 10.11.: „Der Plan konnte nicht geladen werden“) */
-  let fMiss="";if(window.__WEB&&SNAP.fh&&window.__et){const F={};for(const p of P){const l=L[p.id]||{};if(l.aktiv&&l.key)window.__et.pkg(p.id,{},F)}
+  let fMiss="";if(window.__WEB&&SNAP.fh&&window.__et){const F={};for(const p of P){const l=L[p.id]||{};if(l.aktiv&&l.key)window.__et.pkg(p.id,{},F)}if(window.__vid&&window.__vid.files)window.__vid.files(F);
     const miss=Object.keys(F).filter((id)=>!SNAP.fh[id]).sort().join();if(miss&&miss!==lkFTry)fMiss=miss}
   const fpp=await fingerprintParts();if(my!==lkTok)return;
   if(window.__WEB){/* Web-Version: automatisch veröffentlichen (Link-Änderungen sofort, neue Daten alle 6 Stunden) */
