@@ -966,8 +966,8 @@ if("serviceWorker" in navigator&&/^https:|^http:\/\/localhost/.test(location.pro
   const sheets=()=>[...document.querySelectorAll(".mobsheet")].filter(vis);
   const SKIP=/^(SCRIPT|STYLE|LINK|META|TITLE|NAV|TEMPLATE)$/;
   const ovs=()=>{const app=document.querySelector("body > .app");const c=[...document.body.children].concat(app?[...app.children]:[]);
-    return c.filter((e)=>{if(SKIP.test(e.tagName)||e.id==="u13demo"||e.id==="vnav"||e.classList.contains("mobsheet"))return false;if(e.querySelector&&e.querySelector("#li,#u13so"))return false;if(!vis(e))return false;
-      const s=getComputedStyle(e);if(s.position!=="fixed")return false;const r=e.getBoundingClientRect();return r.width>=W.innerWidth*0.9&&r.height>=W.innerHeight*0.85})};
+    return c.filter((e)=>{if(SKIP.test(e.tagName)||e.id==="u13demo"||e.id==="vnav"||e.classList.contains("mobsheet"))return false;if(e.hidden)return false;
+      const s=getComputedStyle(e);if(s.position!=="fixed"||s.display==="none"||s.visibility==="hidden")return false;const r=e.getBoundingClientRect();if(!(r.width>=W.innerWidth*0.9&&r.height>=W.innerHeight*0.85))return false;return!(e.querySelector&&e.querySelector("#li,#u13so"))})};
   const open=()=>sheets().length>0||ovs().length>0;
   const key=()=>{const vt=document.querySelector("#vtab button.on[data-v]");if(vt&&vis(vt.parentElement))return "l:"+vt.dataset.v;
     const V=W.__V;if(V&&V.cur)return "v:"+V.cur;
@@ -986,12 +986,14 @@ if("serviceWorker" in navigator&&/^https:|^http:\/\/localhost/.test(location.pro
   W.addEventListener("popstate",(e)=>{if(ignore){ignore--;return}const st=e.state||{};busy=true;
     try{if(closeTop()){ovPushed=false;if(!(st.u13k===curK&&!st.ov))H.pushState({u13k:curK},"");return}
       if(st.u13k&&st.u13k!==curK){go(st.u13k);curK=st.u13k}}finally{setTimeout(()=>{busy=false},80)}});
-  const tick=()=>{if(busy)return;const k=key();if(!k)return;
+  const tick=()=>{if(busy||Date.now()-lastKey<1200)return;const k=key();if(!k)return;
     if(curK===null){curK=k;H.replaceState({u13k:k},"");return}
     const o=open();
     if(k!==curK){curK=k;if(ovPushed&&H.state&&H.state.ov)H.replaceState({u13k:k},"");else H.pushState({u13k:k},"");ovPushed=false}
     if(o&&!ovPushed){H.pushState({u13k:curK,ov:1},"");ovPushed=true}
     else if(!o&&ovPushed){ovPushed=false;if(H.state&&H.state.ov){ignore++;H.back()}}};
+  /* Beim Tippen nicht prüfen: die Prüfung zwingt den Browser jedes Mal, die Seite neu zu vermessen (Ruckeln in Safari) */
+  let lastKey=0;document.addEventListener("keydown",()=>{lastKey=Date.now()},true);document.addEventListener("input",()=>{lastKey=Date.now()},true);
   setInterval(tick,250);
   document.addEventListener("click",()=>{setTimeout(tick,60)},true);
 })();

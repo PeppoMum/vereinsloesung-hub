@@ -319,7 +319,7 @@ html[data-design] body :is(#nfbt,#nnew,#ntnew,#nmore)[aria-expanded="true"]{box-
 html[data-design] body #gpl td>:is(input,select){vertical-align:middle;margin:0}
 @media(max-width:760px){
 #gd:not([hidden]){position:fixed;inset:0;z-index:600;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:var(--bg);padding:0 12px calc(40px + env(safe-area-inset-bottom,0px))}
-html:has(#gd:not([hidden])){overflow:hidden}
+html.gdauf{overflow:hidden}
 #gd .gdh{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;margin:0 -12px;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;background:var(--card);border-bottom:1px solid var(--ln)}
 #gd .gdh b{flex:1;min-width:0;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html[data-design] body #gd .gdh #gdx{width:var(--ctl);min-width:var(--ctl);padding:0;font-size:18px;flex:none}
@@ -2170,7 +2170,7 @@ let hnRange=null,hnLkA=null;
   {const b=document.querySelector("[data-hnbul]");if(b){b.addEventListener("mousedown",(e)=>e.preventDefault());b.addEventListener("click",()=>{if(!hnIn()){ed.focus();if(hnRange){const g=getSelection();g.removeAllRanges();g.addRange(hnRange)}}rtBul(ed)})}}}
 function hnIn(){const g=getSelection(),ed=$("#hnt");return!!(ed&&g&&g.rangeCount&&ed.contains(g.getRangeAt(0).commonAncestorContainer))}
 function hnFx(c){const ed=$("#hnt");if(!hnIn()){ed.focus();if(hnRange){const g=getSelection();g.removeAllRanges();g.addRange(hnRange)}}try{document.execCommand("styleWithCSS",false,false)}catch(e){}document.execCommand(c);hnFxState()}
-function hnFxState(){const a=hnIn();document.querySelectorAll("[data-hnfx]").forEach((b)=>{let on=false;try{on=a&&document.queryCommandState(b.dataset.hnfx)}catch(e){}b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on))})}
+function hnFxState(){const a=hnIn();document.querySelectorAll("[data-hnfx]").forEach((b)=>{let on=false;try{on=a&&document.queryCommandState(b.dataset.hnfx)}catch(e){}if(b.getAttribute("aria-pressed")!==String(on)){b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on))}})}
 /* „Link einfügen“: markierter Text wird zum Linktext; steht der Cursor in einem Link, wird dieser geändert */
 function hnLkOpen(){const f=$("#hnlf"),ed=$("#hnt"),r=hnIn()?getSelection().getRangeAt(0):hnRange&&ed.contains(hnRange.commonAncestorContainer)?hnRange:null;hnRange=r?r.cloneRange():null;
   const n=r&&r.startContainer,a=n&&(n.nodeType===1?n:n.parentElement).closest("a");hnLkA=a&&ed.contains(a)?a:null;
@@ -2358,7 +2358,7 @@ function rtWire(ed,o){o=o||{};if(rtEds.has(ed))return;const st={range:null,a:nul
   ed.before(tb);ed.after(lf);
   const inEd=()=>{const g=getSelection();return!!(g&&g.rangeCount&&ed.contains(g.getRangeAt(0).commonAncestorContainer))};
   const back=()=>{if(!inEd()){ed.focus();if(st.range){const g=getSelection();g.removeAllRanges();g.addRange(st.range)}}};
-  const state=()=>{const a=inEd();tb.querySelectorAll("[data-rtfx]").forEach((b)=>{let on=false;try{on=a&&document.queryCommandState(b.dataset.rtfx)}catch(e){}b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on))})};
+  const state=()=>{const a=inEd();tb.querySelectorAll("[data-rtfx]").forEach((b)=>{let on=false;try{on=a&&document.queryCommandState(b.dataset.rtfx)}catch(e){}if(b.getAttribute("aria-pressed")!==String(on)){b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on))}})};
   const fx=(c)=>{back();try{document.execCommand("styleWithCSS",false,false)}catch(e){}document.execCommand(c);state()};
   const U=lf.querySelector("[data-rtu]"),Nm=lf.querySelector("[data-rtn]"),M=lf.querySelector("[data-rtm]");
   const lkClose=()=>{lf.hidden=true;U.value="";Nm.value="";M.textContent="";st.a=null};
@@ -5393,7 +5393,7 @@ document.addEventListener("change",(e)=>{const t=e.target;if(!L||!t.dataset||!t.
 /* Reparatur: falsch gespeicherter Status „a“ (abwesend) heißt intern „t“ */
 const fx=new Set();window.__fixA=function(){(D.spiele||[]).forEach((g)=>{const sp=g.spieler||{};if(!Object.values(sp).some((s)=>s&&s.status==="a")||fx.has(g.id))return;fx.add(g.id);const n={};Object.keys(sp).forEach((k)=>{n[k]=sp[k]&&sp[k].status==="a"?{...sp[k],status:"t"}:sp[k]});(window.ccQuiet||((f)=>f()))(()=>save("games",g.id,{...g,spieler:n}))})};
 const css=document.createElement("style");
-css.textContent='#lv{position:fixed;inset:0;z-index:200;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}#lv[hidden]{display:none}html:has(#lv:not([hidden])) #gd:not([hidden]){z-index:190}#lv .lvb{max-width:1000px;margin:0 auto;padding:12px 14px calc(90px + env(safe-area-inset-bottom))}'
+css.textContent='#lv{position:fixed;inset:0;z-index:200;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}#lv[hidden]{display:none}html.lvauf #gd:not([hidden]){z-index:190}#lv .lvb{max-width:1000px;margin:0 auto;padding:12px 14px calc(90px + env(safe-area-inset-bottom))}'
 +'#lv .lvbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg);padding:6px 0 10px;z-index:3;flex-wrap:wrap}#lv .lvtop{display:flex;gap:18px;align-items:center;flex-wrap:wrap}'
 +'#lv .lvck{display:flex;align-items:center;gap:14px;flex-wrap:wrap}#lv #lvclk{font-size:44px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}#lv .lvcb{display:flex;gap:8px;flex-wrap:wrap}#lv .lvf{display:flex;gap:14px;align-items:center;flex-wrap:wrap}#lv .lvadj{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-basis:100%}#lv .lvadj .btn{padding:7px 10px}'
 +'#lv .lvg{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:8px}#lv .lvr{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:9px 10px;display:flex;flex-direction:column;gap:7px}#lv .lvr.lvx{opacity:.7}#lv .lvr.lvx .lvn{text-decoration:line-through}'
@@ -5403,6 +5403,11 @@ css.textContent='#lv{position:fixed;inset:0;z-index:200;background:var(--bg);ove
 +'#lv .lvfoot{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--ln);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center;z-index:4}#lv .lvfoot .btn{padding:11px 18px}@media(max-width:520px){#lv #lvclk{font-size:38px}}';
 document.head.appendChild(css);
 })();
+
+/* Statt html:has(…): Safari rechnet bei :has am html-Element nach jeder Änderung die ganze Seite neu (Ruckeln beim Tippen). Darum merken sich zwei Klassen am html-Element, ob Spiel-Fenster (#gd) bzw. Spieltag (#lv) offen sind. */
+(function(){const R=document.documentElement,up=()=>{const g=document.getElementById("gd"),l=document.getElementById("lv");R.classList.toggle("gdauf",!!g&&!g.hidden);R.classList.toggle("lvauf",!!l&&!l.hidden)};
+  const go=()=>{up();new MutationObserver(up).observe(document.body,{subtree:true,attributes:true,attributeFilter:["hidden"]});new MutationObserver(up).observe(document.body,{childList:true})};
+  if(document.body)go();else document.addEventListener("DOMContentLoaded",go)})();
 </script>
 <script>/* ===== Spieltag: Aufstellung · Ansprache & Skizzen · (Live-Spielzeit in live.js) · Notizblatt mit Apple Pencil =====
    Daten: eigene Sammlung „spieltag“ (ein Dokument je Spiel), bewusst getrennt von den Spielen. Nichts davon gelangt in Spielerlinks, Planlink oder Demo. */
