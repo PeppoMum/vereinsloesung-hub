@@ -564,9 +564,11 @@ html.mobnav #mobmore .vbadge{position:absolute!important;top:0;left:calc(50% + 7
     const l2mGew = div(sum(gew2.map((x) => x.s.minuten || 0)), sum(gew2.map(cap)));
     const gewSaison = div(sum(gew.map((x) => x.s.minuten || 0)), sum(gew.map(cap)));
     return {
-      l2mKader: kader2.length, l2mMinuten: sum(kader2.map((x) => x.s.minuten || 0)),
+      l2mKader: kader2.length, l2mGewN: gew2.length, l2mMinuten: sum(kader2.map((x) => x.s.minuten || 0)),
       l2mGewichtet: l2mGew, l2mAbs: div(sum(kader2.map((x) => x.s.minuten || 0)), sum(all2.map((g) => g.dauer))),
       trend: gewSaison != null && l2mGew != null ? l2mGew - gewSaison : null,
+      /* Im zuletzt erfassten Spiel als verletzt eingetragen (dann gerade keine Spielzeit-Warnung) */
+      zuletztVerletzt: (() => { const g = all.filter((x) => x.datum).sort((x, y) => x.datum.localeCompare(y.datum)).pop(); const s = g && (g.spieler || {})[pid]; return !!(s && s.status === "v"); })(),
       spiele: all.length, kader: kader.length, n: cnt("n"), v: cnt("v"), t: cnt("t"),
       nichtImKader: cnt("n") + cnt("v") + cnt("t"),
       minuten, twMin: sum(twG.map((x) => +x.s.tw || 0)), twN: twG.length,
@@ -611,14 +613,19 @@ html.mobnav #mobmore .vbadge{position:absolute!important;top:0;left:calc(50% + 7
   const farbeSpielzeit = (x) => farbe(x, GR.s);
   const farbeTraining = (x) => farbe(x, GR.t);
 
+  const MIN_SPIELE_60 = 4;
   /* Alles für alle belegten, aktiven Spieler + Team-Kennzahlen (Saisonübersicht). */
   function saison(db, refMonat) {
     const zl = (db.einstellungen && db.einstellungen.zaehlendeAbwesenheiten) || { e: true, u: true, v: false, t: false }; // neue Mannschaften haben noch keine eigene Einstellung
     const rows = db.spieler.filter((p) => p.aktiv && p.name).map((p) => {
       const sp = spielStats(p.id, db.spiele), tr = trainStats(p.id, db.trainings, zl, refMonat);
-      /* Warnung: Feldspieler unter der ersten (roten) Spielzeit-Grenze, voreingestellt 50 % (Saison oder letzte 2 Monate), aber nur wenn er in den letzten 2 Monaten im Kader stand */
-      const lowS = sp.gewichtet != null && sp.gewichtet < GR.s[0] / 100, lowL = sp.l2mGewichtet != null && sp.l2mGewichtet < GR.s[0] / 100;
-      const warn = !p.torwart && sp.l2mKader > 0 && (lowS || lowL) ? { saison: lowS, l2m: lowL } : null;
+      /* Warnung: Feldspieler unter der ersten (roten) Spielzeit-Grenze, voreingestellt 50 % (Saison oder letzte 60 Tage), aber nur wenn er in den letzten 60 Tagen im Kader stand.
+         Die letzten 60 Tage zählen erst ab MIN_SPIELE_60 gewichteten Spielen im Kader (sonst zu wenig Aussagekraft).
+         Keine Warnung, solange ein Ausfall eingetragen ist (config.ausfaelle) oder er im zuletzt erfassten Spiel als verletzt eingetragen ist. */
+      const td = heute(), af = ((db.einstellungen && db.einstellungen.ausfaelle) || {})[p.id];
+      const raus = !!(af && af.von && af.bis && af.von <= td && af.bis >= td) || sp.zuletztVerletzt;
+      const lowS = sp.gewichtet != null && sp.gewichtet < GR.s[0] / 100, lowL = sp.l2mGewN >= MIN_SPIELE_60 && sp.l2mGewichtet != null && sp.l2mGewichtet < GR.s[0] / 100;
+      const warn = !p.torwart && !raus && sp.l2mKader > 0 && (lowS || lowL) ? { saison: lowS, l2m: lowL } : null;
       return { spieler: p, spiel: sp, training: tr, warnSpielzeit: warn,
                farbeSpielzeit: p.torwart ? 0 : farbeSpielzeit(sp.gewichtet), farbeTraining: farbeTraining(tr.gewichtet) };
     });
@@ -4554,7 +4561,7 @@ function renderStart(){
   const tnotes=(D.notizen||[]).filter((n)=>n.pid==="team"&&n.art!=="ziel"&&n.art!=="beobachtung"&&n.ort!=="allg").sort((a,b)=>(b.datum||"").localeCompare(a.datum||"")).slice(0,5);
   const WN=S?S.rows.filter((r)=>r.warnSpielzeit).sort((x,y)=>(Math.min(x.spiel.gewichtet??1,x.spiel.l2mGewichtet??1))-(Math.min(y.spiel.gewichtet??1,y.spiel.l2mGewichtet??1))):[];
   /* Spielzeit-Warnung: standardmäßig eine Zeile, aufgeklappt mit Name + Profil oben und den Werten darunter */
-  const wnAuf=!!wnGet(),wnHtml=WN.length?'<div class="card wnc" style="grid-column:1/-1;border-color:var(--r)"><h3 data-wnt="1" title="'+(wnAuf?"Minimieren":"Anzeigen")+'">'+(wnAuf?'<i class="chv"></i>':'<i class="chv r"></i>')+' <i class=sy data-sy=warn></i> '+WN.length+' Spieler unter '+U13.grenzen().s[0]+' % Spielzeit</h3>'+(wnAuf?'<div style="margin-top:10px"></div>'+WN.map((r)=>{const s=r.spiel,pr=(x)=>x==null?"–":Math.round(x*100)+" %",bad=(f)=>f?'<b class="dn">':"<b>";return'<div class="row wnr"><b class="wnn">'+esc(nm(r.spieler))+'</b><span class="note wnv">Saison '+bad(r.warnSpielzeit.saison)+pr(s.gewichtet)+"</b> · letzte 60 Tage "+bad(r.warnSpielzeit.l2m)+pr(s.l2mGewichtet)+'</b></span><button class="rm" data-pid="'+r.spieler.id+'">Profil</button></div>'}).join("")+'<p class="note" style="margin:8px 0 0">Spielzeit gewichtet, ohne Torhüter. Keine Warnung, wenn der Spieler in den letzten 60 Tagen nicht im Kader stand.</p>':"")+'</div>':"";
+  const wnAuf=!!wnGet(),wnHtml=WN.length?'<div class="card wnc" style="grid-column:1/-1;border-color:var(--r)"><h3 data-wnt="1" title="'+(wnAuf?"Minimieren":"Anzeigen")+'">'+(wnAuf?'<i class="chv"></i>':'<i class="chv r"></i>')+' <i class=sy data-sy=warn></i> '+WN.length+' Spieler unter '+U13.grenzen().s[0]+' % Spielzeit</h3>'+(wnAuf?'<div style="margin-top:10px"></div>'+WN.map((r)=>{const s=r.spiel,pr=(x)=>x==null?"–":Math.round(x*100)+" %",bad=(f)=>f?'<b class="dn">':"<b>";return'<div class="row wnr"><b class="wnn">'+esc(nm(r.spieler))+'</b><span class="note wnv">Saison '+bad(r.warnSpielzeit.saison)+pr(s.gewichtet)+"</b> · letzte 60 Tage "+bad(r.warnSpielzeit.l2m)+pr(s.l2mGewichtet)+"</b>"+((s.l2mGewN||0)<4?" ("+(s.l2mGewN||0)+(s.l2mGewN===1?" Spiel":" Spiele")+")":"")+'</span><button class="rm" data-pid="'+r.spieler.id+'">Profil</button></div>'}).join("")+'<p class="note" style="margin:8px 0 0">Spielzeit gewichtet, ohne Torhüter. Letzte 60 Tage zählen erst ab 4 Spielen. Keine Warnung bei Ausfall oder Verletzung im letzten Spiel.</p>':"")+'</div>':"";
   $("#hg").innerHTML='<div class="card"><h3>Nächste Termine</h3>'+(up.length?up.map(evLine).join(""):'<p class="note">Keine Termine. Unter „Termine“ anlegen.</p>')+'</div>'+wnHtml+'<div class="card"><h3>Zu erledigen'+qaBtn("todo")+'</h3>'+(todo.length?todo.join(""):'<p class="note">Alles erledigt ✓</p>')+(tdd.length?'<p class="note" style="margin:8px 0 0">'+tdd.length+' erledigt · <button class="rm" data-tdc="1">aufräumen</button></p>':"")+'</div><div class="card"><h3>Nächste Geburtstage</h3>'+(bd.length?bd.map((b)=>'<div class="row"><span>'+esc(bdn(b.p))+'</span><span class="note">'+esc(ddm(b.datum))+" · wird "+b.alter+"</span></div>").join(""):'<p class="note">Keine Geburtstage hinterlegt. Geburtsdaten unter „Stammdaten“ eintragen.</p>')+'</div><div class="card"><h3>Notizen'+qaBtn("note")+'</h3>'+tnotes.map((n)=>'<div class="row"><span style="white-space:pre-wrap;overflow-wrap:anywhere;min-width:0"><b>'+esc(ddm(n.datum))+"</b> · "+bulHtml(n.text)+(n.autor?' <span class="note">(von '+esc(n.autor)+")</span>":"")+'</span><button class="rm'+(snArm===n.id?" arm":"")+'" data-snd="'+n.id+'" title="Notiz löschen">'+(snArm===n.id?"Löschen?":"✕")+"</button></div>").join("")+thn.map((x)=>tdRow(x,false)).join("")+(hin.length?hin.map((e)=>'<div class="row"><span><b>'+esc(ddm(e.datum))+(e.bis&&e.bis>e.datum?" – "+esc(ddm(e.bis)):"")+"</b> · "+esc(e.titel||e.typ)+"</span></div>").join(""):thn.length||tnotes.length?"":'<p class="note">Keine Notizen. '+(qaOk()?"Mit ＋ oben rechts anlegen.":"Unter „Notizen“ anlegen.")+'</p>')+"</div>";
   $("#hn").innerHTML=[["a","Beteiligung"],["q","Bilanz"],["p","Profil"],["n","Notizen"],["t","Training"],["g","Spiele"],["m","Termine"],["w","Schwerpunkte"],["s","Stammdaten"],["k","Kaderplanung"],["e","Einstellungen"]].map((a)=>'<button class="btn" data-go="'+a[0]+'" style="padding:12px 10px"><span class="tic">'+window.__dz.icon(a[0])+"</span>"+a[1]+"</button>").join("");
 }
