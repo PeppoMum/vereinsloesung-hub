@@ -5244,7 +5244,7 @@ function xNotizen(wer){
   /* Zeilen vorberechnen: Gruppenkopf, Notizkopf (Datum, Art, Kategorie), Text */
   const blocks=[];
   groups.forEach((g)=>{blocks.push({k:"g",t:g.t,n:g.L.length,h:30});
-    g.L.forEach((n)=>{const tag=[n.art==="ziel"?"Entwicklungsziel":"Notiz",(n.pid&&n.pid!=="team"&&n.sichtbar)?"im Profil sichtbar":(n.pid&&n.pid!=="team"?"intern":""),n.autor?"von "+n.autor:""].filter(Boolean).join(" · "),lines=xwrap(rtPlain(n.text||""),TW,9.5);
+    g.L.forEach((n)=>{const ob=n.art==="beobachtung",tag=[n.art==="ziel"?"Entwicklungsziel":ob?"Beobachtung":"Notiz",ob?(n.anlass||"Allgemein"):"",ob?(n.pid&&n.pid!=="team"?"intern":""):(n.pid&&n.pid!=="team"&&n.sichtbar)?"im Profil sichtbar":(n.pid&&n.pid!=="team"?"intern":""),n.ort==="start"?"Startseite":"",ob&&n.zus?"zusammengefasst":"",n.aus?"ausgeblendet":"",n.autor?"von "+n.autor:""].filter(Boolean).join(" · "),lines=xwrap(rtPlain(n.text||""),TW,9.5);
       blocks.push({k:"n",d:n.datum,tag,lines,h:18+lines.length*LH+10,ziel:n.art==="ziel"})})});
   const pages=[];let pg=[],y=TOPF;
   blocks.forEach((b,i)=>{let need=b.h;if(b.k==="g"){const nx=blocks[i+1];need+=nx?Math.min(nx.h,60):0}
