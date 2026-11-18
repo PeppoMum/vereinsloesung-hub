@@ -11850,4 +11850,88 @@ function dlg(){
 })();
 
 </script>
+<script>/* ---------- ESC-Taste schließt das oberste Fenster wie der Schließen-Knopf (Computer) ----------
+   Fenster mit eigener ESC-Regel schließen weiter selbst; sonst klickt ESC den Schließen-/Abbrechen-Knopf des obersten Fensters.
+   Nur wenn im Fenster etwas geändert wurde, das erst ein Speichern-Knopf sichert, kommt vorher die Frage „Änderungen speichern?“.
+   Fenster ohne Speichern-Knopf speichern sofort beim Ändern, dort wird nicht gefragt. */
+(function(){
+  const W=window,d=document;if(W.__escAn)return;W.__escAn=1;
+  const vis=(e)=>{if(!e||!e.isConnected||e.hidden)return false;const s=getComputedStyle(e);return s.display!=="none"&&s.visibility!=="hidden"};
+  const SKIP=/^(SCRIPT|STYLE|LINK|META|TITLE|NAV|TEMPLATE)$/;
+  /* ganzflächiges Fenster: fest stehend und (fast) so groß wie der Bildschirm */
+  const gross=(e)=>{if(SKIP.test(e.tagName)||e.id==="u13demo"||e.id==="vnav"||e.id==="escq"||e.classList.contains("mobsheet")||!vis(e))return false;
+    const s=getComputedStyle(e);if(s.position!=="fixed")return false;const r=e.getBoundingClientRect();
+    return r.width>=W.innerWidth*0.9&&r.height>=W.innerHeight*0.85&&!(e.querySelector&&e.querySelector("#li,#u13so"))};
+  const zi=(e)=>{const z=parseInt(getComputedStyle(e).zIndex,10);return isNaN(z)?0:z};
+  /* oberstes Fenster: das innerste offene; bei mehreren das mit der höchsten Ebene, sonst das spätere */
+  const fenster=()=>[...d.body.querySelectorAll("*")].filter((e)=>e.offsetParent===null&&gross(e));
+  const oben=()=>{const c=fenster();if(!c.length)return null;const inn=c.filter((e)=>!c.some((x)=>x!==e&&e.contains(x)));
+    const aus=(e)=>{let a=e;c.forEach((x)=>{if(x.contains(a)&&x!==a)a=x});return a};
+    return inn.map((e,i)=>[e,zi(aus(e)),i]).sort((x,y)=>x[1]-y[1]||x[2]-y[2]).pop()[0]};
+  W.__escOben=oben;   /* für die Prüfungen */
+  const fensterVon=(t)=>{let o=null;for(let e=t;e&&e!==d.body;e=e.parentElement){if(e.nodeType===1&&gross(e)){o=e;break}}return o};
+  const lab=(b)=>(b.getAttribute("aria-label")||b.getAttribute("title")||b.textContent||"").replace(/\s+/g," ").trim();
+  const knoepfe=(o)=>[...o.querySelectorAll("button,[role=button],input[type=submit]")].filter((b)=>!b.disabled&&vis(b)&&b.getClientRects().length);
+  const SPEICH=/^(speichern|übernehmen|anlegen|hinzufügen|eintragen|erstellen|senden|absenden|abschicken)\b|speichern$/i;
+  const speicherKnopf=(o)=>{const k=knoepfe(o);return k.find((b)=>SPEICH.test(lab(b))&&!/nicht speichern/i.test(lab(b)))||k.find((b)=>b.type==="submit"&&!/abbrechen|schließen/i.test(lab(b)))||null};
+  const schliessKnopf=(o)=>{const k=knoepfe(o),t=(b)=>(b.textContent||"").trim();
+    return k.find((b)=>/schließen$/i.test(b.getAttribute("aria-label")||b.getAttribute("title")||""))
+      ||k.find((b)=>/^(✕|×)$/.test(t(b))&&!b.getAttribute("aria-label")&&!b.getAttribute("title"))
+      ||k.find((b)=>/^(✕ ?|× ?)?(schließen|fenster schließen)$/i.test(t(b)))
+      ||k.find((b)=>/^(abbrechen)$/i.test(t(b)))
+      ||k.find((b)=>/^(‹ |← )?zurück$/i.test(t(b)))
+      ||k.find((b)=>/^fertig$/i.test(t(b)))
+      ||null};
+  /* Eingabefelder: Wert beim ersten Anfassen merken; geändert = jetzt anders als damals */
+  const FELD="input:not([type=button]):not([type=submit]):not([type=reset]):not([type=hidden]),textarea,select,[contenteditable=true],[contenteditable='']";
+  const alt=new WeakMap();
+  const wert=(f)=>f.type==="checkbox"||f.type==="radio"?String(f.checked):("value" in f)?String(f.value):f.innerHTML;
+  const feldVon=(t)=>t&&t.closest?t.closest(FELD):null;
+  const merk=(e)=>{const f=feldVon(e.target);if(f&&!alt.has(f))alt.set(f,wert(f));
+    if(f&&(f.type==="radio")&&f.name){d.querySelectorAll('input[type=radio][name="'+CSS.escape(f.name)+'"]').forEach((r)=>{if(!alt.has(r))alt.set(r,wert(r))})}};
+  d.addEventListener("focusin",merk,true);d.addEventListener("pointerdown",merk,true);d.addEventListener("mousedown",merk,true);
+  const geaendert=(o)=>[...o.querySelectorAll(FELD)].some((f)=>alt.has(f)&&alt.get(f)!==wert(f));
+  const vergiss=(o)=>o.querySelectorAll(FELD).forEach((f)=>alt.delete(f));
+  const merkJetzt=(o)=>o.querySelectorAll(FELD).forEach((f)=>{if(alt.has(f))alt.set(f,wert(f))});
+  const istZu=(b)=>/schließen$/i.test(b.getAttribute("aria-label")||b.getAttribute("title")||"")||/^((✕|×) ?)?(schließen|fenster schließen|abbrechen|zurück|‹ zurück|← zurück|fertig)$|^(✕|×)$/i.test((b.textContent||"").trim())&&!(/^(✕|×)$/.test((b.textContent||"").trim())&&(b.getAttribute("aria-label")||b.getAttribute("title")));
+  /* Bereich, zu dem ein Knopf gehört: der nächste umgebende Teil mit Speichern-Knopf, sonst Formular/Karte/Seite */
+  const bereich=(b)=>{for(let e=b.parentElement;e&&e!==d.body;e=e.parentElement){if(e.querySelector(FELD)&&speicherKnopf(e))return e;if(/^(SECTION|MAIN)$/.test(e.tagName)||gross(e))break}return b.closest("form,.card,section")||b.parentElement};
+  /* Was schließt ESC? Ein offenes Fenster, sonst ein offener Bereich in der Seite (z. B. Spiel bearbeiten am Computer) */
+  const ziel=()=>{const o=oben();if(o)return{o,b:schliessKnopf(o)};
+    const k=knoepfe(d.body).filter((b)=>istZu(b)&&!b.closest("nav,#vnav,.mobsheet,[role=menu],#escq"));if(!k.length)return null;
+    const ae=d.activeElement,z=k.map((b)=>({o:bereich(b),b})),m=ae&&ae!==d.body?z.filter((x)=>x.o.contains(ae)):[];
+    return m.length?m[m.length-1]:z.length===1?z[0]:null};
+  W.__escZiel=ziel;   /* für die Prüfungen */
+  /* Speichern/Schließen per Klick: danach gilt der Stand als gesichert bzw. verworfen */
+  d.addEventListener("click",(e)=>{const b=e.target&&e.target.closest&&e.target.closest("button,[role=button],input[type=submit]");if(!b||b.closest("#escq"))return;
+    const sp=SPEICH.test(lab(b))&&!/nicht speichern/i.test(lab(b)),zuK=!sp&&istZu(b);if(!sp&&!zuK)return;
+    const o=fensterVon(b)||b.closest("form,.card,section");if(!o)return;
+    setTimeout(()=>{if(zuK||!vis(o))vergiss(o);else merkJetzt(o)},400)},true);
+  /* Frage „Änderungen speichern?“ */
+  let frage=null;
+  const frageZu=()=>{if(frage){frage.remove();frage=null}};
+  const zu=(z)=>{if(z.b&&z.b.isConnected){z.b.click();return true}
+    const bg=[...z.o.children].find((c)=>/(^|\s)qa-bg(\s|$)/.test(c.className||""));if(bg){bg.click();return true}return false};
+  const fragen=(z)=>{frageZu();const sp=speicherKnopf(z.o);
+    frage=d.createElement("div");frage.id="escq";frage.className="qa";frage.style.zIndex="3000";
+    frage.innerHTML='<div class="qa-bg" data-escq="weiter"></div><div class="qa-box" role="alertdialog" aria-modal="true" aria-labelledby="escqh" style="width:min(440px,calc(100% - 24px))"><h3 id="escqh">Änderungen speichern?</h3>'
+      +'<div class="qa-btns" style="flex-wrap:wrap"><button type="button" class="btn" data-escq="weiter">Weiter bearbeiten</button><button type="button" class="btn" data-escq="weg">Nicht speichern</button><button type="button" class="btn qa-ok" data-escq="ja">Speichern</button></div></div>';
+    d.body.appendChild(frage);
+    frage.addEventListener("click",(e)=>{const a=e.target.closest("[data-escq]");if(!a)return;const w=a.dataset.escq;frageZu();
+      if(w==="ja"){if(sp&&sp.isConnected)sp.click()}
+      else if(w==="weg"){vergiss(z.o);zu(z)}});
+    frage.querySelector('[data-escq="ja"]').focus()};
+  let beob=null,ziel0=null;
+  W.addEventListener("keydown",(e)=>{if(e.key!=="Escape"||!e.isTrusted||e.isComposing)return;
+    if(beob){beob.disconnect();beob=null}ziel0=null;
+    if(frage){e.preventDefault();e.stopImmediatePropagation();frageZu();return}
+    const z=ziel();if(!z)return;
+    if(speicherKnopf(z.o)&&geaendert(z.o)){e.preventDefault();e.stopImmediatePropagation();fragen(z);return}
+    /* Andere ESC-Regeln (Menüs, Auswahllisten, Fenster mit eigener Regel) zuerst laufen lassen; nur wenn keine etwas schließt, schließt diese hier */
+    ziel0=z;beob=new MutationObserver(()=>{});beob.observe(d.body,{subtree:true,childList:true,attributes:true,attributeFilter:["hidden","open","class","style"]})},true);
+  W.addEventListener("keydown",(e)=>{if(e.key!=="Escape"||!e.isTrusted||!beob)return;const r=beob.takeRecords();beob.disconnect();beob=null;const z=ziel0;ziel0=null;
+    if(e.defaultPrevented||r.length||!z||!vis(z.o))return;
+    if(zu(z))e.preventDefault()});
+})();
+</script>
 </body></html>
