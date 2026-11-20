@@ -7119,7 +7119,7 @@ function gcBuild(){
       else{
         const est=tf==null;if(est)tf=anE-90;
         const fz=gcFz(e),ort=gcOrt(e);
-        s=tf-fz.min-15;en=anE+dur+45;
+        s=tf;en=anE+dur+45;
         desc.push("Treffen: "+gcHM(tf)+" Uhr"+(est?" (geschätzt: 90 Min. vor Anstoß)":""));
         if(an!=null)desc.push("Anstoß: "+gcHM(an)+" Uhr");
         desc.push("Abfahrt: "+gcHM(tf-fz.min)+" Uhr (Fahrzeit ca. "+fz.min+" Min., "+(fz.src==="m"?"von dir eingetragen":fz.src==="b"?"berechnet":"geschätzt – Adresse fehlt")+")");
