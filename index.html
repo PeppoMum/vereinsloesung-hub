@@ -2228,7 +2228,7 @@ const aufClips=()=>{const V=window.__vid;return V&&V.on&&V.on()?V.clips||[]:[]};
 function aufDa(){return hnList().some((n)=>n&&n.art==="c"&&n.text)||aufClips().some((c)=>c&&c.aufgabe)}
 function aufListe(){const td=hnHeute(),L=window.__links||{},A=typeof active==="function"?active():[],mit=(p)=>!!(L[p.id]&&L[p.id].aktiv&&L[p.id].key),o=[];
   for(const n of hnList())if(n&&n.art==="c"&&n.text&&!(n.von&&td<n.von))o.push({k:"h",id:n.id,f:n.bis?Date.parse(n.bis+"T23:59:59"):NaN,ab:n.von||(/^h[0-9a-z]+$/.test(n.id)?aufTag(parseInt(n.id.slice(1),36)):""),an:hnEmpf(n).filter(mit),t:hnFmt(n.text.split("\n")[0]),n});
-  for(const c of aufClips())if(c&&c.aufgabe&&c.s&&c.ck)o.push({k:"v",id:c.id,f:c.frist?Date.parse(c.frist.length<=10?c.frist+"T23:59":c.frist):NaN,ab:(c.at||"").slice(0,10),an:(c.an==="alle"||!Array.isArray(c.an)?A:A.filter((p)=>c.an.includes(p.id))).filter(mit),t:"Clip: "+esc(c.titel||c.aufgabe)});
+  for(const c of aufClips())if(c&&c.aufgabe&&c.s&&c.ck&&!c.aus&&!c.kaus)o.push({k:"v",id:c.id,f:c.frist?Date.parse(c.frist.length<=10?c.frist+"T23:59":c.frist):NaN,ab:(c.at||"").slice(0,10),an:(c.an==="alle"||!Array.isArray(c.an)?A:A.filter((p)=>c.an.includes(p.id))).filter(mit),t:"Clip: "+esc(c.titel||c.aufgabe)});
   return o.filter((a)=>a.an.length)}
 function aufSt(a,at,nein){if(nein)return{s:nein==="e"?"e":nein==="g"?"g":nein==="v"?"y":"x",at};if(at)return{s:isNaN(a.f)||at==="?"||Date.parse(at)<=a.f?"p":"v",at};return{s:!isNaN(a.f)&&Date.now()>a.f?"n":"o",at:null}}
 /* Antworten auf eine Aufgabe mit Abhaken zählen auch als erledigt (viele vergessen das Abhaken): Zeitpunkte je Spieler aus antw/<pfad>/m */
@@ -2719,10 +2719,10 @@ const myName=()=>{const v=ls.get("u13vname","");if(v)return v;const st=((D.confi
   const em=(window.__ACCT||"").split("@")[0];return em&&em!=="main"?em.charAt(0).toUpperCase()+em.slice(1).split(/[._-]/)[0]:"Trainer"};
 const canW=()=>!!db&&window.__ROLE!=="lesen"&&window.__ROLE!=="scout"&&!window.__RO;
 /* Für die Spielerlinks (links.js): Clips je Spieler, ganze Spiele mit Video, Feedback-Schlüssel */
-V.clipsFor=(pid)=>V.clips.filter((c)=>sichtbar(c)&&c.s&&c.ck&&(c.an==="alle"||(Array.isArray(c.an)&&c.an.includes(pid))))
-  .map((c)=>({id:c.id,ti:c.titel||"",u:c.url||"",a:c.aufgabe||"",f:c.frist||"",at:c.at||"",s:c.s,ck:c.ck,n:c.an==="alle"?0:c.an.length}));
+V.clipsFor=(pid)=>V.clips.filter((c)=>sichtbar(c)&&!c.aus&&c.s&&c.ck&&(c.an==="alle"||(Array.isArray(c.an)&&c.an.includes(pid))))
+  .map((c)=>({id:c.id,ti:c.titel||"",u:c.url||"",a:c.aufgabe||"",f:c.frist||"",at:c.at||"",s:c.s,ck:c.ck,n:c.an==="alle"?0:c.an.length,...(c.kaus?{nk:1}:{})}));
 V.games=()=>D.spiele.filter((g)=>urlOk(g.video)).map((g)=>({d:g.datum||"",g:g.gegner||"",ha:g.ha||"",a:g.art||"",e:g.tore!=null&&g.gt!=null?g.tore+":"+g.gt:"",v:g.video})).sort((a,b)=>a.d<b.d?1:-1);
-V.sig=()=>JSON.stringify([V.on()?V.clips.filter(sichtbar).map((c)=>[c.id,c.titel,c.url,c.aufgabe,c.an,c.frist,c.bis,c.s]):0,V.on()?V.games():0,V.msgOn()?V.fbKey:0]);
+V.sig=()=>JSON.stringify([V.on()?V.clips.filter(sichtbar).map((c)=>[c.id,c.titel,c.url,c.aufgabe,c.an,c.frist,c.bis,c.s,!!c.aus,!!c.kaus]):0,V.on()?V.games():0,V.msgOn()?V.fbKey:0]);
 /* Dienste für die Übersicht im Spielerlink: alle (Materialdienst, Leibchen, Obst & Gemüse) nur im Link des eingeteilten Spielers – gilt auch für die Eltern-Ansicht.
    Welche gerade gelten, entscheidet der Spielerlink beim Anzeigen nach dem heutigen Datum (dsNow). */
 const DS_EIG=["Leibchen","Obst & Gemüse"];
@@ -2843,12 +2843,14 @@ function formHtml(){
     +'<label class="note" style="display:block;margin:0 0 8px">Aufgabe (freiwillig)<br><textarea id="vda" rows="3" maxlength="1500" style="width:100%;box-sizing:border-box">'+esc(c.aufgabe||"")+"</textarea></label>"
     +'<div class="note" style="margin:0 0 4px">Wer bekommt den Clip?</div><div class="seg" id="vdan" style="margin:0 0 6px"><button type="button" data-an="alle" class="'+(alle?"on":"")+'">Ganze Mannschaft</button><button type="button" data-an="ein" class="'+(alle?"":"on")+'">Einzelne Spieler</button></div>'
     +'<div class="vd-grid" id="vdps"'+(alle?" hidden":"")+">"+active().map((p)=>'<label><input type="checkbox" value="'+esc(p.id)+'"'+(sel.includes(p.id)?" checked":"")+">"+esc(p.vorname+" "+p.name)+"</label>").join("")+"</div>"
-    +'<div class="note" style="margin:8px 0 4px">Kommentieren bis (freiwillig)</div><div class="bar" style="margin:0 0 4px">'+dIn("vdfd",fd,"Datum der Frist")+'<input id="vdft" data-vtime inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:MM" value="'+esc(ft)+'" aria-label="Uhrzeit der Frist" style="width:5.5em"><span class="note">Uhr</span></div><div class="note" style="margin:0 0 8px">Einen Tag vorher bekommen Spieler ohne Kommentar einen Hinweis. Kommentieren geht auch danach.</div>'
+    +'<label style="display:flex;gap:8px;align-items:center;margin:10px 0 6px;font-weight:600"><input type="checkbox" id="vdkm"'+(c.kaus?"":" checked")+'>Kommentieren erlaubt</label><div id="vdfw"'+(c.kaus?" hidden":"")+'>'
+    +'<div class="note" style="margin:8px 0 4px">Kommentieren bis (freiwillig)</div><div class="bar" style="margin:0 0 4px">'+dIn("vdfd",fd,"Datum der Frist")+'<input id="vdft" data-vtime inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:MM" value="'+esc(ft)+'" aria-label="Uhrzeit der Frist" style="width:5.5em"><span class="note">Uhr</span></div><div class="note" style="margin:0 0 8px">Einen Tag vorher bekommen Spieler ohne Kommentar einen Hinweis. Kommentieren geht auch danach.</div></div>'
+    +'<label style="display:flex;gap:8px;align-items:center;margin:10px 0 6px;font-weight:600"><input type="checkbox" id="vdsv"'+(c.aus?"":" checked")+'>Für Spieler sichtbar</label>'
     +'<label class="note" style="display:block;margin:0 0 8px">Für Spieler sichtbar bis (freiwillig)<br>'+dIn("vdb",c.bis||"","Für Spieler sichtbar bis")+'</label><div class="note" style="margin:-4px 0 10px">Danach verschwindet der Clip bei den Spielern. Du siehst ihn weiter unter „Abgelaufen“.</div>'
     +'<div class="bar"><button class="btn" id="vdcancel">Abbrechen</button><button class="btn" id="vdsave" style="background:var(--ac);color:#fff;border-color:var(--ac)">Speichern</button></div></div>'}
 function clipRow(c){
   const R=recips(c),K=V.kom[c.id]||[],done=new Set(K.filter((k)=>!k.tr&&!k.r).map((k)=>k.p)),n=R.filter((p)=>done.has(p.id)).length;
-  return'<button type="button" class="card" data-vc="'+esc(c.id)+'" style="display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;margin:0 0 8px;'+(V.sel===c.id?"border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)":kNeu(c)?"border-color:var(--o)":"")+'"><b style="font-size:15px">'+esc(c.titel||"(ohne Titel)")+'</b>'+(kNeu(c)?' <span class="pill" style="background:var(--o);color:#fff;padding:0 7px">'+kNeu(c)+" neu</span>":"")+'<div class="note">'+(c.an==="alle"?"Ganze Mannschaft":"An "+R.length+" Spieler")+(c.frist?" · bis "+esc(fristTxt(c.frist)):"")+(c.bis?" · sichtbar bis "+esc(dShort(c.bis)):"")+'</div><div class="note" style="color:var(--g);font-weight:600">'+n+" von "+R.length+" haben kommentiert</div></button>"}
+  return'<button type="button" class="card" data-vc="'+esc(c.id)+'" style="display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;margin:0 0 8px;'+(V.sel===c.id?"border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)":kNeu(c)?"border-color:var(--o)":"")+'"><b style="font-size:15px">'+esc(c.titel||"(ohne Titel)")+'</b>'+(kNeu(c)?' <span class="pill" style="background:var(--o);color:#fff;padding:0 7px">'+kNeu(c)+" neu</span>":"")+'<div class="note">'+(c.an==="alle"?"Ganze Mannschaft":"An "+R.length+" Spieler")+(c.frist?" · bis "+esc(fristTxt(c.frist)):"")+(c.bis?" · sichtbar bis "+esc(dShort(c.bis)):"")+'</div>'+(c.aus?'<div class="note" style="color:var(--o);font-weight:600">Für Spieler nicht sichtbar</div>':"")+(c.kaus?'<div class="note">Kommentieren aus</div>':'<div class="note" style="color:var(--g);font-weight:600">'+n+" von "+R.length+" haben kommentiert</div>")+"</button>"}
 function clipsHtml(){
   const ro=!canW(),akt=V.clips.filter(sichtbar),alt=V.clips.filter((c)=>!sichtbar(c));
   if(V.sel&&!V.clips.some((c)=>c.id===V.sel))V.sel=null;
@@ -2861,12 +2863,12 @@ function clipsHtml(){
 function detailHtml(){
   const c=V.clips.find((x)=>x.id===V.sel);if(!c)return'<div class="card"><div class="note">Wähle links einen Clip, um die Kommentare zu sehen und zu antworten.</div></div>';
   const R=recips(c),K=V.kom[c.id]||[],done=new Set(K.filter((k)=>!k.tr&&!k.r).map((k)=>k.p)),ro=!canW(),armed=V.armed==="d"+c.id;
-  return'<div class="card" id="vddet"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start"><div style="flex:1;min-width:200px"><h3 style="margin:0;font-size:18px;text-transform:none;letter-spacing:0">'+esc(c.titel||"(ohne Titel)")+'</h3><div class="note">'+(c.an==="alle"?"Ganze Mannschaft":"An "+esc(R.map((p)=>p.vorname).join(", ")))+(c.frist?" · kommentieren bis "+esc(fristTxt(c.frist)):"")+"</div></div>"
-    +'<div class="bar" style="margin:0">'+(urlOk(c.url)?'<a class="btn" href="'+esc(c.url)+'" target="_blank" rel="noopener noreferrer">Ansehen</a>':"")+(ro?"":'<button class="btn" data-vce="'+esc(c.id)+'">Bearbeiten</button><button class="btn'+(armed?" arm":"")+'" data-vcd="'+esc(c.id)+'">'+(armed?"Wirklich löschen?":"Löschen")+"</button>")+"</div></div>"
+  return'<div class="card" id="vddet"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start"><div style="flex:1;min-width:200px"><h3 style="margin:0;font-size:18px;text-transform:none;letter-spacing:0">'+esc(c.titel||"(ohne Titel)")+'</h3><div class="note">'+(c.an==="alle"?"Ganze Mannschaft":"An "+esc(R.map((p)=>p.vorname).join(", ")))+(c.kaus?" · Kommentieren aus":c.frist?" · kommentieren bis "+esc(fristTxt(c.frist)):"")+"</div>"+(c.aus?'<div class="note" style="color:var(--o);font-weight:600">Für Spieler nicht sichtbar</div>':"")+"</div>"
+    +'<div class="bar" style="margin:0">'+(urlOk(c.url)?'<a class="btn" href="'+esc(c.url)+'" target="_blank" rel="noopener noreferrer">Ansehen</a>':"")+(ro?"":(c.aus?'<button class="btn" data-vcf="'+esc(c.id)+'" style="background:var(--ac);color:#fff;border-color:var(--ac)">Freigeben</button>':'<button class="btn" data-vcf="'+esc(c.id)+'">Ausblenden</button>')+'<button class="btn" data-vce="'+esc(c.id)+'">Bearbeiten</button><button class="btn'+(armed?" arm":"")+'" data-vcd="'+esc(c.id)+'">'+(armed?"Wirklich löschen?":"Löschen")+"</button>")+"</div></div>"
     +(c.aufgabe?'<div class="vd-auf" style="margin:10px 0"><b>Aufgabe</b><div style="white-space:pre-wrap">'+esc(c.aufgabe)+"</div></div>":"")
-    +'<div class="vd-miss" style="margin:8px 0 12px">'+R.map((p)=>'<span class="'+(done.has(p.id)?"":"no")+'">'+esc(p.vorname)+(done.has(p.id)?" ✓":" fehlt noch")+"</span>").join("")+"</div>"
-    +'<div style="display:flex;flex-direction:column;gap:8px" id="vdk">'+(K.length?treeHtml(K,{reply:!ro,del:!ro}):'<div class="note">Noch keine Kommentare.</div>')+"</div>"
-    +(ro||!window.__WEB?"":'<div style="margin-top:12px" id="vdrw">'+(V.repTo?'<div class="note">Antwort auf den Kommentar von <b>'+esc((K.find((k)=>k.id===V.repTo)||{}).n||"")+'</b> · <button type="button" class="btn" data-vrx style="font-size:12px;padding:2px 8px">nicht antworten</button></div>':"")
+    +(c.kaus?"":'<div class="vd-miss" style="margin:8px 0 12px">'+R.map((p)=>'<span class="'+(done.has(p.id)?"":"no")+'">'+esc(p.vorname)+(done.has(p.id)?" ✓":" fehlt noch")+"</span>").join("")+"</div>")
+    +'<div style="display:flex;flex-direction:column;gap:8px" id="vdk">'+(K.length?treeHtml(K,{reply:!ro,del:!ro}):c.kaus?"":'<div class="note">Noch keine Kommentare.</div>')+"</div>"
+    +(ro||!window.__WEB||c.kaus?"":'<div style="margin-top:12px" id="vdrw">'+(V.repTo?'<div class="note">Antwort auf den Kommentar von <b>'+esc((K.find((k)=>k.id===V.repTo)||{}).n||"")+'</b> · <button type="button" class="btn" data-vrx style="font-size:12px;padding:2px 8px">nicht antworten</button></div>':"")
     +'<label class="note" for="vdrt">Antwort als '+esc(myName())+' <button type="button" class="btn" data-vname style="font-size:12px;padding:2px 8px">Name ändern</button></label><div class="bar" style="align-items:flex-end;margin:4px 0 0"><textarea id="vdrt" class="vd-ta" rows="2" maxlength="2000" style="flex:1;min-width:200px"></textarea><button class="btn" id="vdrs" style="background:var(--ac);color:#fff;border-color:var(--ac)">'+(V.repTo?"Antworten":"Schreiben")+"</button></div></div>")+"</div>"}
 function fbHtml(){
   const ro=!canW();
@@ -2898,7 +2900,7 @@ V.gamePush=(alt,neu)=>{if(!window.__WEB||!V.msgOn()||!V.on()||!neu||!urlOk(neu.v
 V.terminPush=()=>{if(!window.__WEB||!V.msgOn())return;pushQ("termin",{art:"termin"});pubSoon()};
 /* Erinnerung an die Frist: einen Tag vorher, bei knapper Zeit 3 Stunden vorher */
 function fristQ(c){const f=fristTs(c.frist);let t=f-864e5;if(t<Date.now()+36e5)t=f-108e5;
-  if(!c.frist||isNaN(f)||t<Date.now()){pushQdel("f_"+c.id);return}
+  if(!c.frist||c.aus||c.kaus||isNaN(f)||t<Date.now()){pushQdel("f_"+c.id);return}
   pushQ("f_"+c.id,{art:"frist",an:c.an,t,tx:"Bitte kommentiere den Clip bis "+dShort(c.frist)+", "+dTime(c.frist)+". Falls du das schon gemacht hast: Danke!"})}
 /* Dienst-Erinnerung montags 10 Uhr: je Spieler und Woche mit Dienst ein Eintrag für den Spieler (alle seine Dienste der Woche Mo–So)
    und einer für die Eltern (nur Leibchen und Obst & Gemüse, nie Materialdienst). Ohne Dienst kein Eintrag. Text ohne Namen.
@@ -2934,11 +2936,18 @@ async function saveClip(){
   if(fd===null){msg("Das Datum bei „Kommentieren bis“ stimmt nicht (z. B. 26.10.2026).",true);return}
   if(ft===null){msg("Die Uhrzeit stimmt nicht (z. B. 18:00).",true);return}
   if(b===null){msg("Das Datum bei „Für Spieler sichtbar bis“ stimmt nicht (z. B. 26.10.2026).",true);return}
-  const old=V.edit&&V.edit!=="neu"?V.clips.find((x)=>x.id===V.edit):null;
-  const c={id:old?old.id:nid("cl"),titel:t,url:u,aufgabe:a,an:alle?"alle":sel,frist:fd?fd+"T"+(ft||"18:00"):"",bis:b||"",at:old&&old.at||new Date().toISOString(),s:old&&old.s||hex(32),ck:old&&old.ck||b64u(crypto.getRandomValues(new Uint8Array(16)))};
-  try{if(!old)await db.doc("clipauth/"+c.s).set({c:c.id});await save("clips",c.id,c);V.edit=null;V.sel=c.id;draw();msg(old?"Gespeichert.":"Clip gespeichert. Er erscheint in den Spielerlinks der Empfänger.");pubSoon();
-    if(!old)pushQ(nid("q"),{art:"clip",an:c.an});if(!old||old.frist!==c.frist||JSON.stringify(old.an)!==JSON.stringify(c.an))fristQ(c)}catch(e){msg("Das konnte nicht gespeichert werden.",true)}
+  const old=V.edit&&V.edit!=="neu"?V.clips.find((x)=>x.id===V.edit):null,aus=!($("#vdsv")||{checked:true}).checked,kaus=!($("#vdkm")||{checked:true}).checked;
+  const c=clipFrei(old,{id:old?old.id:nid("cl"),titel:t,url:u,aufgabe:a,an:alle?"alle":sel,frist:fd&&!kaus?fd+"T"+(ft||"18:00"):"",bis:b||"",at:old&&old.at||new Date().toISOString(),s:old&&old.s||hex(32),ck:old&&old.ck||b64u(crypto.getRandomValues(new Uint8Array(16))),...(kaus?{kaus:true}:{})},aus);
+  try{if(!old)await db.doc("clipauth/"+c.s).set({c:c.id});await save("clips",c.id,c);V.edit=null;V.sel=c.id;draw();msg(c.aus?"Gespeichert. Die Spieler sehen den Clip erst, wenn du ihn freigibst.":old?"Gespeichert.":"Clip gespeichert. Er erscheint in den Spielerlinks der Empfänger.");pubSoon();clipPush(old,c)}catch(e){msg("Das konnte nicht gespeichert werden.",true)}
 }
+/* Für Spieler sichtbar (Phil 20.11.): aus = ausgeblendet, fr = schon einmal freigegeben (ältere Clips ohne aus zählen als freigegeben).
+   Beim ersten Freigeben gilt der Clip als neu (at = jetzt) und die Spieler bekommen die Nachricht „neuer Clip“. */
+const warFrei=(old)=>!!old&&(!!old.fr||!old.aus);
+function clipFrei(old,c,aus){const o={...c};delete o.aus;delete o.fr;if(aus)o.aus=true;if(!aus||warFrei(old))o.fr=1;if(old&&!aus&&!warFrei(old))o.at=new Date().toISOString();return o}
+function clipPush(old,c){if(!c.aus&&!warFrei(old))pushQ(nid("q"),{art:"clip",an:c.an});
+  if(!old||old.frist!==c.frist||JSON.stringify(old.an)!==JSON.stringify(c.an)||!!old.aus!==!!c.aus||!!old.kaus!==!!c.kaus)fristQ(c)}
+async function freiClip(id){const old=V.clips.find((x)=>x.id===id);if(!old)return;const c=clipFrei(old,{...old},!old.aus);
+  try{await save("clips",c.id,c);draw();msg(c.aus?"Ausgeblendet. Die Spieler sehen den Clip nicht mehr.":"Freigegeben. Die Spieler sehen den Clip jetzt.");pubSoon();clipPush(old,c)}catch(e){msg("Das konnte nicht gespeichert werden.",true)}}
 async function delClip(id){const c=V.clips.find((x)=>x.id===id);if(!c)return;
   try{if(window.__WEB&&c.s){try{const s=await db.collection("kom").doc(c.s).collection("m").get();for(const d of s.docs)await db.collection("kom").doc(c.s).collection("m").doc(d.id).delete()}catch(e){}await db.doc("clipauth/"+c.s).delete().catch(()=>{})}
     await save("clips",id,null);pushQdel("f_"+id);V.sel=null;draw();msg("Clip gelöscht.");pubSoon()}catch(e){msg("Das konnte nicht gelöscht werden.",true)}}
@@ -2963,6 +2972,8 @@ document.addEventListener("click",async(e)=>{
   if(q("#vdsave")){saveClip();return}
   if((b=q("#vdan button"))){document.querySelectorAll("#vdan button").forEach((x)=>x.classList.toggle("on",x===b));$("#vdps").hidden=b.dataset.an==="alle";return}
   if((b=q("[data-vc]"))){V.sel=b.dataset.vc;V.seen("c",V.sel);V.repTo=null;V.armed=null;draw();const d=$("#vddet");if(d&&window.innerWidth<900)d.scrollIntoView({behavior:"smooth",block:"start"});return}
+  if((b=q("[data-vcf]"))){freiClip(b.dataset.vcf);return}
+  if((b=q("#vdkm"))){const w=$("#vdfw");if(w)w.hidden=!b.checked;return}
   if((b=q("[data-vce]"))){V.edit=b.dataset.vce;draw();const f=$("#vdform");f&&f.scrollIntoView({block:"start"});return}
   if((b=q("[data-vcd]"))){const k="d"+b.dataset.vcd;if(V.armed!==k){V.armed=k;draw();return}V.armed=null;delClip(b.dataset.vcd);return}
   if((b=q("[data-krep]"))){V.repTo=b.dataset.krep;draw();const t=$("#vdrt");t&&t.focus();return}
@@ -2998,15 +3009,15 @@ const seenGet=(pid)=>new Set(ls.get("u13vseen."+pid,[]));
 const seenAdd=(pid,id)=>{const s=seenGet(pid);s.add(id);ls.set("u13vseen."+pid,[...s].slice(-300))};
 /* Zahl hinter „Videos“: noch nicht geöffnete Clips, die eine laufende Frist haben oder in den letzten 5 Tagen kamen */
 const unseen=(d,pid)=>{const s=seenGet(pid),now=Date.now(),t5=now-5*864e5;
-  return(d.vc||[]).filter((c)=>!s.has(c.id)&&((c.f&&fristTs(c.f)>=now)||Date.parse(c.at||"")>=t5)).length};
+  return(d.vc||[]).filter((c)=>!s.has(c.id)&&((c.f&&!c.nk&&fristTs(c.f)>=now)||Date.parse(c.at||"")>=t5)).length};
 V.vidLabel=(d,pid)=>{const n=unseen(d,pid);return"Videos"+(n?" ("+n+")":"")};
 const vidTab=()=>{const b=document.querySelector('#vtab [data-v="v"]');if(b&&VW.d){const i=b.querySelector(".vti");b.textContent=V.vidLabel(VW.d,VW.pid);if(i)b.prepend(i)}};
 const hintOff=(pid,id)=>ls.get("u13vhx."+pid,[]).includes(id);
-const hintsFor=(d,pid)=>(d.vc||[]).filter((c)=>c.f&&!hintOff(pid,c.id)&&fristBald(c.f)&&VW.kom&&VW.kom[c.id]&&!mineTop(VW.kom[c.id],pid));
+const hintsFor=(d,pid)=>(d.vc||[]).filter((c)=>c.f&&!c.nk&&!hintOff(pid,c.id)&&fristBald(c.f)&&VW.kom&&VW.kom[c.id]&&!mineTop(VW.kom[c.id],pid));
 /* Neue Aufgabe (Clip mit Aufgabe oder Frist): oben in der Übersicht bis zum Wegklicken, höchstens 3 Tage nach dem Anlegen.
    Weggeklickt merkt sich das Gerät als „n:<Clip>“; die Erinnerung einen Tag vor der Frist kommt trotzdem. */
 const neuAufg=(d,pid)=>{const t3=Date.now()-3*864e5,H=new Set(hintsFor(d,pid).map((c)=>c.id));
-  return(d.vc||[]).filter((c)=>(c.a||c.f)&&!H.has(c.id)&&!hintOff(pid,c.id)&&!hintOff(pid,"n:"+c.id)&&Date.parse(c.at||"")>=t3&&VW.kom&&VW.kom[c.id]&&!mineTop(VW.kom[c.id],pid))};
+  return(d.vc||[]).filter((c)=>(c.a||c.f)&&!c.nk&&!H.has(c.id)&&!hintOff(pid,c.id)&&!hintOff(pid,"n:"+c.id)&&Date.parse(c.at||"")>=t3&&VW.kom&&VW.kom[c.id]&&!mineTop(VW.kom[c.id],pid))};
 function hintHtml(d,pid,ueb){return hintsFor(d,pid).map((c)=>'<div class="vd-hint" data-hint="'+esc(c.id)+'">'+SVG.clock+'<div style="flex:1;font-size:14px;line-height:1.4"><b>'+(Date.now()>fristTs(c.f)?"Frist vorbei":"Bis "+esc(fristTxt(c.f)))+":</b> Bitte kommentiere den Clip „"+esc(c.ti)+'“.</div><button type="button" class="xcl" data-hx="'+esc(c.id)+'" aria-label="Ausblenden" title="Ausblenden">✕</button></div>').join("")
   +(ueb?neuAufg(d,pid).map((c)=>'<div class="vd-hint" data-hint="'+esc(c.id)+'" data-hneu>'+SVG.clock+'<div data-hgo="'+esc(c.id)+'" role="button" tabindex="0" style="flex:1;font-size:14px;line-height:1.4;cursor:pointer"><b>Neue Aufgabe:</b> Bitte kommentiere den Clip „'+esc(c.ti)+"“"+(c.f?" bis "+esc(fristTxt(c.f)):"")+'.</div><button type="button" class="xcl" data-hx="n:'+esc(c.id)+'" aria-label="Ausblenden" title="Ausblenden">✕</button></div>').join(""):"")}
 /* Wer bist du? (einmal je Gerät und Link) */
@@ -3053,7 +3064,7 @@ function vuVid(d,pid,open){const n=unseen(d,pid);
 function uebHtml(d,pid){
   const r=role(pid),T=d.t||{days:{}},t0=today(),days=Object.keys(T.days||{}).filter((x)=>x>=t0).sort(),nx=[];
   for(const x of days){(T.days[x]||[]).forEach((o)=>{if(o.ty!=="Ferien"&&nx.length<5)nx.push({d:x,...o})});if(nx.length>=5)break}
-  const clips=(d.vc||[]),sp=r&&r.r==="s",open=sp?clips.filter((c)=>c.a&&VW.kom&&VW.kom[c.id]&&!mineTop(VW.kom[c.id],pid)):[];
+  const clips=(d.vc||[]),sp=r&&r.r==="s",open=sp?clips.filter((c)=>c.a&&!c.nk&&VW.kom&&VW.kom[c.id]&&!mineTop(VW.kom[c.id],pid)):[];
   const rep=newReplies(d,pid),a=nx[0],n0=a?vuTage(a.d):0;
   VW.unx=nx;const pa=a&&vuPop(a),sun=dsAdd(dsMon(t0),6),dn=nx.slice(1).filter((o,i)=>i<3||o.d<=sun);   /* Danach: die nächsten 3 Termine, ein 4. nur, wenn er noch in dieser Woche (bis Sonntag) ist */
   const gross=a?'<div class="card vu-next'+(a.g?" vu-spiel":"")+'"'+(pa?' data-vtp="0" role="button" tabindex="0"':"")+'><div class="vu-lbl">'+"Nächster Termin · "+esc(a.tl||a.ty)+"</div>"
@@ -3092,14 +3103,14 @@ function vidHtml(d,pid){
     +(sub==="c"?(clips.length?'<div class="note" style="margin:0 0 8px">Neueste Clips oben</div>'+clips.map((c)=>clipHtml(c,pid)).join(""):'<div class="card"><div class="note">Noch keine Clips.</div></div>')
       :(games.length?'<div class="note" style="margin:0 0 8px">Alle Spiele mit Video, neueste oben</div><div class="card">'+games.map((g)=>'<div class="vd-row"><div style="flex:1;min-width:0"><b>'+esc(g.g?"gegen "+g.g:"Spiel")+(g.ha?" ("+esc(g.ha)+")":"")+'</b><div class="note">'+esc(dShort(g.d))+(g.a?" · "+esc(g.a):"")+(g.e?" · "+esc(g.e):"")+'</div></div><a class="btn" href="'+esc(g.v)+'" target="_blank" rel="noopener noreferrer" style="font-weight:600">Bei Veo</a></div>').join("")+"</div>":'<div class="card"><div class="note">Noch keine Spiel-Videos.</div></div>'))}
 function clipHtml(c,pid){
-  const open=VW.open===c.id,K=VW.kom?VW.kom[c.id]:null,done=K&&mineTop(K,pid),neu=!seenGet(pid).has(c.id),late=c.f&&!done&&fristBald(c.f);
-  const tags=(neu?'<span class="vd-tag neu">Neu</span>':"")+(c.f?'<span class="vd-tag'+(late?" bald":"")+'">'+(done?"erledigt":"bis "+esc(fristTxt(c.f)))+"</span>":"");
+  const open=VW.open===c.id,K=VW.kom?VW.kom[c.id]:null,done=K&&mineTop(K,pid),neu=!seenGet(pid).has(c.id),late=c.f&&!c.nk&&!done&&fristBald(c.f);
+  const tags=(neu?'<span class="vd-tag neu">Neu</span>':"")+(c.f&&!c.nk?'<span class="vd-tag'+(late?" bald":"")+'">'+(done?"erledigt":"bis "+esc(fristTxt(c.f)))+"</span>":"");
   let body="";
   if(open){
     const others=K?K.filter((k)=>!(k.p===pid&&!k.tr)&&!k.r).length:0;
     body='<div class="vd-bd">'+veoBtn(c.u,"Clip bei Veo ansehen")
-      +(c.a?'<div class="vd-auf"><b>Deine Aufgabe</b><div style="font-size:15px;margin-top:3px;white-space:pre-wrap">'+esc(c.a)+"</div>"+(c.f?'<div class="note" style="margin-top:6px">Kommentieren bis '+esc(fristTxt(c.f))+"</div>":"")+"</div>":"")
-      +(!net()?'<div class="note">Kommentieren ist in dieser Ansicht nicht möglich.</div>':K==null?'<div class="note">Kommentare werden geladen …</div>':!done
+      +(c.a?'<div class="vd-auf"><b>Deine Aufgabe</b><div style="font-size:15px;margin-top:3px;white-space:pre-wrap">'+esc(c.a)+"</div>"+(c.f&&!c.nk?'<div class="note" style="margin-top:6px">Kommentieren bis '+esc(fristTxt(c.f))+"</div>":"")+"</div>":"")
+      +(c.nk?"":!net()?'<div class="note">Kommentieren ist in dieser Ansicht nicht möglich.</div>':K==null?'<div class="note">Kommentare werden geladen …</div>':!done
         ?'<label class="note" for="vkt" style="font-weight:600;color:var(--tx)">Deine Meinung</label><textarea id="vkt" class="vd-ta" rows="3" maxlength="2000" placeholder="Was siehst du in der Szene?"></textarea><button class="vd-go" data-ksend="'+esc(c.id)+'">Abschicken</button><div class="note">Du kannst deinen Kommentar '+EDIT_MIN+" Minuten lang ändern.</div>"+(others?'<div class="vd-hint" style="background:var(--grs);border-color:var(--ln);margin:0">'+SVG.lock+'<div style="font-size:13px">'+others+(others===1?" Kommentar":" Kommentare")+" der anderen siehst du, sobald du deine eigene Meinung geschrieben hast.</div></div>":"")
         :'<button class="btn" data-kshow="'+esc(c.id)+'" style="min-height:44px;font-weight:600">'+(VW.kOpen===c.id?"Kommentare ausblenden":"Kommentare anzeigen ("+K.length+")")+"</button>"+(VW.kOpen===c.id?'<div style="display:flex;flex-direction:column;gap:8px">'+treeHtml(K,{me:pid,canEdit,reply:true})+"</div>"+(VW.rep&&VW.rep.c===c.id?'<div id="vkrw"><div class="note">Antwort an <b>'+esc((K.find((k)=>k.id===VW.rep.k)||{}).n||"")+'</b></div><textarea id="vkr" class="vd-ta" rows="2" maxlength="2000"></textarea><div class="bar" style="margin:6px 0 0"><button class="btn" data-krx>Abbrechen</button><button class="vd-go" data-krsend="'+esc(c.id)+'">Antworten</button></div></div>':""):""))
       +'<div class="note">'+(c.n?"Sehen nur die "+(c.n===1?"Empfänger":c.n+" Spieler")+", die den Clip bekommen haben, und die Trainer.":"Sieht die ganze Mannschaft.")+"</div></div>"}
@@ -3117,7 +3128,7 @@ function fbHtmlV(d,pid){
 /* Laden der Kommentare und Antworten */
 async function loadAll(d,pid){const n=net();if(!n)return;
   const r=role(pid);
-  if(r&&r.r==="s"){const K={};await Promise.all((d.vc||[]).map(async(c)=>{const x=await loadKom(c);if(x)K[c.id]=x}));VW.kom=K}
+  if(r&&r.r==="s"){const K={};await Promise.all((d.vc||[]).filter((c)=>!c.nk).map(async(c)=>{const x=await loadKom(c);if(x)K[c.id]=x}));VW.kom=K}
   if(d.fk&&r){try{VW.fb=await n.list(TP(d)+"fbaus/"+fbDev(pid)+"/m")}catch(e){}}
 }
 /* Nachricht an den Trainer (Feedback-Eingang); auch für „Ich möchte in Stufe …“ aus eigentraining.js (eigene id) */
@@ -4063,8 +4074,8 @@ function demoPlayer(){
   try{window.__kobsEv=null;K.forEach((k)=>{D[k]=o[k]});r={h:profileHtml(p.id),t:planSnap(),li:ligaSnap(),ds:window.__vid?window.__vid.dienste(p.id):null}}
   catch(e){try{console.warn("Demo-Spielerlink:",e&&e.message)}catch(_){}}
   finally{K.forEach((k)=>{D[k]=keep[k]});window.__kobsEv=kob;try{renderProfile()}catch(e){}}
-  const me=(x)=>x===p.id?"demosp":x,mine=V.clips.filter((c)=>c.an==="alle"||c.an.includes(p.id));
-  const vc=mine.map((c)=>({id:c.id,ti:c.titel,u:c.url,a:c.aufgabe,f:c.frist,at:c.at,s:c.s,ck:c.ck,n:c.an==="alle"?0:c.an.length}));
+  const me=(x)=>x===p.id?"demosp":x,mine=V.clips.filter((c)=>!c.aus&&(c.an==="alle"||c.an.includes(p.id)));
+  const vc=mine.map((c)=>({id:c.id,ti:c.titel,u:c.url,a:c.aufgabe,f:c.frist,at:c.at,s:c.s,ck:c.ck,n:c.an==="alle"?0:c.an.length,...(c.kaus?{nk:1}:{})}));
   const dk={};mine.forEach((c)=>{dk[c.id]=(V.kom[c.id]||[]).map((k)=>({...k,p:me(k.p)}))});
   const df=[];V.fb.filter((x)=>x.pid===p.id).forEach((x)=>{df.push({id:x.id,at:x.at,art:x.art,text:x.text,von:x.von,t:"ich"});if(x.antwort)df.push({id:x.id+"a",at:x.antwortAm||x.at,text:x.antwort,von:x.antwortVon,t:"trainer",re:x.id})});
   const vg=o.spiele.filter((g)=>g.video).map((g)=>({d:g.datum||"",g:g.gegner||"",ha:g.ha||"",a:g.art||"",e:g.tore!=null&&g.gt!=null?g.tore+":"+g.gt:"",v:g.video})).sort((a,b)=>a.d<b.d?1:-1);
